@@ -144,6 +144,29 @@ class BasicOverview extends FormBase {
       ];
     }
 
+    if ( $configuration['enabled'] ) {
+      $output['validation_skip_status'] = [
+        '#type'   => 'markup',
+        '#markup' => $this->t( 'Number of times validation skipped: @skipped of @limit', [
+          '@skipped' => $user_tfa['validation_skipped'],
+          '@limit' => $configuration['validation_skip'],
+        ]),
+      ];
+    }
+
+    if ($this->canPerformReset($user)) {
+      $output['actions'] = ['#type' => 'actions'];
+      $output['actions']['reset_skip_attempts'] = [
+        '#type' => 'submit',
+        '#value' => $this->t('Reset skip validation attempts'),
+        '#submit' => ['::resetSkipValidationAttempts'],
+      ];
+      $output['account'] = [
+        '#type' => 'value',
+        '#value' => $user,
+      ];
+    }
+
     return $output;
   }
 
@@ -182,6 +205,42 @@ class BasicOverview extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+  }
+
+  /**
+   * Resets TFA attempts for the given user account.
+   *
+   * @param array $form
+   *   The form definition.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   */
+  public function resetSkipValidationAttempts(array $form, FormStateInterface $form_state) {
+    $account = $form_state->getValue('account');
+    $tfa_data = $this->tfaGetTfaData($account->id(), $this->userData);
+    $tfa_data['validation_skipped'] = 0;
+    $this->tfaSaveTfaData($account->id(), $this->userData, $tfa_data);
+    $this->messenger()->addMessage($this->t('Validation attempts have been reset for user @name.', [
+      '@name' => $account->getDisplayName(),
+    ]));
+    $this->logger('tfa')->notice('Validation attempts reset for @account by @current_user.', [
+      '@account' => $account->getAccountName(),
+      '@current_user' => $this->currentUser()->getAccountName(),
+    ]);
+  }
+
+  /**
+   * Determine if the current user can perform a TFA attempt reset.
+   *
+   * @param \Drupal\user\UserInterface $account
+   *   The account that TFA is for.
+   */
+  protected function canPerformReset(UserInterface $account) {
+    $current_user = $this->currentUser();
+    return $current_user->hasPermission('administer users')
+      // Disallow users from resetting their own.
+      // @todo Make this configurable.
+      && $current_user->id() != $account->id();
   }
 
 }

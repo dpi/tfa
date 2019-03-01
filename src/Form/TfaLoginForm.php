@@ -233,6 +233,11 @@ class TfaLoginForm extends UserLoginForm {
       $this->tfaContext->doUserLogin();
       $form_state->setRedirect('<front>');
     }
+    else {
+      $message = $this->config('tfa.settings')->get('help_text');
+      $this->messenger()->addError($message);
+      $this->logger('tfa')->notice('@name has no more remaining attempts for bypassing the second authentication factor.', ['@name' => $this->tfaContext->getUser()->getAccountName()]);
+    }
   }
 
   /**

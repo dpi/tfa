@@ -469,6 +469,13 @@ class SettingsForm extends ConfigFormBase {
         ],
       ],
     ];
+    $form['help_text'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Help text'),
+      '#description' => $this->t('Text to display when a user is locked out and blocked from logging in.'),
+      '#default_value' => $config->get('help_text'),
+      '#required' => TRUE,
+    ];
 
     $form['actions']['#type'] = 'actions';
     $form['actions']['submit'] = [
@@ -532,6 +539,7 @@ class SettingsForm extends ConfigFormBase {
       ->set('mail.tfa_enabled_configuration.body', $form_state->getValue('tfa_enabled_configuration_body'))
       ->set('mail.tfa_disabled_configuration.subject', $form_state->getValue('tfa_disabled_configuration_subject'))
       ->set('mail.tfa_disabled_configuration.body', $form_state->getValue('tfa_disabled_configuration_body'))
+      ->set('help_text', $form_state->getValue('help_text'))
       ->save();
 
     parent::submitForm($form, $form_state);
