@@ -269,7 +269,7 @@ class BasicSetup extends FormBase {
           }
         }
 
-        $params = array('account' => $account);
+        $params = ['account' => $account];
         \Drupal::service('plugin.manager.mail')->mail('tfa', 'tfa_enabled_configuration', $account->getEmail(), $account->getPreferredLangcode(), $params);
       }
     }

@@ -87,28 +87,28 @@ class TfaUserLoginBlock extends UserLoginBlock {
     $form['pass']['#size'] = 15;
     $form['#action'] = Url::fromRoute('<current>', [], ['query' => $this->getDestinationArray(), 'external' => FALSE])->toString();
     // Build action links.
-    $items = array();
+    $items = [];
     if (\Drupal::config('user.settings')->get('register') != USER_REGISTER_ADMINISTRATORS_ONLY) {
-      $items['create_account'] = \Drupal::l($this->t('Create new account'), new Url('user.register', array(), array(
-        'attributes' => array(
+      $items['create_account'] = \Drupal::l($this->t('Create new account'), new Url('user.register', [], [
+        'attributes' => [
           'title' => $this->t('Create a new user account.'),
-          'class' => array('create-account-link'),
-        ),
-      )));
+          'class' => ['create-account-link'],
+        ],
+      ]));
     }
-    $items['request_password'] = \Drupal::l($this->t('Reset your password'), new Url('user.pass', array(), array(
-      'attributes' => array(
+    $items['request_password'] = \Drupal::l($this->t('Reset your password'), new Url('user.pass', [], [
+      'attributes' => [
         'title' => $this->t('Send password reset instructions via email.'),
-        'class' => array('request-password-link'),
-      ),
-    )));
-    return array(
+        'class' => ['request-password-link'],
+      ],
+    ]));
+    return [
       'user_login_form' => $form,
-      'user_links' => array(
+      'user_links' => [
         '#theme' => 'item_list',
         '#items' => $items,
-      ),
-    );
+      ],
+    ];
   }
 
 }
