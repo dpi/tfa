@@ -1,8 +1,6 @@
 <?php
 
-namespace Drupal\tfa\Tests;
-
-use Drupal\Tests\tfa\Functional\TfaTestBase;
+namespace Drupal\Tests\tfa\Functional;
 
 /**
  * Tests the Tfa UI.
