@@ -3,6 +3,7 @@
 namespace Drupal\tfa\Plugin\TfaValidation;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\encrypt\EncryptionProfileManagerInterface;
 use Drupal\encrypt\EncryptService;
 use Drupal\encrypt\EncryptServiceInterface;
@@ -24,6 +25,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface {
+
+  use StringTranslationTrait;
+
   /**
    * The number of recovery codes to generate.
    *
@@ -204,7 +208,7 @@ class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface {
         return $this->isValid;
       }
     }
-    $this->errorMessages['recovery_code'] = t('Invalid recovery code.');
+    $this->errorMessages['recovery_code'] = $this->t('Invalid recovery code.');
     return $this->isValid;
   }
 
