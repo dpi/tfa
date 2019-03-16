@@ -147,8 +147,8 @@ class BasicOverview extends FormBase {
     if ( $configuration['enabled'] ) {
       $output['validation_skip_status'] = [
         '#type'   => 'markup',
-        '#markup' => $this->t( 'Number of times validation skipped: @skipped of @limit', [
-          '@skipped' => $user_tfa['validation_skipped'],
+        '#markup' => $this->t('Number of times validation skipped: @skipped of @limit', [
+          '@skipped' => isset($user_tfa['validation_skipped']) ? $user_tfa['validation_skipped'] : 0,
           '@limit' => $configuration['validation_skip'],
         ]),
       ];
