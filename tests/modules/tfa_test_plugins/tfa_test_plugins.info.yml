@@ -4,4 +4,4 @@ description: For testing core TFA APIs
 core: 8.x
 package: System
 dependencies:
-  - tfa
+  - tfa:tfa
