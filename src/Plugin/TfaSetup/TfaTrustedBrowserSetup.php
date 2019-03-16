@@ -4,6 +4,7 @@ namespace Drupal\tfa\Plugin\TfaSetup;
 
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\encrypt\EncryptionProfileManagerInterface;
 use Drupal\encrypt\EncryptServiceInterface;
@@ -25,6 +26,7 @@ use Drupal\user\UserDataInterface;
  * )
  */
 class TfaTrustedBrowserSetup extends TfaTrustedBrowser implements TfaSetupInterface {
+  use StringTranslationTrait;
 
   /**
    * {@inheritdoc}
@@ -41,7 +43,7 @@ class TfaTrustedBrowserSetup extends TfaTrustedBrowser implements TfaSetupInterf
     $time = $this->expiration / 86400;
     $form['info'] = [
       '#type' => 'markup',
-      '#markup' => '<p>' . t("Trusted browsers are a method for
+      '#markup' => '<p>' . $this->t("Trusted browsers are a method for
       simplifying login by avoiding verification code entry for a set amount of
       time, @time days from marking a browser as trusted. After @time days, to
       log in you'll need to enter a verification code with your username and
@@ -55,15 +57,15 @@ class TfaTrustedBrowserSetup extends TfaTrustedBrowser implements TfaSetupInterf
       $current_trusted = FALSE;
       $form['trust'] = [
         '#type' => 'checkbox',
-        '#title' => t('Trust this browser?'),
+        '#title' => $this->t('Trust this browser?'),
         '#default_value' => empty($existing) ? 1 : 0,
       ];
       // Optional field to name this browser.
       $form['name'] = [
         '#type' => 'textfield',
-        '#title' => t('Name this browser'),
+        '#title' => $this->t('Name this browser'),
         '#maxlength' => 255,
-        '#description' => t('Optionally, name the browser on your browser (e.g.
+        '#description' => $this->t('Optionally, name the browser on your browser (e.g.
         "home firefox" or "office desktop windows"). Your current browser user
         agent is %browser', ['%browser' => $_SERVER['HTTP_USER_AGENT']]),
         '#default_value' => $this->getAgent(),
@@ -77,8 +79,8 @@ class TfaTrustedBrowserSetup extends TfaTrustedBrowser implements TfaSetupInterf
     if (!empty($existing)) {
       $form['existing'] = [
         '#type' => 'fieldset',
-        '#title' => t('Existing browsers'),
-        '#description' => t('Leave checked to keep these browsers in your trusted log in list.'),
+        '#title' => $this->t('Existing browsers'),
+        '#description' => $this->t('Leave checked to keep these browsers in your trusted log in list.'),
         '#tree' => TRUE,
       ];
 
@@ -93,17 +95,17 @@ class TfaTrustedBrowserSetup extends TfaTrustedBrowser implements TfaSetupInterf
         }
 
         if ($current_trusted == $browser_id) {
-          $name = '<strong>' . t('@name (current browser)', ['@name' => $browser['name']]) . '</strong>';
+          $name = '<strong>' . $this->t('@name (current browser)', ['@name' => $browser['name']]) . '</strong>';
         }
         else {
           $name = Html::escape($browser['name']);
         }
 
         if (empty($browser['last_used'])) {
-          $message = t('Marked trusted @set', $vars);
+          $message = $this->t('Marked trusted @set', $vars);
         }
         else {
-          $message = t('Marked trusted @set, last used for log in @time', $vars);
+          $message = $this->t('Marked trusted @set, last used for log in @time', $vars);
         }
         $form['existing']['trusted_browser_' . $browser_id] = [
           '#type' => 'checkbox',
@@ -115,7 +117,7 @@ class TfaTrustedBrowserSetup extends TfaTrustedBrowser implements TfaSetupInterf
     }
     $form['actions']['save'] = [
       '#type' => 'submit',
-      '#value' => t('Save'),
+      '#value' => $this->t('Save'),
     ];
     return $form;
   }
@@ -204,11 +206,11 @@ class TfaTrustedBrowserSetup extends TfaTrustedBrowser implements TfaSetupInterf
         '@browser' => $device['name'],
       ];
       if (empty($device['last_used'])) {
-        $message = t('@browser, set @set', $vars);
+        $message = $this->t('@browser, set @set', $vars);
       }
       else {
         $vars['@time'] = $date_formatter->format($device['last_used']);
-        $message = t('@browser, set @set, last used @time', $vars);
+        $message = $this->t('@browser, set @set, last used @time', $vars);
       }
       $trusted_browsers[] = $message;
     }
@@ -216,12 +218,12 @@ class TfaTrustedBrowserSetup extends TfaTrustedBrowser implements TfaSetupInterf
       'heading' => [
         '#theme' => 'html_tag',
         '#tag' => 'h3',
-        '#value' => t('Trusted browsers'),
+        '#value' => $this->t('Trusted browsers'),
       ],
       'description' => [
         '#theme' => 'html_tag',
         '#tag' => 'p',
-        '#value' => t('Browsers that will not require a verification code during login.'),
+        '#value' => $this->t('Browsers that will not require a verification code during login.'),
       ],
     ];
     if (!empty($trusted_browsers)) {
@@ -229,7 +231,7 @@ class TfaTrustedBrowserSetup extends TfaTrustedBrowser implements TfaSetupInterf
       $output['list'] = [
         '#theme' => 'item_list',
         '#items' => $trusted_browsers,
-        '#title' => t('Browsers that will not require a verification code during login.'),
+        '#title' => $this->t('Browsers that will not require a verification code during login.'),
       ];
     }
     $output['link'] = [

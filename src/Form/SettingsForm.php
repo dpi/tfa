@@ -6,6 +6,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\encrypt\EncryptionProfileManagerInterface;
 use Drupal\tfa\TfaDataTrait;
 use Drupal\tfa\TfaLoginPluginManager;
@@ -20,6 +21,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class SettingsForm extends ConfigFormBase {
   use TfaDataTrait;
+  use StringTranslationTrait;
 
   /**
    * The login plugin manager to fetch plugin information.
@@ -278,8 +280,8 @@ class SettingsForm extends ConfigFormBase {
     // $validation_plugins_labels has the plugin ids as the key.
     $form['validation_plugin_settings'] = [
       '#type' => 'fieldset',
-      '#title' => t('Extra Settings'),
-      '#descrption' => t('Extra plugin settings.'),
+      '#title' => $this->t('Extra Settings'),
+      '#descrption' => $this->t('Extra plugin settings.'),
       '#tree' => TRUE,
       '#states' => $enabled_state,
     ];

@@ -84,15 +84,15 @@ class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface {
   public function getForm(array $form, FormStateInterface $form_state) {
     $form['code'] = [
       '#type' => 'textfield',
-      '#title' => t('Enter one of your recovery codes'),
+      '#title' => $this->t('Enter one of your recovery codes'),
       '#required' => TRUE,
-      '#description' => t('Recovery codes were generated when you first set up TFA. Format: XXX XX XXX'),
+      '#description' => $this->t('Recovery codes were generated when you first set up TFA. Format: XXX XX XXX'),
       '#attributes' => ['autocomplete' => 'off'],
     ];
     $form['actions']['#type'] = 'actions';
     $form['actions']['login'] = [
       '#type' => 'submit',
-      '#value' => t('Verify'),
+      '#value' => $this->t('Verify'),
     ];
     return $form;
   }
@@ -100,7 +100,7 @@ class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface {
   public function buildConfigurationForm($config, $state) {
     $settings_form['recovery_codes_amount'] = [
       '#type' => 'textfield',
-      '#title' => t('Recovery Codes Amount'),
+      '#title' => $this->t('Recovery Codes Amount'),
       '#default_value' => ($this->codeLimit) ?: 10,
       '#description' => 'Number of Recovery Codes To Generate.',
       '#size' => 2,
@@ -194,7 +194,7 @@ class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface {
     // Get codes and compare.
     $codes = $this->getCodes();
     if (empty($codes)) {
-      $this->errorMessages['recovery_code'] = t('You have no unused codes available.');
+      $this->errorMessages['recovery_code'] = $this->t('You have no unused codes available.');
       return FALSE;
     }
     // Remove empty spaces.

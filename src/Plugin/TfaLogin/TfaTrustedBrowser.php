@@ -4,6 +4,7 @@ namespace Drupal\tfa\Plugin\TfaLogin;
 
 use Drupal\Component\Utility\Crypt;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\encrypt\EncryptionProfileManagerInterface;
 use Drupal\encrypt\EncryptServiceInterface;
 use Drupal\tfa\Plugin\TfaBasePlugin;
@@ -22,6 +23,7 @@ use Drupal\user\UserDataInterface;
  * )
  */
 class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaValidationInterface {
+  use StringTranslationTrait;
 
   /**
    * Trust browser.
@@ -76,8 +78,8 @@ class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaV
   public function getForm(array $form, FormStateInterface $form_state) {
     $form['trust_browser'] = [
       '#type' => 'checkbox',
-      '#title' => t('Remember this browser?'),
-      '#description' => t('Not recommended if you are on a public or shared computer.'),
+      '#title' => $this->t('Remember this browser?'),
+      '#description' => $this->t('Not recommended if you are on a public or shared computer.'),
     ];
     return $form;
   }

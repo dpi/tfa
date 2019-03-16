@@ -3,6 +3,7 @@
 namespace Drupal\tfa\Plugin\EncryptionMethod;
 
 use Drupal\Component\Utility\Unicode;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\encrypt\EncryptionMethodInterface;
 use Drupal\encrypt\Plugin\EncryptionMethod\EncryptionMethodBase;
 
@@ -19,6 +20,7 @@ use Drupal\encrypt\Plugin\EncryptionMethod\EncryptionMethodBase;
  * )
  */
 class McryptAES128Encryption extends EncryptionMethodBase implements EncryptionMethodInterface {
+  use StringTranslationTrait;
 
   /**
    * @return mixed
@@ -82,12 +84,12 @@ class McryptAES128Encryption extends EncryptionMethodBase implements EncryptionM
     $errors = [];
 
     if (!function_exists('mcrypt_encrypt')) {
-      $errors[] = t('MCrypt library not installed.');
+      $errors[] = $this->t('MCrypt library not installed.');
     }
 
     // Check if we have a 128 bit key.
     if (strlen($key) != 16) {
-      $errors[] = t('This encryption method requires a 128 bit key.');
+      $errors[] = $this->t('This encryption method requires a 128 bit key.');
     }
 
     return $errors;
