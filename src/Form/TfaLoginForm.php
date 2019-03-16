@@ -225,10 +225,13 @@ class TfaLoginForm extends UserLoginForm {
       $tfa_setup_link = Url::fromRoute('tfa.overview', [
         'user' => $user->id(),
       ])->toString();
-      drupal_set_message($this->t('You are required to setup two-factor authentication <a href="@link">here.</a> You have @remaining attempts left after this you will be unable to login.', [
-        '@remaining' => $remaining - 1,
-        '@link' => $tfa_setup_link,
-      ]), 'error');
+      $message = $this->formatPlural(
+        $remaining - 1,
+        'You are required to setup two-factor authentication <a href="@link">here.</a> You have @remaining attempt left. After this you will be unable to login.',
+        'You are required to setup two-factor authentication <a href="@link">here.</a> You have @remaining attempts left. After this you will be unable to login.',
+        ['@remaining' => $remaining - 1, '@link' => $tfa_setup_link]
+      );
+      $this->messenger()->addError($message);
       $this->tfaContext->hasSkipped();
       $this->tfaContext->doUserLogin();
       $form_state->setRedirect('<front>');
