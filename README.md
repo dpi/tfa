@@ -64,7 +64,7 @@ modules. Real AES is not the only method available, another is [Sodium](https://
 
 ##### [Key](https://www.drupal.org/project/key)
 
-The key module provides Drupal access to an encryption key you create. Setting 
+The key module provides Drupal access to an encryption key you create. Setting
 up the key module:
 
 * Install the Key module.
@@ -100,7 +100,7 @@ Now you should be ready to configure the TFA module.
 * Visit the TFA module's configuration page.
     * Enable TFA
     * Select your desired Validation Plugin(s).
-    * Encryption Profile: Select the Encryption Profile you created in the 
+    * Encryption Profile: Select the Encryption Profile you created in the
      previous step.
     * Adjust other settings as desired.
     * Save
@@ -108,3 +108,14 @@ Now you should be ready to configure the TFA module.
     * Consider granting "Require TFA process" for some roles
 * Visit your account's Security tab: `user/[uid]/security/tfa`
     * Configure the selected Validation Plugins as desired for your account.
+
+##### TFA, Testing, and Development
+
+It can be hard to test user authentication in automated tests with the TFA
+module enabled. Development environments also will likely struggle to login
+unless they disable TFA or reset the secrets for an account. One solution is
+to disable the module in the development and testing environment. To quickly
+disable the module you can run these drush commands to set some config:
+
+* Disable TFA with `drush config-set tfa.settings enabled 0`
+* Enable TFA with `drush config-set tfa.settings enabled 1`
