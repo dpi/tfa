@@ -216,12 +216,12 @@ class TfaTrustedBrowserSetup extends TfaTrustedBrowser implements TfaSetupInterf
     }
     $output = [
       'heading' => [
-        '#theme' => 'html_tag',
+        '#type' => 'html_tag',
         '#tag' => 'h3',
         '#value' => $this->t('Trusted browsers'),
       ],
       'description' => [
-        '#theme' => 'html_tag',
+        '#type' => 'html_tag',
         '#tag' => 'p',
         '#value' => $this->t('Browsers that will not require a verification code during login.'),
       ],
