@@ -54,7 +54,7 @@ class TfaSetupPluginManager extends DefaultPluginManager {
    *   Encryption service.
    */
   public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, UserDataInterface $user_data, EncryptionProfileManagerInterface $encryption_profile_manager, EncryptService $encrypt_service) {
-    parent::__construct('Plugin/TfaSetup', $namespaces, $module_handler, 'Drupal\tfa\TfaSetupInterface', 'Drupal\tfa\Annotation\TfaSetup');
+    parent::__construct('Plugin/TfaSetup', $namespaces, $module_handler, 'Drupal\tfa\Plugin\TfaSetupInterface', 'Drupal\tfa\Annotation\TfaSetup');
     $this->alterInfo('tfa_setup_info');
     $this->setCacheBackend($cache_backend, 'tfa_setup');
     $this->userData = $user_data;

@@ -23,7 +23,7 @@ class TfaSendPluginManager extends DefaultPluginManager {
    *   The module handler.
    */
   public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler) {
-    parent::__construct('Plugin/TfaSend', $namespaces, $module_handler, 'Drupal\tfa\TfaSendInterface', 'Drupal\tfa\Annotation\TfaSend');
+    parent::__construct('Plugin/TfaSend', $namespaces, $module_handler, 'Drupal\tfa\Plugin\TfaSendInterface', 'Drupal\tfa\Annotation\TfaSend');
     $this->alterInfo('tfa_send_info');
     $this->setCacheBackend($cache_backend, 'tfa_send');
   }
