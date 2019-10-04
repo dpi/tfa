@@ -86,7 +86,7 @@ class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface {
       '#type' => 'textfield',
       '#title' => $this->t('Enter one of your recovery codes'),
       '#required' => TRUE,
-      '#description' => $this->t('Recovery codes were generated when you first set up TFA. Format: XXX XX XXX'),
+      '#description' => $this->t('Recovery codes were generated when you first set up TFA. Format: XXX XXX XXX'),
       '#attributes' => ['autocomplete' => 'off'],
     ];
     $form['actions']['#type'] = 'actions';
