@@ -23,7 +23,6 @@ function tfa_help($route_name, RouteMatchInterface $route_match) {
       $output .= '<p>' . \Drupal::translation()->translate('Pluggable provider of second factor authentication for Drupal. For more information, see the online documentation for the <a href=":tfa">Two-factor Authentication</a> module.',
           [
             ':tfa' => 'https://www.drupal.org/project/tfa',
-            ':field_help' => \Drupal\Core\Url::fromRoute('help.page', ['name' => 'field']),
           ]) . '</p>';
       return $output;
   }
