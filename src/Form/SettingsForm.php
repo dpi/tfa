@@ -7,6 +7,7 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\Url;
 use Drupal\encrypt\EncryptionProfileManagerInterface;
 use Drupal\tfa\TfaDataTrait;
 use Drupal\tfa\TfaLoginPluginManager;
@@ -159,11 +160,11 @@ class SettingsForm extends ConfigFormBase {
         $validation_plugins_fallbacks[$plugin['id']] = $plugin['fallbacks'];
       }
     }
-    // Fetching all available encrpytion profiles.
+    // Fetching all available encryption profiles.
     $encryption_profiles = $this->encryptionProfileManager->getAllEncryptionProfiles();
 
-    $plugins_empty = $this->dataEmptyCheck($validation_plugins, 'No plugins available for validation. See the TFA help documentation for setup.');
-    $encryption_profiles_empty = $this->dataEmptyCheck($encryption_profiles, 'No Encryption profiles available. Please set one up.');
+    $plugins_empty = $this->dataEmptyCheck($validation_plugins, $this->t('No plugins available for validation. See the TFA help documentation for setup.'));
+    $encryption_profiles_empty = $this->dataEmptyCheck($encryption_profiles, $this->t('No Encryption profiles available. <a href=":add_profile_url">Add an encryption profile</a>.', [':add_profile_url' => Url::fromRoute('entity.encryption_profile.add_form')->toString()]));
 
     if ($plugins_empty || $encryption_profiles_empty) {
       $form_state->cleanValues();
@@ -555,19 +556,19 @@ class SettingsForm extends ConfigFormBase {
   }
 
   /**
-   * Check whether the given data is empty and set appropritate message.
+   * Check whether the given data is empty and set appropriate message.
    *
    * @param array $data
    *   Data to be checked.
    * @param string $message
-   *   Message to show if data is empty.
+   *   Error message to show if data is empty.
    *
    * @return bool
    *   TRUE if data is empty otherwise FALSE.
    */
-  protected function dataEmptyCheck($data, $message) {
+  protected function dataEmptyCheck(array $data, $message) {
     if (empty($data)) {
-      drupal_set_message($this->t($message), 'error');
+      $this->messenger()->addError($message);
       return TRUE;
     }
 
