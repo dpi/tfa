@@ -15,8 +15,6 @@ use Drupal\tfa\Plugin\TfaValidationInterface;
  *   id = "tfa_test_plugins_validation",
  *   label = @Translation("TFA Test Validation Plugin"),
  *   description = @Translation("TFA Test Validation Plugin"),
- *   fallbacks = { },
- *   isFallback = FALSE
  * )
  */
 class TfaTestValidationPlugin extends TfaBasePlugin implements TfaValidationInterface {
@@ -33,20 +31,6 @@ class TfaTestValidationPlugin extends TfaBasePlugin implements TfaValidationInte
    */
   public function validateForm(array $form, FormStateInterface $form_state) {
     return TRUE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFallbacks() {
-    return [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isFallback() {
-    return FALSE;
   }
 
   /**

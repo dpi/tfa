@@ -155,7 +155,7 @@ class BasicDisable extends FormBase {
     $values = $form_state->getValues();
     $account = $storage['account'];
     if ($values['op'] === $values['cancel']) {
-      drupal_set_message($this->t('TFA disable canceled.'));
+      $this->messenger()->addStatus($this->t('TFA disable cancelled.'));
       $form_state->setRedirect('tfa.overview', ['user' => $account->id()]);
       return;
     }
@@ -172,7 +172,7 @@ class BasicDisable extends FormBase {
     $params = ['account' => $account];
     \Drupal::service('plugin.manager.mail')->mail('tfa', 'tfa_disabled_configuration', $account->getEmail(), $account->getPreferredLangcode(), $params);
 
-    drupal_set_message($this->t('TFA has been disabled.'));
+    $this->messenger()->addStatus($this->t('TFA has been disabled.'));
     $form_state->setRedirect('tfa.overview', ['user' => $account->id()]);
   }
 
@@ -180,7 +180,7 @@ class BasicDisable extends FormBase {
    * {@inheritdoc}
    */
   public function cancelForm(array &$form, FormStateInterface $form_state) {
-    drupal_set_message('TFA Disable cancelled.', 'warning');
+    $this->messenger()->addWarning($this->t('TFA Disable cancelled.'));
     $form_state->setRedirect('tfa.overview', ['user' => $this->currentUser()->id()]);
   }
 

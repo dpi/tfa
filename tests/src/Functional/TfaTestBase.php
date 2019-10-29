@@ -94,6 +94,7 @@ abstract class TfaTestBase extends BrowserTestBase {
     $this->drupalLogin($adminUser);
 
     $this->drupalGet('admin/config/people/tfa');
+    $assert->statusCodeEquals(200);
     $assert->pageTextContains('TFA Settings');
 
     $edit = [
@@ -104,6 +105,7 @@ abstract class TfaTestBase extends BrowserTestBase {
     ];
 
     $this->drupalPostForm(NULL, $edit, 'Save configuration');
+    $assert->statusCodeEquals(200);
     $assert->pageTextContains('The configuration options have been saved.');
     $select_field_id = 'edit-tfa-validate';
     $option_field = $assert->optionExists($select_field_id, $validation_plugin_id);

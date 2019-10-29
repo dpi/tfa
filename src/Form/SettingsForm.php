@@ -141,24 +141,15 @@ class SettingsForm extends ConfigFormBase {
 
     // Get Validation Plugins.
     $validation_plugins = $this->tfaValidation->getDefinitions();
-    // Get validation plugin labels and their fallbacks.
+    // Get validation plugin labels.
     $validation_plugins_labels = [];
-    $validation_plugins_fallbacks = [];
-    $fallback_plugins_labels = [];
     foreach ($validation_plugins as $key => $plugin) {
       // Skip this plugin if no setup class is available.
       if (!isset($setup_plugins[$key . '_setup'])){
         unset($validation_plugins[$key]);
         continue;
       }
-      if ($plugin['isFallback']) {
-        $fallback_plugins_labels[$plugin['id']] = $plugin['label']->render();
-        continue;
-      }
       $validation_plugins_labels[$plugin['id']] = $plugin['label']->render();
-      if (!empty($plugin['fallbacks'])) {
-        $validation_plugins_fallbacks[$plugin['id']] = $plugin['fallbacks'];
-      }
     }
     // Fetching all available encryption profiles.
     $encryption_profiles = $this->encryptionProfileManager->getAllEncryptionProfiles();
@@ -197,85 +188,26 @@ class SettingsForm extends ConfigFormBase {
       '#required' => FALSE,
     ];
 
-    if (count($validation_plugins)) {
-      $form['tfa_allowed_validation_plugins'] = [
-        '#type' => 'checkboxes',
-        '#title' => $this->t('Allowed Validation plugins'),
-        '#options' => $validation_plugins_labels,
-        '#default_value' => $config->get('allowed_validation_plugins') ?: ['tfa_totp'],
-        '#description' => $this->t('Plugins that can be setup by users for various TFA processes.'),
-        // Show only when TFA is enabled.
-        '#states' => $enabled_state,
-        '#required' => TRUE,
-      ];
-      $form['tfa_validate'] = [
-        '#type' => 'select',
-        '#title' => $this->t('Default Validation plugin'),
-        '#options' => $validation_plugins_labels,
-        '#default_value' => $config->get('default_validation_plugin') ?: 'tfa_totp',
-        '#description' => $this->t('Plugin that will be used as the default TFA process.'),
-        // Show only when TFA is enabled.
-        '#states' => $enabled_state,
-        '#required' => TRUE,
-      ];
-    }
-    else {
-      $form['no_validate'] = [
-        '#value' => 'markup',
-        '#markup' => $this->t('No available validation plugins available. TFA
-        process will not occur.'),
-      ];
-    }
-
-    if (count($validation_plugins_fallbacks)) {
-      $form['tfa_fallback'] = [
-        '#type' => 'fieldset',
-        '#title' => $this->t('Validation fallback plugins'),
-        '#description' => $this->t('Fallback plugins and order.'),
-        '#states' => $enabled_state,
-        '#tree' => TRUE,
-      ];
-
-      $enabled_fallback_plugins = $config->get('fallback_plugins');
-      foreach ($validation_plugins_fallbacks as $plugin => $fallbacks) {
-        $fallback_state = [
-          'visible' => [
-            ':input[name="tfa_validate"]' => ['value' => $plugin],
-          ],
-        ];
-        if (count($fallbacks)) {
-          foreach ($fallbacks as $fallback) {
-            $order = (@$enabled_fallback_plugins[$plugin][$fallback]['weight']) ?: -2;
-            $fallback_value = (@$enabled_fallback_plugins[$plugin][$fallback]['enable']) ?: 1;
-            $fallback_instance = $this->tfaValidation->createInstance($fallback, ['uid' => $uid]);
-            $form['tfa_fallback'][$plugin][$fallback] = [
-              'enable' => [
-                '#title' => $fallback_plugins_labels[$fallback],
-                '#type' => 'checkbox',
-                '#default_value' => $fallback_value,
-                '#states' => $fallback_state,
-              ],
-              'settings' => $fallback_instance->buildConfigurationForm($config, $fallback_state),
-              'weight' => [
-                '#type' => 'weight',
-                '#title' => $this->t('Order'),
-                '#delta' => 2,
-                '#default_value' => $order,
-                '#title_display' => 'invisible',
-                '#states' => $fallback_state,
-              ],
-            ];
-          }
-        }
-        else {
-          $form['tfa_fallback'][$plugin] = [
-            '#type' => 'item',
-            '#description' => $this->t('No fallback plugins available.'),
-            '#states' => $fallback_state,
-          ];
-        }
-      }
-    }
+    $form['tfa_allowed_validation_plugins'] = [
+      '#type' => 'checkboxes',
+      '#title' => $this->t('Allowed Validation plugins'),
+      '#options' => $validation_plugins_labels,
+      '#default_value' => $config->get('allowed_validation_plugins') ?: ['tfa_totp'],
+      '#description' => $this->t('Plugins that can be setup by users for various TFA processes.'),
+      // Show only when TFA is enabled.
+      '#states' => $enabled_state,
+      '#required' => TRUE,
+    ];
+    $form['tfa_validate'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Default Validation plugin'),
+      '#options' => $validation_plugins_labels,
+      '#default_value' => $config->get('default_validation_plugin') ?: 'tfa_totp',
+      '#description' => $this->t('Plugin that will be used as the default TFA process.'),
+      // Show only when TFA is enabled.
+      '#states' => $enabled_state,
+      '#required' => TRUE,
+    ];
 
     // Validation plugin related settings.
     // $validation_plugins_labels has the plugin ids as the key.
@@ -344,25 +276,23 @@ class SettingsForm extends ConfigFormBase {
     ];
 
     // Enable login plugins.
-    if (count($login_plugins)) {
-      $login_form_array = [];
+    $login_form_array = [];
 
-      foreach ($login_plugins as $login_plugin) {
-        $id = $login_plugin['id'];
-        $title = $login_plugin['label']->render();
-        $login_form_array[$id] = (string) $title;
-      }
-
-      $form['tfa_login'] = [
-        '#type' => 'checkboxes',
-        '#title' => $this->t('Login plugins'),
-        '#options' => $login_form_array,
-        '#default_value' => ($config->get('login_plugins')) ? $config->get('login_plugins') : [],
-        '#description' => $this->t('Plugins that can allow a user to skip the
-        TFA process. If any plugin returns true the user will not be required
-        to follow TFA. <strong>Use with caution.</strong>'),
-      ];
+    foreach ($login_plugins as $login_plugin) {
+      $id = $login_plugin['id'];
+      $title = $login_plugin['label']->render();
+      $login_form_array[$id] = (string) $title;
     }
+
+    $form['tfa_login'] = [
+      '#type' => 'checkboxes',
+      '#title' => $this->t('Login plugins'),
+      '#options' => $login_form_array,
+      '#default_value' => ($config->get('login_plugins')) ? $config->get('login_plugins') : [],
+      '#description' => $this->t('Plugins that can allow a user to skip the
+      TFA process. If any plugin returns true the user will not be required
+      to follow TFA. <strong>Use with caution.</strong>'),
+    ];
 
     // Enable send plugins.
     if (count($send_plugins)) {
@@ -423,7 +353,7 @@ class SettingsForm extends ConfigFormBase {
       $message = $this->t('Email settings missing. If this is the first time you are seeing this error after upgrading the TFA module, then please make sure you have run the required @update_link function.', [
         '@update_link' => Link::createFromRoute('update', 'system.status')->toString(),
       ]);
-      drupal_set_message($message, 'error');
+      $this->messenger()->addError($message);
     }
     $form['mail'] = [
       '#type' => 'vertical_tabs',
@@ -508,10 +438,6 @@ class SettingsForm extends ConfigFormBase {
     $allowed_validation_plugins = $form_state->getValue('tfa_allowed_validation_plugins');
     // Default validation plugin must always be allowed.
     $allowed_validation_plugins[$validation_plugin] = $validation_plugin;
-    $fallback_plugins = $form_state->getValue('tfa_fallback');
-    if (empty($fallback_plugins)) {
-      $fallback_plugins = [];
-    }
     $validation_plugin_settings = $form_state->getValue('validation_plugin_settings');
     if (empty($validation_plugin_settings)) {
       $validation_plugin_settings = [];
@@ -532,7 +458,6 @@ class SettingsForm extends ConfigFormBase {
       ->set('allowed_validation_plugins', array_filter($allowed_validation_plugins))
       ->set('default_validation_plugin', $validation_plugin)
       ->set('validation_plugin_settings', $validation_plugin_settings)
-      ->set('fallback_plugins', $fallback_plugins)
       ->set('validation_skip', $form_state->getValue('validation_skip'))
       ->set('encryption', $form_state->getValue('encryption_profile'))
       ->set('tfa_flood_uid_only', $form_state->getValue('tfa_flood_uid_only'))

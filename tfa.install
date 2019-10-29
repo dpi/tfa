@@ -85,3 +85,39 @@ function tfa_update_8004() {
     }
   }
 }
+
+/**
+ * Convert tfa_recovery_code from a fallback plugin into validation plugin.
+ */
+function tfa_update_8005() {
+  $config = \Drupal::configFactory()->getEditable('tfa.settings');
+
+  if (!empty($config->get('fallback_plugins'))) {
+    // There could have been multiple instances of recovery codes as fallbacks.
+    // But as a validation plugin we only need the settings for one of those, so
+    // get the first instance.
+    $settings = [];
+    foreach ($config->get('fallback_plugins') as $validation_plugin_id => $fallbacks) {
+      if (isset($fallbacks['tfa_recovery_code'])) {
+        $settings = $fallbacks['tfa_recovery_code']['settings'];
+        break;
+      }
+    }
+
+    // Save the settings to the validation_plugin_settings array, and enable the
+    // tfa_recovery_code plugin as an allowed plugin.
+    if (!empty($settings)) {
+      $validation_plugin_settings = $config->get('validation_plugin_settings');
+      $validation_plugin_settings['tfa_recovery_code'] = $settings;
+
+      $allowed_validation_plugins = $config->get('allowed_validation_plugins');
+      $allowed_validation_plugins['tfa_recovery_code'] = 'tfa_recovery_code';
+
+      $config
+        ->clear('fallback_plugins')
+        ->set('validation_plugin_settings', $validation_plugin_settings)
+        ->set('allowed_validation_plugins', $allowed_validation_plugins)
+        ->save();
+    }
+  }
+}

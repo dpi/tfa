@@ -193,7 +193,7 @@ class BasicSetup extends FormBase {
    */
   public function cancelForm(array &$form, FormStateInterface $form_state) {
     $account = $form['account']['#value'];
-    drupal_set_message('TFA setup canceled.', 'warning');
+    $this->messenger()->addWarning($this->t('TFA setup canceled.'));
     $form_state->setRedirect('tfa.overview', ['user' => $account->id()]);
   }
 
@@ -232,8 +232,7 @@ class BasicSetup extends FormBase {
         // Plugin form submit.
         $setup_class = $storage[$method];
         if (!$setup_class->submitForm($form, $form_state)) {
-          drupal_set_message($this->t('There was an error during TFA setup. Your
-          settings have not been saved.'), 'error');
+          $this->messenger()->addError($this->t('There was an error during TFA setup. Your settings have not been saved.'));
           $form_state->setRedirect('tfa.overview', ['user' => $account->id()]);
           return;
         }
@@ -244,7 +243,7 @@ class BasicSetup extends FormBase {
         return;
       }
       // Else, setup complete and return to overview page.
-      drupal_set_message(t('TFA setup complete.'));
+      $this->messenger()->addStatus($this->t('TFA setup complete.'));
       $form_state->setRedirect('tfa.overview', ['user' => $account->id()]);
 
       // Log and notify if this was full setup.
@@ -255,19 +254,6 @@ class BasicSetup extends FormBase {
           '@name' => $account->getAccountName(),
           '@uid' => $account->id(),
         ]);
-
-        // @todo - Temporary fix for preventing emails from sending when setting up a fallback plugin.
-        // @todo - Remove this check along side removal of fallback concept in #2924691
-        $validation_plugin_manager = \Drupal::service('plugin.manager.tfa.validation');
-        $validation_plugins = $validation_plugin_manager->getDefinitions();
-        $validation_plugin_id = str_replace('_setup', '', $storage['step_method']);
-        if (isset($validation_plugins[$validation_plugin_id])) {
-          $validation_plugin = $validation_plugin_manager
-            ->createInstance($validation_plugin_id, ['uid' => $account->id()]);
-          if ($validation_plugin->isFallback()) {
-            return;
-          }
-        }
 
         $params = ['account' => $account];
         \Drupal::service('plugin.manager.mail')->mail('tfa', 'tfa_enabled_configuration', $account->getEmail(), $account->getPreferredLangcode(), $params);
@@ -280,14 +266,9 @@ class BasicSetup extends FormBase {
    */
   private function tfaFullSetupSteps() {
     $config = $this->config('tfa.settings');
-    $enabled_plugin = $config->get('default_validation_plugin');
     $steps = [
       $config->get('default_validation_plugin'),
     ];
-
-    if (isset($config->get('fallback_plugins')[$enabled_plugin])) {
-      $steps[] = key($config->get('fallback_plugins')[$enabled_plugin]);
-    }
 
     $login_plugins = $config->get('login_plugins');
 
@@ -323,7 +304,7 @@ class BasicSetup extends FormBase {
       $count = count($storage['steps_left']);
       $output .= ' ' . \Drupal::translation()->formatPlural($count, 'One setup step remaining.', '@count TFA setup steps remain.', ['@count' => $count]);
       if ($output) {
-        drupal_set_message($output);
+        $this->messenger()->addStatus($output);
       }
 
       // Set next step and mark form for rebuild.

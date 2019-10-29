@@ -92,6 +92,7 @@ class TfaRecoveryCodeTest extends UnitTestCase {
    * Helper method to construct the test fixture.
    *
    * @return \Drupal\tfa\Plugin\TfaValidation\TfaRecoveryCode
+   * @throws \Exception
    */
   protected function getFixture() {
     // The plugin calls out to the global \Drupal object, so mock that here.
@@ -107,7 +108,8 @@ class TfaRecoveryCodeTest extends UnitTestCase {
       [],
       $this->userData->reveal(),
       $this->encryptionProfileManager->reveal(),
-      $this->encryptionService->reveal()
+      $this->encryptionService->reveal(),
+      $container->get('config.factory')
     );
   }
 
@@ -125,9 +127,9 @@ class TfaRecoveryCodeTest extends UnitTestCase {
     $this->userData->get('tfa', 3, 'tfa_recovery_code')->willReturn(['foo', 'bar']);
     $this->encryptionService->decrypt('foo', $this->encryptionProfile->reveal())->willReturn('foo_decrypted');
     $this->encryptionService->decrypt('bar', $this->encryptionProfile->reveal())->willReturn('bar_decrypted');
+    $this->tfaSettings->get('validation_plugin_settings.tfa_recovery_code.recovery_codes_amount')->willReturn(10);
     $this->tfaSettings->get('encryption')->willReturn('foo');
     $this->tfaSettings->get('default_validation_plugin')->willReturn('bar');
-    $this->tfaSettings->get('fallback_plugins')->willReturn([]);
     $this->encryptionProfileManager->getEncryptionProfile('foo')->willReturn($this->encryptionProfile->reveal());
     $fixture = $this->getFixture();
     $this->assertTrue($fixture->ready());

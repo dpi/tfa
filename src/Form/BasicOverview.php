@@ -110,10 +110,6 @@ class BasicOverview extends FormBase {
       $allowed_plugins = $configuration['allowed_validation_plugins'];
       $enabled_plugins = isset($user_tfa['data']['plugins']) ? $user_tfa['data']['plugins'] : [];
       $default_plugin = $configuration['default_validation_plugin'];
-      $enabled_fallback_plugin = '';
-      if (isset($configuration['fallback_plugins'][$default_plugin])) {
-        $enabled_fallback_plugin = key($configuration['fallback_plugins'][$default_plugin]);
-      }
 
       foreach ($allowed_plugins as $allowed_plugin) {
         $output[$allowed_plugin] = $this->tfaPluginSetupFormOverview($allowed_plugin, $user, !empty($enabled_plugins[$allowed_plugin]));
@@ -129,11 +125,6 @@ class BasicOverview extends FormBase {
         $send_plugin = $configuration['send_plugins'];
         if ($send_plugin) {
           $output[$send_plugin] = $this->tfaPluginSetupFormOverview($send_plugin, $user, $enabled);
-        }
-
-        if ($enabled_fallback_plugin) {
-          // Fallback Setup.
-          $output['recovery'] = $this->tfaPluginSetupFormOverview($enabled_fallback_plugin, $user, $enabled);
         }
       }
     }

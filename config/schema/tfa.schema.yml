@@ -35,11 +35,6 @@ tfa.settings:
       type: sequence
       sequence:
         type: tfa.validation.plugin.config.[%key]
-    fallback_plugins:
-      type: sequence
-      label: 'Fallback plugins'
-      sequence:
-        type: fallback.config.[%key]
     validation_skip:
       type: integer
       label: 'No. of times a user without tfa validation set-up can login.'
@@ -76,32 +71,14 @@ tfa.settings:
           type: mail
           label: 'User-disabled TFA email'
 
-default.fallback.config:
-  type: mapping
-  label: 'Default Fallback plugin config.'
-  mapping:
-    enable:
-      type: integer
-      label: 'Plugin state'
-    settings:
-      type: mapping
-      label: 'Default fallback settings'
-      mapping:
-        recovery_codes_amount:
-          type: integer
-          label: 'Recovery codes amount. Default is 10.'
-    weight:
-      type: integer
-      label: 'Weight'
-
-default.fallback:
-  type: mapping
-  label: 'OTP Fallbacks'
-  mapping:
-    tfa_recovery_code:
-      type: default.fallback.config
-      label: 'Recovery code fallback'
-
 tfa.login.config.tfa_trusted_browser:
   type: string
   label: 'Tfa Trusted Browser'
+
+tfa.validation.plugin.config.tfa_recovery_code:
+  type: mapping
+  label: 'TFA Recovery Code settings'
+  mapping:
+    recovery_codes_amount:
+      type: integer
+      label: 'Number of recovery codes generated'

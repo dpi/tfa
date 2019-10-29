@@ -39,25 +39,6 @@ interface TfaValidationInterface {
   public function validateForm(array $form, FormStateInterface $form_state);
 
   /**
-   * Get validation plugin fallbacks.
-   *
-   * @return string[]
-   *   Returns a list of fallback methods available for the current validation
-   */
-  public function getFallbacks();
-
-  /**
-   * Is the validation plugin a fallback?
-   *
-   * If the plugin is a fallback we remove it from the validation
-   * plugins list and show it only in the fallbacks list.
-   *
-   * @return bool
-   *   TRUE if plugin is a fallback otherwise FALSE
-   */
-  public function isFallback();
-
-  /**
    * Check whether the user has setup Tfa for this validation plugin.
    *
    * @return bool

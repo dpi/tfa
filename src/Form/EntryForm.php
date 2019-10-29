@@ -47,13 +47,6 @@ class EntryForm extends FormBase {
   protected $tfaLoginPlugins;
 
   /**
-   * The fallback plugin object.
-   *
-   * @var \Drupal\tfa\Plugin\TfaValidationInterface
-   */
-  protected $tfaFallbackPlugin;
-
-  /**
    * TFA configuration object.
    *
    * @var \Drupal\Core\Config\ImmutableConfig
@@ -249,40 +242,22 @@ class EntryForm extends FormBase {
       return;
     }
 
-    // Star validation.
     $validated = $this->tfaValidationPlugin->validateForm($form, $form_state);
-    $fallbacks = $this->tfaSettings->get('fallback_plugins');
-    $auth_success = true;
     if (!$validated) {
-      $auth_success = false;
-      $form_state->clearErrors();
-      $errors = $this->tfaValidationPlugin->getErrorMessages();
-      $form_state->setErrorByName(key($errors), current($errors));
-      if(isset($fallbacks[$this->tfaSettings->get('default_validation_plugin')])) {
-        foreach ($fallbacks[$this->tfaSettings->get('default_validation_plugin')] as $fallback => $val) {
-          $fallback_plugin = $this->tfaValidationManager->createInstance($fallback, ['uid' => $values['account']->id()]);
-          if (!$fallback_plugin->validateForm($form, $form_state)) {
-            $errors = $fallback_plugin->getErrorMessages();
-            $form_state->setErrorByName(key($errors), current($errors));
-          }
-          else {
-            $auth_success = true;
-            $form_state->clearErrors();
-            break;
-          }
-        }
+      // @todo - Either define getErrorMessages in the TfaValidationInterface, or don't use it.
+      // For now, let's just check that it exists before assuming.
+      if (method_exists($this->tfaValidationPlugin, 'getErrorMessages')) {
+        $form_state->clearErrors();
+        $errors = $this->tfaValidationPlugin->getErrorMessages();
+        $form_state->setErrorByName(key($errors), current($errors));
       }
 
-      // Register failed login in flood controls.
-      if (!$auth_success)
-        $this->flood->register('tfa.failed_validation', $this->tfaSettings->get('tfa_flood_window'), $this->floodIdentifier);
+      $this->flood->register('tfa.failed_validation', $this->tfaSettings->get('tfa_flood_window'), $this->floodIdentifier);
     }
   }
 
   /**
-   * For the time being, assume there is no fallback options available.
-   * If the form is submitted and passes validation, the user should be able
-   * to log in.
+   * If the form is passes validation, the user should get logged in.
    *
    * {@inheritdoc}
    */

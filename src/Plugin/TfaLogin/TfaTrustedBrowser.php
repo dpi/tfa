@@ -19,7 +19,6 @@ use Drupal\user\UserDataInterface;
  *   id = "tfa_trusted_browser",
  *   label = @Translation("TFA Trusted Browser"),
  *   description = @Translation("TFA Trusted Browser Plugin"),
- *   isFallback = TRUE
  * )
  */
 class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaValidationInterface {
@@ -259,24 +258,10 @@ class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaV
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public function getFallbacks() {
-    return ($this->pluginDefinition['fallbacks']) ?: '';
-  }
-
-  /**
    * Purge all the plugin related data.
    */
   public function purge() {
     $this->deleteTrusted();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isFallback() {
-    return ($this->pluginDefinition['isFallback']) ?: FALSE;
   }
 
 }

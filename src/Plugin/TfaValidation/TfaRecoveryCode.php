@@ -2,16 +2,17 @@
 
 namespace Drupal\tfa\Plugin\TfaValidation;
 
+use Drupal\Core\Config\Config;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\encrypt\EncryptionProfileManagerInterface;
-use Drupal\encrypt\EncryptService;
 use Drupal\encrypt\EncryptServiceInterface;
 use Drupal\tfa\Plugin\TfaBasePlugin;
 use Drupal\tfa\Plugin\TfaValidationInterface;
+use Drupal\tfa\TfaRandomTrait;
 use Drupal\user\UserDataInterface;
-use Otp\GoogleAuthenticator;
-use Otp\Otp;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -21,10 +22,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   id = "tfa_recovery_code",
  *   label = @Translation("TFA Recovery Code"),
  *   description = @Translation("TFA Recovery Code Validation Plugin"),
- *   isFallback = TRUE
  * )
  */
-class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface {
+class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface, ContainerFactoryPluginInterface {
+
+  use TfaRandomTrait;
 
   use StringTranslationTrait;
 
@@ -33,27 +35,18 @@ class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface {
    *
    * @var int
    */
-  protected $codeLimit;
-
-  /**
-   * Object containing the external validation library.
-   *
-   * @var GoogleAuthenticator
-   */
-  protected $auth;
+  protected $codeLimit = 10;
 
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id,
-    $plugin_definition, UserDataInterface $user_data, EncryptionProfileManagerInterface $encryption_profile_manager, EncryptServiceInterface $encrypt_service) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, UserDataInterface $user_data, EncryptionProfileManagerInterface $encryption_profile_manager, EncryptServiceInterface $encrypt_service, ConfigFactoryInterface $config_factory) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $user_data, $encryption_profile_manager, $encrypt_service);
-    $this->auth      = new \StdClass();
-    $this->auth->otp = new Otp();
-    $this->auth->ga  = new GoogleAuthenticator();
-    $validation_plugin = \Drupal::config('tfa.settings')->get('default_validation_plugin');
-    $settings = \Drupal::config('tfa.settings')->get('fallback_plugins');
-    $this->codeLimit = (isset($settings[$validation_plugin]['tfa_recovery_code']['settings']['recovery_codes_amount'])) ? $settings[$validation_plugin]['tfa_recovery_code']['settings']['recovery_codes_amount'] : 9;
+    $codes_amount = $config_factory->get('tfa.settings')->get('validation_plugin_settings.tfa_recovery_code.recovery_codes_amount');
+
+    if (!empty($codes_amount)) {
+      $this->codeLimit = $codes_amount;
+    }
   }
 
   /**
@@ -66,7 +59,8 @@ class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface {
       $plugin_definition,
       $container->get('user.data'),
       $container->get('encrypt.encryption_profile.manager'),
-      $container->get('encryption')
+      $container->get('encryption'),
+      $container->get('config.factory')
     );
   }
 
@@ -97,15 +91,26 @@ class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface {
     return $form;
   }
 
-  public function buildConfigurationForm($config, $state) {
+  /**
+   * The configuration form for this validation plugin.
+   *
+   * @param \Drupal\Core\Config\Config $config
+   *   Config object for tfa settings.
+   * @param array $state
+   *   Form state array determines if this form should be shown.
+   *
+   * @return array
+   *   Form array specific for this validation plugin.
+   */
+  public function buildConfigurationForm(Config $config, array $state = []) {
     $settings_form['recovery_codes_amount'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Recovery Codes Amount'),
-      '#default_value' => ($this->codeLimit) ?: 10,
-      '#description' => 'Number of Recovery Codes To Generate.',
+      '#default_value' => $this->codeLimit,
+      '#description' => $this->t('Number of Recovery Codes To Generate.'),
       '#size' => 2,
       '#states' => $state,
-      '#required' => TRUE
+      '#required' => TRUE,
     ];
 
     return $settings_form;
@@ -138,6 +143,22 @@ class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface {
   }
 
   /**
+   * Generate an array of secure recovery codes.
+   *
+   * @return array
+   *   An array of randomly generated codes.
+   */
+  public function generateCodes() {
+    $codes = [];
+
+    for ($i = 0; $i < $this->codeLimit; $i++) {
+      $codes[] = $this->randomCharacters(9, '1234567890');
+    }
+
+    return $codes;
+  }
+
+  /**
    * Get unused recovery codes.
    *
    * @todo consider returning used codes so validate() can error with
@@ -148,7 +169,7 @@ class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface {
    */
   public function getCodes() {
     $codes = $this->getUserData('tfa', 'tfa_recovery_code', $this->uid, $this->userData) ?: [];
-    array_walk($codes, function(&$v, $k) {
+    array_walk($codes, function (&$v, $k) {
       $v = $this->decrypt($v);
     });
     return $codes;
@@ -160,22 +181,16 @@ class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface {
    * @param array $codes
    *   Recovery codes for current account.
    */
-  public function storeCodes($codes) {
+  public function storeCodes(array $codes) {
     $this->deleteCodes();
 
     // Encrypt code for storage.
-    array_walk($codes, function(&$v, $k) {
+    array_walk($codes, function (&$v, $k) {
       $v = $this->encrypt($v);
     });
     $data = ['tfa_recovery_code' => $codes];
 
     $this->setUserData('tfa', $data, $this->uid, $this->userData);
-
-    // $message = 'Saved recovery codes for user %uid';
-    // if ($num_deleted) {
-    //  $message .= ' and deleted 1 old code';
-    // }
-    // \Drupal::logger('tfa')->info($message, ['%uid' => $this->configuration['uid']]);.
   }
 
   /**
@@ -210,20 +225,6 @@ class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface {
     }
     $this->errorMessages['recovery_code'] = $this->t('Invalid recovery code.');
     return $this->isValid;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFallbacks() {
-    return ($this->pluginDefinition['fallbacks']) ?: '';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isFallback() {
-    return ($this->pluginDefinition['isFallback']) ?: FALSE;
   }
 
 }

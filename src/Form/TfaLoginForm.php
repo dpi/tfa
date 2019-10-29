@@ -190,7 +190,7 @@ class TfaLoginForm extends UserLoginForm {
     $user = $this->tfaContext->getUser();
     if ($this->tfaContext->pluginAllowsLogin()) {
       $this->tfaContext->doUserLogin();
-      drupal_set_message('You have logged in on a trusted browser.');
+      $this->messenger()->addStatus('You have logged in on a trusted browser.');
       $form_state->setRedirect('<front>');
     }
     else {

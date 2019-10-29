@@ -4,7 +4,7 @@ TFA is a base module for providing two-factor authentication for your Drupal
 site. As a base module, TFA handles all of the Drupal integration work,
 providing flexible and well tested interfaces to enable seamless, and
 configurable, choice of various two-factor authentication solutions like
-Time-based One Time Passwords, SMS-delivered codes, fallback codes, or
+Time-based One Time Passwords, SMS-delivered codes, recovery codes, or
 integrations with third-party suppliers like Authy, Duo and others.
 
 Read more about the features and use of TFA at its Drupal.org project page at
@@ -34,14 +34,6 @@ The plugin that will be used by default during user authentication. The plugin
 must be ready for use by the authenticating account. If "Require TFA" is marked
 then an account that has not setup TFA with the validation plugin will be unable
 to log in.
-
-#### Fallback plugins
-
-With multiple validation plugins installed, TFA can be setup to handle fallback
-options for a user going through the TFA process. For example, let's say a user
-has setup SMS code delivery and TOTP via Google Authenticator app on their
-phone. In the situation that the user has deleted the Authenticator app they
-could fallback to SMS code delivery and still authenticate to the site.
 
 ### Plugin development
 
