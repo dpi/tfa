@@ -128,8 +128,10 @@ class TfaRecoveryCodeSetup extends TfaRecoveryCode implements TfaSetupInterface 
     ];
 
     if (!empty($reset)) {
+      $form['actions'] = ['#type' => 'actions'];
       $form['actions']['save'] = [
         '#type' => 'submit',
+        '#button_type' => 'primary',
         '#value' => $this->t('Save codes to account'),
       ];
     }

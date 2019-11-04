@@ -112,8 +112,10 @@ class BasicDisable extends FormBase {
       '#type' => 'value',
       '#value' => $user->getEmail(),
     ];
+    $form['actions'] = ['#type' => 'actions'];
     $form['actions']['submit'] = [
       '#type' => 'submit',
+      '#button_type' => 'primary',
       '#value' => $this->t('Disable'),
     ];
     $form['actions']['cancel'] = [

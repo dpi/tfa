@@ -115,8 +115,10 @@ class TfaTrustedBrowserSetup extends TfaTrustedBrowser implements TfaSetupInterf
         ];
       }
     }
+    $form['actions'] = ['#type' => 'actions'];
     $form['actions']['save'] = [
       '#type' => 'submit',
+      '#button_type' => 'primary',
       '#value' => $this->t('Save'),
     ];
     return $form;

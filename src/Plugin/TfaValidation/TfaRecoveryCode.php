@@ -86,6 +86,7 @@ class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface, C
     $form['actions']['#type'] = 'actions';
     $form['actions']['login'] = [
       '#type' => 'submit',
+      '#button_type' => 'primary',
       '#value' => $this->t('Verify'),
     ];
     return $form;

@@ -91,12 +91,14 @@ class BasicSetup extends FormBase {
         '#attributes' => ['autocomplete' => 'off'],
       ];
 
-      $form['submit'] = [
+      $form['actions'] = ['#type' => 'actions'];
+      $form['actions']['submit'] = [
         '#type' => 'submit',
+        '#button_type' => 'primary',
         '#value' => $this->t('Confirm'),
       ];
 
-      $form['cancel'] = [
+      $form['actions']['cancel'] = [
         '#type' => 'submit',
         '#value' => $this->t('Cancel'),
         '#limit_validation_errors' => [],
@@ -125,6 +127,7 @@ class BasicSetup extends FormBase {
       $form = $tfa_setup->getForm($form, $form_state, $reset);
       $storage[$method] = $tfa_setup;
 
+      $form['actions']['#type'] = 'actions';
       if (isset($storage['full_setup']) && count($storage['steps']) > 1) {
         $count = count($storage['steps_left']);
         $form['actions']['skip'] = [

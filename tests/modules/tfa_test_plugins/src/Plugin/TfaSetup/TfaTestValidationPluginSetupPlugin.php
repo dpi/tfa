@@ -52,6 +52,7 @@ class TfaTestValidationPluginSetupPlugin extends TfaBasePlugin implements TfaSet
     $form['actions']['#type'] = 'actions';
     $form['actions']['login'] = [
       '#type'  => 'submit',
+      '#button_type' => 'primary',
       '#value' => $this->t('Verify and save'),
     ];
     return $form;
