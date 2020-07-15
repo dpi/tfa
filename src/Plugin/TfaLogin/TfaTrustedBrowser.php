@@ -2,7 +2,6 @@
 
 namespace Drupal\tfa\Plugin\TfaLogin;
 
-use Drupal\Component\Utility\Crypt;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\encrypt\EncryptionProfileManagerInterface;
@@ -116,7 +115,7 @@ class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaV
    *   Base64 encoded browser id.
    */
   protected function generateBrowserId() {
-    $id = base64_encode(Crypt::randomBytes(32));
+    $id = base64_encode(random_bytes(32));
     return strtr($id, ['+' => '-', '/' => '_', '=' => '']);
   }
 
@@ -134,7 +133,7 @@ class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaV
     $records = $this->getUserData('tfa', 'tfa_trusted_browser', $this->configuration['uid'], $this->userData) ?: [];
 
     $records[$id] = [
-      'created' => REQUEST_TIME,
+      'created' => \Drupal::time()->getRequestTime(),
       'ip' => \Drupal::request()->getClientIp(),
       'name' => $name,
     ];
@@ -146,7 +145,7 @@ class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaV
     $this->setUserData('tfa', $data, $this->configuration['uid'], $this->userData);
     // Issue cookie with ID.
     $cookie_secure = ini_get('session.cookie_secure');
-    $expiration = REQUEST_TIME + $this->expiration;
+    $expiration = \Drupal::time()->getRequestTime() + $this->expiration;
     $domain = strpos($_SERVER['HTTP_HOST'], 'localhost') === FALSE ? $_SERVER['HTTP_HOST'] : FALSE;
     setcookie($this->cookieName, $id, $expiration, '/', $domain, (empty($cookie_secure) ? FALSE : TRUE), TRUE);
     $name = empty($name) ? $this->getAgent() : $name;
@@ -162,7 +161,7 @@ class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaV
    */
   protected function setUsed($id) {
     $result = $this->getUserData('tfa', 'tfa_trusted_browser', $this->uid, $this->userData);
-    $result[$id]['last_used'] = REQUEST_TIME;
+    $result[$id]['last_used'] = \Drupal::time()->getRequestTime();
     $data = [
       'tfa_trusted_browser' => $result,
     ];

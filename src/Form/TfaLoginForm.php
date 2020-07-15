@@ -115,7 +115,7 @@ class TfaLoginForm extends UserLoginForm {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('flood'),
-      $container->get('entity.manager')->getStorage('user'),
+      $container->get('entity_type.manager')->getStorage('user'),
       $container->get('user.auth'),
       $container->get('renderer'),
       $container->get('plugin.manager.tfa.validation'),

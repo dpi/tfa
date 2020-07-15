@@ -23,7 +23,7 @@ class TfaCommands extends DrushCommands implements SanitizePluginInterface {
   public function sanitize($result, CommandData $commandData) {
     // DBTNG does not support expressions in delete queries.
     $sql = "DELETE FROM users_data WHERE LEFT(name, 4) = 'tfa_'";
-    db_query($sql);
+    \Drupal::service('database')->query($sql);
     $this->logger()->success('Removed recovery codes and other user-specific TFA data.');
   }
 

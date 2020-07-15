@@ -121,7 +121,7 @@ trait TfaDataTrait {
 
     $record = [
       'tfa_user_settings' => [
-        'saved' => REQUEST_TIME,
+        'saved' => \Drupal::time()->getRequestTime(),
         'status' => $status,
         'data' => $tfa_data,
         'validation_skipped' => $validation_skipped,

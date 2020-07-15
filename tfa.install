@@ -5,6 +5,8 @@
  * Installation related functions for TFA module.
  */
 
+use Drupal\Core\Session\AccountInterface;
+
 /**
  * Clear this module's plugin cache after validation plugins moved to ga_login module.
  */
@@ -41,7 +43,7 @@ function tfa_update_8003() {
         ->save();
     }
   }
-  unset($required_roles[\Drupal\Core\Session\AccountInterface::ANONYMOUS_ROLE]);
+  unset($required_roles[AccountInterface::ANONYMOUS_ROLE]);
 
   $config = \Drupal::configFactory()->getEditable('tfa.settings');
   $config->set('required_roles', $required_roles)

@@ -4,10 +4,12 @@ namespace Drupal\tfa\Plugin\Block;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Link;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Drupal\user\Plugin\Block\UserLoginBlock;
+use Drupal\user\UserInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -88,15 +90,15 @@ class TfaUserLoginBlock extends UserLoginBlock {
     $form['#action'] = Url::fromRoute('<current>', [], ['query' => $this->getDestinationArray(), 'external' => FALSE])->toString();
     // Build action links.
     $items = [];
-    if (\Drupal::config('user.settings')->get('register') != USER_REGISTER_ADMINISTRATORS_ONLY) {
-      $items['create_account'] = \Drupal::l($this->t('Create new account'), new Url('user.register', [], [
+    if (\Drupal::config('user.settings')->get('register') != UserInterface::REGISTER_ADMINISTRATORS_ONLY) {
+      $items['create_account'] = Link::fromTextAndUrl($this->t('Create new account'), new Url('user.register', [], [
         'attributes' => [
           'title' => $this->t('Create a new user account.'),
           'class' => ['create-account-link'],
         ],
       ]));
     }
-    $items['request_password'] = \Drupal::l($this->t('Reset your password'), new Url('user.pass', [], [
+    $items['request_password'] = Link::fromTextAndUrl($this->t('Reset your password'), new Url('user.pass', [], [
       'attributes' => [
         'title' => $this->t('Send password reset instructions via email.'),
         'class' => ['request-password-link'],

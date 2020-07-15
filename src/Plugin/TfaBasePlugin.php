@@ -209,7 +209,7 @@ abstract class TfaBasePlugin extends PluginBase {
     $hash = hash('sha1', Settings::getHashSalt() . $code);
 
     // Store the hash made using the code in users_data.
-    $store_data = ['tfa_accepted_code_' . $hash => REQUEST_TIME];
+    $store_data = ['tfa_accepted_code_' . $hash => \Drupal::time()->getRequestTime()];
     $this->setUserData('tfa', $store_data, $this->uid, $this->userData);
   }
 

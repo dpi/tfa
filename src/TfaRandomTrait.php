@@ -2,8 +2,6 @@
 
 namespace Drupal\tfa;
 
-use Drupal\Component\Utility\Crypt;
-
 /**
  * Trait TfaRandomTrait for generating cryptographically secure random data.
  *
@@ -79,7 +77,7 @@ trait TfaRandomTrait {
     for ($i = 0; $i < $length; $i++) {
       do {
         // Find a secure random number within the range needed.
-        $index = ord(Crypt::randomBytes(1));
+        $index = ord(random_bytes(1));
       } while ($index > $len);
 
       // Each iteration, pick a random character from the

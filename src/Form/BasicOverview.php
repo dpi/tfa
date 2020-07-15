@@ -84,7 +84,7 @@ class BasicOverview extends FormBase {
           $status_text = $this->t('Status: <strong>TFA enabled</strong>, set
           @time. <a href=":url">Disable TFA</a>', [
             '@time' => $date_formatter->format($user_tfa['saved']),
-            ':url' => URL::fromRoute('tfa.disable', ['user' => $user->id()])->toString(),
+            ':url' => Url::fromRoute('tfa.disable', ['user' => $user->id()])->toString(),
           ]);
         }
         else {

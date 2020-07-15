@@ -2,7 +2,6 @@
 
 namespace Drupal\tfa\Plugin\EncryptionMethod;
 
-use Drupal\Component\Utility\Unicode;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\encrypt\EncryptionMethodInterface;
 use Drupal\encrypt\Plugin\EncryptionMethod\EncryptionMethodBase;
@@ -29,7 +28,7 @@ class McryptAES128Encryption extends EncryptionMethodBase implements EncryptionM
     $processed_text = '';
 
     // Key cannot be too long for this encryption.
-    $key = Unicode::substr($key, 0, 32);
+    $key = mb_substr($key, 0, 32);
 
     // Define iv cipher.
     $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_ECB);
@@ -53,7 +52,7 @@ class McryptAES128Encryption extends EncryptionMethodBase implements EncryptionM
     $processed_text = '';
 
     // Key cannot be too long for this encryption.
-    $key = Unicode::substr($key, 0, 32);
+    $key = mb_substr($key, 0, 32);
 
     // Define iv cipher.
     $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_ECB);
