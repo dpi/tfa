@@ -25,10 +25,11 @@ function tfa_uninstall() {
  * Implements hook_requirements().
  */
 function tfa_requirements($phase) {
+  $t = get_t();
   if ($phase == 'runtime') {
     if (!extension_loaded('mcrypt')) {
       $requirement_severity = REQUIREMENT_ERROR;
-      $description = t('The TFA module requires the PHP Mcrypt extension be installed on the web server.');
+      $description = $t('The TFA module requires the PHP Mcrypt extension be installed on the web server.');
     }
     else {
       $requirement_severity = REQUIREMENT_OK;
@@ -40,8 +41,8 @@ function tfa_requirements($phase) {
 
     $requirements = array(
       array(
-        'title' => t('Two-factor authentication'),
-        'value' => t($msg),
+        'title' => $t('Two-factor authentication'),
+        'value' => $t($msg),
         'description' => $description,
         'severity' => $requirement_severity,
       ),
