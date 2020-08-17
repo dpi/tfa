@@ -2,7 +2,7 @@
     "name": "drupal/tfa",
     "type": "drupal-module",
     "description": "Pluggable provider of two factor authentication for Drupal",
-    "license": "GPL-2.0+",
+    "license": "GPL-2.0-or-later",
     "minimum-stability": "dev",
     "require": {
         "drupal/encrypt": "~3.0"
