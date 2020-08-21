@@ -27,13 +27,19 @@ function tfa_uninstall() {
 function tfa_requirements($phase) {
   $t = get_t();
   if ($phase == 'runtime') {
-    if (!extension_loaded('mcrypt')) {
-      $requirement_severity = REQUIREMENT_ERROR;
-      $description = $t('The TFA module requires the PHP Mcrypt extension be installed on the web server.');
+    if (!extension_loaded('openssl')) {
+      if (extension_loaded('mcrypt')) {
+        $requirement_severity = REQUIREMENT_WARNING;
+        $description = $t('The TFA module recommends the PHP OpenSSL extension to be installed on the web server.');
+      }
+      else {
+        $requirement_severity = REQUIREMENT_ERROR;
+        $description = $t('The TFA module requires either the PHP OpenSSL or Mcrypt extensions to be installed on the web server.');
+      }
     }
     else {
       $requirement_severity = REQUIREMENT_OK;
-      $description= '';
+      $description = '';
     }
 
     $enabled = variable_get('tfa_enabled', 0);

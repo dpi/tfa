@@ -376,6 +376,8 @@ class TfaSetup {
  */
 abstract class TfaBasePlugin {
 
+  const CRYPT_VERSION = '1';
+
   /**
    * @var string
    */
@@ -502,10 +504,39 @@ abstract class TfaBasePlugin {
    *
    * Should be used when writing codes to storage.
    *
-   * @param string.
+   * @param string $text
+   *   The plaintext to be encrypted.
+   *
    * @return string
+   *   The encrypted text.
    */
   protected function encrypt($text) {
+    // Backwards compatibility with Mcrypt.
+    if (!extension_loaded('openssl') && extension_loaded('mcrypt')) {
+      return $this->encryptWithMcrypt($text);
+    }
+    $iv = drupal_random_bytes(16);
+    // Using 1 instead of the constant OPENSSL_RAW_DATA, for PHP 5.3.
+    $ciphertext = openssl_encrypt($text, 'aes-256-cbc', $this->encryptionKey, 1, $iv);
+    $crypto_data = array(
+      'version' => self::CRYPT_VERSION,
+      'iv_base64' => base64_encode($iv),
+      'ciphertext_base64' => base64_encode($ciphertext),
+    );
+    $json_encoded_crypto_data = drupal_json_encode($crypto_data);
+    return $json_encoded_crypto_data;
+  }
+
+  /**
+   * Encrypt using the deprecated Mcrypt extension.
+   *
+   * @param string $text
+   *   The text to encrypt.
+   *
+   * @return string
+   *   The text encrypted using Mcrypt.
+   */
+  protected function encryptWithMcrypt($text) {
     $td = mcrypt_module_open('rijndael-128', '', 'cbc', '');
     $iv = drupal_random_bytes(mcrypt_enc_get_iv_size($td));
 
@@ -528,10 +559,42 @@ abstract class TfaBasePlugin {
    *
    * Should be used when reading codes from storage.
    *
-   * @param string
+   * @param string $data
+   *   The encrypted text.
+   *
    * @return string
+   *   The plaintext, or empty string on failure.
    */
   protected function decrypt($data) {
+    $is_legacy = TRUE;
+    $crypto_data = drupal_json_decode($data);
+    if (empty($crypto_data['version']) || empty($crypto_data['iv_base64']) || empty($crypto_data['ciphertext_base64'])) {
+      // Backwards compatibility with the old Mcrypt scheme.
+      if (extension_loaded('mcrypt')) {
+        return $this->decryptLegacyDataWithMcrypt($data);
+      }
+      if (extension_loaded('openssl')) {
+        return $this->decryptLegacyDataWithOpenSSL($data);
+      }
+
+      return '';
+    }
+
+    $iv = base64_decode($crypto_data['iv_base64']);
+    $ciphertext = base64_decode($crypto_data['ciphertext_base64']);
+    return openssl_decrypt($ciphertext, 'aes-256-cbc', $this->encryptionKey, TRUE, $iv);
+  }
+
+  /**
+   * Decrypt using the deprecated Mcrypt extension.
+   *
+   * @param string $data
+   *   The data to be decrypted.
+   *
+   * @return string
+   *   The plaintext, or empty string on failure.
+   */
+  protected function decryptLegacyDataWithMcrypt($data) {
     $td = mcrypt_module_open('rijndael-128', '', 'cbc', '');
     $iv = substr($data, 0, mcrypt_enc_get_iv_size($td));
 
@@ -551,6 +614,36 @@ abstract class TfaBasePlugin {
     return $text;
   }
 
+  /**
+   * Use OpenSSL to decrypt data that was originally encrypted with Mcrypt.
+   *
+   * As used by an earlier version of this module.
+   *
+   * @param string $data
+   *   The data to be decrypted.
+   *
+   * @return string
+   *   The plaintext, or empty string on failure.
+   */
+  protected function decryptLegacyDataWithOpenSSL($data) {
+    $key_size = 32; // Based on return value of mcrypt_enc_get_key_size($td).
+    $iv_size = 16; // Based on return value of mcrypt_enc_get_iv_size($td).
+    $key = substr($this->encryptionKey, 0, $key_size);
+    $iv = substr($data, 0, $iv_size);
+    $data = substr($data, $iv_size);
+    // Using 3 instead of the constant OPENSSL_NO_PADDING, for PHP 5.3.
+    $decrypted_text = openssl_decrypt($data, 'aes-256-cbc', $key, 3, $iv);
+
+    // Return only the message and none of its padding.
+    if (strpos($decrypted_text, '|') !== FALSE) {
+      list($length, $padded_data) = explode('|', $decrypted_text, 2);
+      $decrypted_text = substr($padded_data, 0, $length);
+      return $decrypted_text;
+    }
+    else {
+      return '';
+    }
+  }
 }
 
 /**
@@ -565,8 +658,12 @@ interface TfaValidationPluginInterface {
    * Get TFA process form from plugin.
    *
    * @param array $form
+   *   The form array structure.
    * @param array $form_state
-   * @return array Form API array.
+   *   The current form state array.
+   *
+   * @return array
+   *   Form API array.
    */
   public function getForm(array $form, array &$form_state);
 
@@ -574,8 +671,12 @@ interface TfaValidationPluginInterface {
    * Validate form.
    *
    * @param array $form
+   *   The form array structure.
    * @param array $form_state
-   * @return bool Whether form passes validation or not
+   *   The current form state array.
+   *
+   * @return bool
+   *   Whether form passes validation or not.
    */
   public function validateForm(array $form, array &$form_state);
 }
@@ -592,6 +693,7 @@ interface TfaLoginPluginInterface {
    * Whether authentication should be interrupted.
    *
    * @return bool
+   *   Indicates whether authentication should be interrupted.
    */
   public function loginAllowed();
 }
@@ -623,20 +725,28 @@ interface TfaSetupPluginInterface {
 
   /**
    * @param array $form
+   *   The form array structure.
    * @param array $form_state
+   *   The current form state array.
    */
   public function getSetupForm(array $form, array &$form_state);
 
   /**
    * @param array $form
+   *   The form array structure.
    * @param array $form_state
+   *   The current form state array.
    */
   public function validateSetupForm(array $form, array &$form_state);
 
   /**
    * @param array $form
+   *   The form array structure.
    * @param array $form_state
+   *   The current form state array.
+   *
    * @return bool
+   *   Indicates whether the form submission succeeded.
    */
   public function submitSetupForm(array $form, array &$form_state);
 

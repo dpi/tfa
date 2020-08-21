@@ -25,10 +25,10 @@ function tfa_admin_settings($form, $form_state) {
     }
   }
 
-  // Check if mcrypt plugin is available.
-  if (!extension_loaded('mcrypt')) {
+  // Check if openssl or mcrypt extensions are available.
+  if (!extension_loaded('openssl') && !extension_loaded('mcrypt')) {
     // @todo allow alter in case of other encryption libs.
-    drupal_set_message(t('The TFA module requires the PHP Mcrypt extension be installed on the web server. See <a href="!link">the TFA help documentation</a> for setup.', array('!link' => url('admin/help/tfa'))), 'error');
+    drupal_set_message(t('The TFA module requires one of the PHP OpenSSL or Mcrypt extensions to be installed on the web server. See <a href="!link">the TFA help documentation</a> for setup.', array('!link' => url('admin/help/tfa'))), 'error');
     return array();
   }
 
