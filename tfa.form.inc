@@ -119,10 +119,9 @@ function tfa_form_submit($form, &$form_state) {
  *   Array with the redirect destination, and options.
  */
 function _tfa_form_get_destination(array $context, array $form_state, $account) {
-  $query = drupal_get_query_parameters();
   $options = array();
   $destination = 'user';
-  if (!empty($query['pass-reset-token'])) {
+  if (!empty($_GET['pass-reset-token'])) {
     // If pass-reset-token was set then complete final process interrupted
     // from user_pass_reset().
     watchdog('tfa', 'User %name used one-time login link', array('%name' => $account->name));
@@ -130,7 +129,7 @@ function _tfa_form_get_destination(array $context, array $form_state, $account) 
     // Let the user's password be changed without the current password check.
     $token = drupal_hash_base64(drupal_random_bytes(32));
     $_SESSION['pass_reset_' . $account->uid] = $token;
-    $query['pass-reset-token'] = $token;
+    $options['query']['pass-reset-token'] = $token;
   }
   if (!empty($form_state['redirect'])) {
     if (is_array($form_state['redirect'])) {
@@ -141,9 +140,12 @@ function _tfa_form_get_destination(array $context, array $form_state, $account) 
       $destination = $form_state['redirect'];
     }
   }
-  if (!empty($query['destination'])) {
-    $destination = $query['destination'];
-    unset($query['destination']);
+  if (!empty($_GET['destination']) && !url_is_external($_GET['destination'])) {
+    $query_destination = drupal_parse_url($_GET['destination']);
+    $destination = $query_destination['path'];
+    $options['query'] = !empty($options['query']) ?
+      array_merge($options['query'], $query_destination['query']) : $query_destination['query'];
+    $options['fragment'] = $query_destination['fragment'];
     unset($_GET['destination']);
   }
   // Context redirect takes final precedence.
@@ -156,7 +158,6 @@ function _tfa_form_get_destination(array $context, array $form_state, $account) 
       $destination = $context['redirect'];
     }
   }
-  $options = array_merge($options, array('query' => $query));
   // Allow other modules to alter final destination. This is better than form
   // altering TFA forms because callers would need to check the TFA process
   // status to figure out when to act.
