@@ -2,6 +2,8 @@
 
 /**
  * @file
+ * TFA API.
+ *
  * This file contains no working PHP code; it exists to provide additional
  * documentation for doxygen as well as to document hooks in the standard
  * Drupal manner.
@@ -24,7 +26,7 @@
  * Note, user-defined plugin classes must be available to the Drupal registry
  * for loading. Either define them in a .info file or via an autoloader.
  *
- * @return
+ * @return array
  *   Keyed array of information about the plugin for TFA integration.
  *
  *   Required key:
@@ -67,10 +69,7 @@ function hook_tfa_api() {
 function my_tfa_setup_form($form, &$form_state, $account) {
 
   if (empty($form_state['storage'])) {
-    /**
-     * Include details about existing setup, if applicable.
-     */
-
+    // Include details about existing setup, if applicable.
     // Button to begin setup.
     $form['start'] = array(
       '#type' => 'submit',
@@ -117,7 +116,6 @@ function my_tfa_setup_form_submit($form, &$form_state) {
 
   if (empty($form_state['storage'])) {
     // Start the TfaSetup process.
-
     $context = array('uid' => $account->uid);
     // Setup plugin class must be defined somehow (e.g. from a variable).
     $class = 'MyTfaPluginSetup';
@@ -132,7 +130,7 @@ function my_tfa_setup_form_submit($form, &$form_state) {
     // Invoke plugin form submission.
     $tfaSetup = $form_state['storage']['tfa_setup'];
     if ($tfaSetup->submitForm($form, $form_state)) {
-      drupal_set_message('Setup complete');
+      drupal_set_message(t('Setup complete'));
       $form_state['redirect'] = 'user';
     }
     else {
@@ -150,8 +148,7 @@ function my_tfa_setup_form_submit($form, &$form_state) {
  * @param array $context
  *   TFA process context.
  */
-function hook_tfa_flood_hit($context = array()) {
-
+function hook_tfa_flood_hit(array $context = array()) {
 }
 
 /**
@@ -168,5 +165,5 @@ function hook_tfa_flood_hit($context = array()) {
  *   FALSE to disallow login or TRUE to allow it without undergoing TFA.
  */
 function hook_tfa_ready_require($account) {
-
+  return TRUE;
 }

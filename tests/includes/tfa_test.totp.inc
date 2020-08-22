@@ -1,16 +1,27 @@
 <?php
 
+/**
+ * Class TfaTestTotp.
+ */
 class TfaTestTotp extends TfaBasePlugin implements TfaValidationPluginInterface {
 
   /**
-   * @var string Data store for testing encryption.
+   * Data store for testing encryption.
+   *
+   * @var string
    */
   protected $store;
 
+  /**
+   * {@inheritdoc}
+   */
   public function ready() {
     return variable_get('tfa_test_is_ready', TRUE);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getForm(array $form, array &$form_state) {
     $form['code'] = array(
       '#type' => 'textfield',
@@ -25,6 +36,9 @@ class TfaTestTotp extends TfaBasePlugin implements TfaValidationPluginInterface 
     return $form;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function validateForm(array $form, array &$form_state) {
     $this->code = variable_get('tfa_totp', 123456);
     if (!parent::validate($form_state['values']['code'])) {
@@ -50,4 +64,5 @@ class TfaTestTotp extends TfaBasePlugin implements TfaValidationPluginInterface 
   public function readFromStore() {
     return $this->decrypt($this->store);
   }
+
 }

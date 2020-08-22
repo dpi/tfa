@@ -1,40 +1,53 @@
 <?php
 
 /**
- * @file TFA module classes
+ * @file
+ * TFA module classes.
  */
 
 /**
- * Class Tfa
+ * Class Tfa.
  */
 class Tfa {
 
   /**
+   * Context of TFA process.
+   *
    * @var array
    */
   protected $context;
 
   /**
+   * TFA validation plugin.
+   *
    * @var TfaBasePlugin
    */
   protected $validatePlugin;
 
   /**
+   * TfaLoginPluginInterface objects for use during login indexed by name.
+   *
    * @var array
    */
   protected $loginPlugins = array();
 
   /**
+   * TfaBasePlugin objects for use as fallback indexed by name.
+   *
    * @var array
    */
   protected $fallbackPlugins = array();
 
   /**
+   * Complete.
+   *
    * @var bool
    */
   protected $complete = FALSE;
 
   /**
+   * Fallback process.
+   *
    * @var bool
    */
   protected $fallback = FALSE;
@@ -44,26 +57,19 @@ class Tfa {
    *
    * @param TfaBasePlugin $validate
    *   Validation plugin.
-   *
    * @param array $context
    *   Context of TFA process.
-   *
    *   Must include key:
-   *
    *     - 'uid'
    *       Account uid of user in TFA process.
-   *
    *     - 'plugins'
    *       Array of plugin names indexed by type: 'validate', 'fallback',
    *       'login'.
-   *
    * @param array $fallbackPlugins
    *   Optional TfaBasePlugin objects for use as fallback indexed by name.
-   *
    * @param array $loginPlugins
    *   Optional TfaLoginPluginInterface objects for use during login indexed by
    *   name.
-   *
    */
   public function __construct(TfaBasePlugin $validate, array $context, array $fallbackPlugins, array $loginPlugins) {
     $validate_plugin = $context['plugins']['validate'];
@@ -104,6 +110,7 @@ class Tfa {
    * If any plugin returns TRUE then authentication is not interrupted by TFA.
    *
    * @return bool
+   *   Whether authentication should be allowed.
    */
   public function loginAllowed() {
     if (!empty($this->loginPlugins)) {
@@ -119,7 +126,8 @@ class Tfa {
   /**
    * Determine if TFA process is ready.
    *
-   * @return bool Whether process can begin or not.
+   * @return bool
+   *   Whether process can begin or not.
    */
   public function ready() {
     return $this->validatePlugin->ready();
@@ -129,8 +137,12 @@ class Tfa {
    * Get TFA process form from plugin.
    *
    * @param array $form
+   *   The form array structure.
    * @param array $form_state
-   * @return array Form API array.
+   *   The current form state array.
+   *
+   * @return array
+   *   Form API array.
    */
   public function getForm(array $form, array &$form_state) {
     $form = $this->validatePlugin->getForm($form, $form_state);
@@ -149,8 +161,11 @@ class Tfa {
   /**
    * Checks if user is allowed to continue with plugin action.
    *
-   * @param string $window
+   * @param int $window
+   *   Number of seconds in the time window for this event.
+   *
    * @return bool
+   *   Whether user is allowed to continue.
    */
   public function floodIsAllowed($window = '') {
     if (method_exists($this->validatePlugin, 'floodIsAllowed')) {
@@ -163,8 +178,12 @@ class Tfa {
    * Validate form.
    *
    * @param array $form
+   *   The form array structure.
    * @param array $form_state
+   *   The current form state array.
+   *
    * @return bool
+   *   Whether form passes validation or not.
    */
   public function validateForm(array $form, array &$form_state) {
     return $this->validatePlugin->validateForm($form, $form_state);
@@ -174,6 +193,7 @@ class Tfa {
    * Return process error messages.
    *
    * @return array
+   *   Error messages.
    */
   public function getErrorMessages() {
     return $this->validatePlugin->getErrorMessages();
@@ -183,9 +203,13 @@ class Tfa {
    * Invoke submitForm() on plugins.
    *
    * @param array $form
+   *   The form array structure.
    * @param array $form_state
-   * @return bool Whether the validate plugin is complete.
-   *   FALSE will cause tfa_form_submit() to rebuild the form for multi-step.
+   *   The current form state array.
+   *
+   * @return bool
+   *   Whether the validate plugin is complete. FALSE will cause
+   *   tfa_form_submit() to rebuild the form for multi-step.
    */
   public function submitForm(array $form, array &$form_state) {
     // Handle fallback if set.
@@ -230,15 +254,17 @@ class Tfa {
    * Whether the TFA process has any fallback process.
    *
    * @return bool
+   *   Whether the TFA process has any fallback process.
    */
   public function hasFallback() {
     return $this->fallback;
   }
 
   /**
-   * Whether it's a fallback process.
+   * Whether it is a fallback process.
    *
    * @return bool
+   *   Whether it is a fallback process.
    */
   public function isFallback() {
     return isset($this->context['active_fallback']);
@@ -248,6 +274,7 @@ class Tfa {
    * Return TFA context.
    *
    * @return array
+   *   TFA context.
    */
   public function getContext() {
     if (method_exists($this->validatePlugin, 'getPluginContext')) {
@@ -278,11 +305,13 @@ class Tfa {
 }
 
 /**
- * Class TfaSetup
+ * Class TfaSetup.
  */
 class TfaSetup {
 
   /**
+   * Plugin being set up.
+   *
    * @var TfaBasePlugin
    */
   protected $setupPlugin;
@@ -292,15 +321,11 @@ class TfaSetup {
    *
    * @param TfaBasePlugin $setupPlugin
    *   Plugin being set up.
-   *
    * @param array $context
    *   Context of TFA process.
-   *
    *   Must include key:
-   *
    *     - 'uid'
    *       Account uid of user in TFA process.
-   *
    */
   public function __construct(TfaBasePlugin $setupPlugin, array $context) {
     $this->setupPlugin = $setupPlugin;
@@ -321,8 +346,12 @@ class TfaSetup {
    * Get plugin form.
    *
    * @param array $form
+   *   The form array structure.
    * @param array $form_state
+   *   The current form state array.
+   *
    * @return array
+   *   Form array structure.
    */
   public function getForm(array $form, array &$form_state) {
     return $this->setupPlugin->getSetupForm($form, $form_state);
@@ -332,8 +361,12 @@ class TfaSetup {
    * Validate form.
    *
    * @param array $form
+   *   The form array structure.
    * @param array $form_state
+   *   The current form state array.
+   *
    * @return bool
+   *   Whether form passes validation or not.
    */
   public function validateForm(array $form, array &$form_state) {
     return $this->setupPlugin->validateSetupForm($form, $form_state);
@@ -343,24 +376,32 @@ class TfaSetup {
    * Return process error messages.
    *
    * @return array
+   *   Error messages.
    */
   public function getErrorMessages() {
     return $this->setupPlugin->getErrorMessages();
   }
 
   /**
+   * Form submission handler.
    *
    * @param array $form
+   *   The form array structure.
    * @param array $form_state
+   *   The current form state array.
+   *
    * @return bool
+   *   Whether the form submission succeeded.
    */
   public function submitForm(array $form, array &$form_state) {
     return $this->setupPlugin->submitSetupForm($form, $form_state);
   }
 
   /**
+   * Return TFA context.
    *
    * @return array
+   *   TFA context.
    */
   public function getContext() {
     if (method_exists($this->setupPlugin, 'getPluginContext')) {
@@ -369,6 +410,7 @@ class TfaSetup {
     }
     return $this->context;
   }
+
 }
 
 /**
@@ -379,31 +421,43 @@ abstract class TfaBasePlugin {
   const CRYPT_VERSION = '1';
 
   /**
+   * TFA code.
+   *
    * @var string
    */
   protected $code;
 
   /**
+   * Code Length.
+   *
    * @var int
    */
   protected $codeLength;
 
   /**
+   * Context of current TFA process.
+   *
    * @var array
    */
   protected $context;
 
   /**
+   * Error messages.
+   *
    * @var array
    */
   protected $errorMessages = array();
 
   /**
+   * Code is valid.
+   *
    * @var bool
    */
   protected $isValid;
 
   /**
+   * Encryption key.
+   *
    * @var string
    */
   protected $encryptionKey;
@@ -413,17 +467,12 @@ abstract class TfaBasePlugin {
    *
    * @param array $context
    *   Context of current TFA process.
-   *
    *   Must include key:
-   *
    *     - 'uid'
    *       Account uid of user in TFA process.
-   *
    *   May include keys:
-   *
    *     - 'validate_context'
    *       Plugin-specific context for use during Tfa validation.
-   *
    *     - 'setup_context'
    *       Plugin-specific context for use during TfaSetup.
    */
@@ -438,6 +487,7 @@ abstract class TfaBasePlugin {
    * Determine if the plugin can run for the current TFA context.
    *
    * @return bool
+   *   Whether the plugin can run.
    */
   public function ready() {
     return TRUE;
@@ -447,6 +497,7 @@ abstract class TfaBasePlugin {
    * Get error messages suitable for form_set_error().
    *
    * @return array
+   *   Error messages.
    */
   public function getErrorMessages() {
     return $this->errorMessages;
@@ -456,9 +507,13 @@ abstract class TfaBasePlugin {
    * Submit form.
    *
    * @param array $form
+   *   The form array structure.
    * @param array $form_state
-   * @return bool Whether plugin form handling is complete.
-   *   Plugins should return FALSE to invoke multi-step.
+   *   The current form state array.
+   *
+   * @return bool
+   *   Whether plugin form handling is complete. Plugins should return FALSE to
+   *   invoke multi-step.
    */
   public function submitForm(array $form, array &$form_state) {
     return $this->isValid;
@@ -470,8 +525,11 @@ abstract class TfaBasePlugin {
    * Note, plugins overriding validate() should be sure to set isValid property
    * correctly or else also override submitForm().
    *
-   * @param string $code Code to be validated
-   * @return bool Whether code is valid
+   * @param string $code
+   *   Code to be validated.
+   *
+   * @return bool
+   *   Whether code is valid.
    */
   protected function validate($code) {
     if ((string) $code === (string) $this->code) {
@@ -487,14 +545,23 @@ abstract class TfaBasePlugin {
    * Generate a random string of characters of length $this->codeLength.
    *
    * @return string
+   *   Generated random string of characters.
    */
   protected function generate() {
     $string = '';
     do {
       $chars = strtolower(base64_encode(drupal_random_bytes($this->codeLength)));
       // Remove some characters that are more difficult to distinguish or type.
-      $string .= strtr($chars, array('+' => '', '/' => '', '=' => '', '-' => '', '_' => '', '0' => '', 'o' => ''));
-    } while(strlen($string) <= $this->codeLength);
+      $string .= strtr($chars, array(
+        '+' => '',
+        '/' => '',
+        '=' => '',
+        '-' => '',
+        '_' => '',
+        '0' => '',
+        'o' => '',
+      ));
+    } while (strlen($string) <= $this->codeLength);
 
     return substr($string, 0, $this->codeLength);
   }
@@ -566,7 +633,6 @@ abstract class TfaBasePlugin {
    *   The plaintext, or empty string on failure.
    */
   protected function decrypt($data) {
-    $is_legacy = TRUE;
     $crypto_data = drupal_json_decode($data);
     if (empty($crypto_data['version']) || empty($crypto_data['iv_base64']) || empty($crypto_data['ciphertext_base64'])) {
       // Backwards compatibility with the old Mcrypt scheme.
@@ -624,10 +690,14 @@ abstract class TfaBasePlugin {
    *
    * @return string
    *   The plaintext, or empty string on failure.
+   *
+   * phpcs:disable Drupal.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
    */
   protected function decryptLegacyDataWithOpenSSL($data) {
-    $key_size = 32; // Based on return value of mcrypt_enc_get_key_size($td).
-    $iv_size = 16; // Based on return value of mcrypt_enc_get_iv_size($td).
+    // Based on return value of mcrypt_enc_get_key_size($td).
+    $key_size = 32;
+    // Based on return value of mcrypt_enc_get_iv_size($td).
+    $iv_size = 16;
     $key = substr($this->encryptionKey, 0, $key_size);
     $iv = substr($data, 0, $iv_size);
     $data = substr($data, $iv_size);
@@ -644,10 +714,11 @@ abstract class TfaBasePlugin {
       return '';
     }
   }
+
 }
 
 /**
- * Interface TfaValidationPluginInterface
+ * Interface TfaValidationPluginInterface.
  *
  * Validation plugins interact with the Tfa form processes to provide code entry
  * and validate submitted codes.
@@ -679,10 +750,11 @@ interface TfaValidationPluginInterface {
    *   Whether form passes validation or not.
    */
   public function validateForm(array $form, array &$form_state);
+
 }
 
 /**
- * Interface TfaLoginPluginInterface
+ * Interface TfaLoginPluginInterface.
  *
  * Login plugins interact with the Tfa loginAllowed() process prior to starting
  * a TFA process.
@@ -696,10 +768,11 @@ interface TfaLoginPluginInterface {
    *   Indicates whether authentication should be interrupted.
    */
   public function loginAllowed();
+
 }
 
 /**
- * Interface TfaSendPluginInterface
+ * Interface TfaSendPluginInterface.
  *
  * Send plugins interact with the Tfa begin() process to communicate a code
  * during the start of the TFA process.
@@ -712,10 +785,11 @@ interface TfaSendPluginInterface {
    * TFA process begin.
    */
   public function begin();
+
 }
 
 /**
- * Interface TfaSetupPluginInterface
+ * Interface TfaSetupPluginInterface.
  *
  * Setup plugins are used by TfaSetup for configuring a plugin.
  *
@@ -724,22 +798,34 @@ interface TfaSendPluginInterface {
 interface TfaSetupPluginInterface {
 
   /**
+   * Get setup form.
+   *
    * @param array $form
    *   The form array structure.
    * @param array $form_state
    *   The current form state array.
+   *
+   * @return array
+   *   Form array structure.
    */
   public function getSetupForm(array $form, array &$form_state);
 
   /**
+   * Validate setup form.
+   *
    * @param array $form
    *   The form array structure.
    * @param array $form_state
    *   The current form state array.
+   *
+   * @return bool
+   *   Indicates whether the form is valid.
    */
   public function validateSetupForm(array $form, array &$form_state);
 
   /**
+   * Submit setup form.
+   *
    * @param array $form
    *   The form array structure.
    * @param array $form_state

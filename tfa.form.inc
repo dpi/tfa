@@ -1,17 +1,20 @@
 <?php
 
 /**
- * @file tfa.form.inc
+ * @file
+ * Form-related functions.
  */
 
 /**
  * Start of TFA process form.
  *
- * @param $account User account
+ * @param object $account
+ *   User account object.
  */
 function tfa_begin_form($account) {
   return drupal_get_form('tfa_form', $account);
 }
+
 /**
  * Main TFA process form builder.
  *
@@ -105,12 +108,17 @@ function tfa_form_submit($form, &$form_state) {
 /**
  * Get destination and options for $form_state['redirect'].
  *
- * @param array $context TFA account context
- * @param array $form_state Form API state array from tfa_form_submit()
- * @param $account User account
+ * @param array $context
+ *   TFA account context.
+ * @param array $form_state
+ *   Form API state array from tfa_form_submit()
+ * @param object $account
+ *   User account.
+ *
  * @return array
+ *   Array with the redirect destination, and options.
  */
-function _tfa_form_get_destination($context, $form_state, $account) {
+function _tfa_form_get_destination(array $context, array $form_state, $account) {
   $query = drupal_get_query_parameters();
   $options = array();
   $destination = 'user';
@@ -160,7 +168,12 @@ function _tfa_form_get_destination($context, $form_state, $account) {
  * Check if flood has been hit.
  *
  * @param Tfa $tfa
+ *   Tfa object.
+ *
  * @return bool
+ *   TRUE if the flood has been hit.
+ *
+ * phpcs:disable Drupal.Commenting.FunctionComment.TypeHintMissing
  */
 function _tfa_hit_flood($tfa) {
   if (variable_get('tfa_test_mode', 0)) {
@@ -171,7 +184,7 @@ function _tfa_hit_flood($tfa) {
   $context = $tfa->getContext();
   $identifier = variable_get('user_failed_login_identifier_uid_only', FALSE) ? $context['uid'] : $context['uid'] . '-' . ip_address();
 
-  // Check user specific flood
+  // Check user specific flood.
   if (!flood_is_allowed('tfa_user', variable_get('tfa_user_threshold', 6), $user_window, $identifier)) {
     drupal_set_message(t('You have reached the threshold for incorrect code entry attempts. Please try again in !time minutes.', array('!time' => round($user_window / 60))), 'error');
     return TRUE;

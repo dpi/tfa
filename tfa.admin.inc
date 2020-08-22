@@ -1,7 +1,8 @@
 <?php
 
 /**
- * @file tfa.admin.inc
+ * @file
+ * TFA Administration and settings functions.
  */
 
 /**
@@ -60,6 +61,7 @@ function tfa_admin_settings($form, $form_state) {
     elseif ($enabled) {
       $message .= ' - unused';
     }
+    // phpcs:disable Drupal.Semantics.FunctionT.NotLiteralString
     $items[] = t($message, array('%type' => _tfa_class_types($plugin['class']), '@name' => $plugin['name']));
   }
   $form['plugins']['list'] = array(
@@ -75,11 +77,13 @@ function tfa_admin_settings($form, $form_state) {
     '#description' => t('Enable TFA for account authentication.'),
   );
   // Reusable #states for tfa_enabled.
-  $enabled_state = array('visible' => array(
-    ':input[name="tfa_enabled"]' => array('checked' => TRUE))
+  $enabled_state = array(
+    'visible' => array(
+      ':input[name="tfa_enabled"]' => array('checked' => TRUE),
+    ),
   );
 
-  // Default active plugin
+  // Default active plugin.
   if (count($validate_plugins) >= 1) {
     $form['tfa_validate'] = array(
       '#type' => 'select',
@@ -97,7 +101,7 @@ function tfa_admin_settings($form, $form_state) {
     );
   }
 
-  // Order of fallback plugins
+  // Order of fallback plugins.
   if (count($validate_plugins) > 1) {
     $enabled_fallback = variable_get('tfa_fallback_plugins', array());
     $form['tfa_fallback'] = array(
@@ -109,8 +113,10 @@ function tfa_admin_settings($form, $form_state) {
     );
     // First enabled.
     foreach ($enabled_fallback as $order => $key) {
-      $validate_state = array('invisible' => array(
-        ':input[name="tfa_validate"]' => array('value' => $key))
+      $validate_state = array(
+        'invisible' => array(
+          ':input[name="tfa_validate"]' => array('value' => $key),
+        ),
       );
       $form['tfa_fallback'][$key] = array(
         'enable' => array(
@@ -135,8 +141,10 @@ function tfa_admin_settings($form, $form_state) {
       if (isset($form['tfa_fallback'][$key])) {
         continue;
       }
-      $validate_state = array('invisible' => array(
-        ':input[name="tfa_validate"]' => array('value' => $key))
+      $validate_state = array(
+        'invisible' => array(
+          ':input[name="tfa_validate"]' => array('value' => $key),
+        ),
       );
       $form['tfa_fallback'][$key] = array(
         'enable' => array(

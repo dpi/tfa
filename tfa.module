@@ -1,7 +1,8 @@
 <?php
 
 /**
- * @file Two-factor authentication for Drupal.
+ * @file
+ * Two-factor authentication for Drupal.
  */
 
 /**
@@ -56,12 +57,13 @@ function tfa_permission() {
  * Set context for account's TFA process.
  *
  * @param object $account
- *   User account
+ *   User account.
  * @param array $context
- *   Context array
- *   @see tfa_start_context() for context format
+ *   TFA context.
+ *
+ * @see tfa_start_context()
  */
-function tfa_set_context($account, $context) {
+function tfa_set_context($account, array $context) {
   $_SESSION['tfa'][$account->uid] = $context;
   $_SESSION['tfa'][$account->uid]['uid'] = $account->uid;
   // Clear existing static TFA process.
@@ -72,9 +74,12 @@ function tfa_set_context($account, $context) {
  * Context for account TFA process.
  *
  * @param object $account
- *   User account
+ *   User account.
+ *
  * @return array
- *   @see tfa_start_context() for format
+ *   TFA context.
+ *
+ * @see tfa_start_context()
  */
 function tfa_get_context($account) {
   $context = array();
@@ -90,7 +95,7 @@ function tfa_get_context($account) {
  * Start context for TFA.
  *
  * @param object $account
- *   User account
+ *   User account.
  *
  * @return array
  *   array(
@@ -137,7 +142,7 @@ function tfa_start_context($account) {
  * Remove context for account.
  *
  * @param object $account
- *   User account object
+ *   User account object.
  */
 function tfa_clear_context($account) {
   unset($_SESSION['tfa'][$account->uid]);
@@ -147,9 +152,10 @@ function tfa_clear_context($account) {
  * Get Tfa object in the account's current context.
  *
  * @param object $account
- *   User account
+ *   User account.
  *
  * @return Tfa
+ *   Tfa object for account.
  */
 function tfa_get_process($account) {
   $tfa = &drupal_static(__FUNCTION__);
@@ -192,8 +198,12 @@ function tfa_get_process($account) {
  * Get or create a TFA plugin object.
  *
  * @param string $plugin_name
+ *   Plugin name.
  * @param array $context
- * @return TfaBasePlugin|FALSE
+ *   TFA context.
+ *
+ * @return TfaBasePlugin|false
+ *   TFA plugin or FALSE on error.
  */
 function tfa_get_plugin($plugin_name, array $context) {
   $api = module_invoke_all('tfa_api');
@@ -202,7 +212,7 @@ function tfa_get_plugin($plugin_name, array $context) {
     $function = $api[$plugin_name]['callback'];
     return $function($context);
   }
-  // Or (plugin_name)_create
+  // Or (plugin_name)_create.
   $function = $plugin_name . '_create';
   if (function_exists($function)) {
     return $function($context);
@@ -256,7 +266,6 @@ function tfa_login_form_redirect($form, &$form_state) {
  */
 function tfa_login_submit($form, &$form_state) {
   // Similar to tfa_user_login() but not required to force user logout.
-
   $account = isset($form_state['uid']) ? user_load($form_state['uid']) : user_load_by_name($form_state['values']['name']);
   // Return early if user has succesfully gone through TFA process or if
   // a login plugin specifically allows it.
@@ -314,9 +323,10 @@ function tfa_login_submit($form, &$form_state) {
  * Check TFA plugins if login should be interrupted for authenticating account.
  *
  * @param object $account
- *   User account
+ *   User account.
  *
  * @return bool
+ *   Whether login is allowed.
  */
 function tfa_login_allowed($account) {
   // TFA master login allowed switch is set by tfa_login().
@@ -399,7 +409,8 @@ function tfa_logout() {
 /**
  * Authenticate the user.
  *
- * @param $account User account object.
+ * @param object $account
+ *   User account object.
  */
 function tfa_login($account) {
   global $user;
@@ -436,7 +447,7 @@ function tfa_help($path, $arg) {
   switch ($path) {
     case 'admin/help#tfa':
       $output = '<h3>' . t('Two-factor Authentication for Drupal') . '</h3>';
-      $output .= '<p>' . t("TFA is a base module for providing two-factor authentication for your Drupal site. As such it provides a framework for specific TFA plugins that act during user authentication to confirm a \"second factor\" for the user.") . '<p>';
+      $output .= '<p>' . t('TFA is a base module for providing two-factor authentication for your Drupal site. As such it provides a framework for specific TFA plugins that act during user authentication to confirm a "second factor" for the user.') . '<p>';
       // @todo include explanations on TFA module variables and fallback ordering
       $output .= $link;
       return $output;
@@ -446,8 +457,11 @@ function tfa_help($path, $arg) {
 /**
  * Generate account hash to access the TFA form.
  *
- * @param object $account User account.
- * @return string Random hash.
+ * @param object $account
+ *   User account.
+ *
+ * @return string
+ *   Random hash.
  */
 function tfa_login_hash($account) {
   // Using account login will mean this hash will become invalid once user has

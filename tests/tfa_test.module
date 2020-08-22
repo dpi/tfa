@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @file tfa_test.module.
+ * @file
  * A mock module for testing TFA.
  */
 
@@ -57,40 +57,63 @@ function tfa_test_form_user_login_alter(&$form, &$form_state) {
   }
 }
 
+/**
+ * Form submission handler.
+ */
 function tfa_test_form_login_submit($form, &$form_state) {
   $form_state['redirect'] = 'filter/tips';
 }
 
 /**
+ * Create test login object.
+ *
  * @param array $context
+ *   TFA context.
+ *
  * @return TfaTestLogin
+ *   Created TfaTestLogin object.
  */
-function tfa_test_login_create($context) {
+function tfa_test_login_create(array $context) {
   $uid = variable_get('tfa_test_login_uid', '');
-  return new TfaTestLogin($context, $uid);
+  return new TfaTestLogin($uid, $context);
 }
 
 /**
+ * Create test send object.
+ *
  * @param array $context
+ *   TFA context.
+ *
  * @return TfaTestSend
+ *   Created TfaTestSend object.
  */
-function tfa_test_send_create($context) {
+function tfa_test_send_create(array $context) {
   return new TfaTestSend($context);
 }
 
 /**
+ * Create test TOTP object.
+ *
  * @param array $context
+ *   TFA context.
+ *
  * @return TfaTestTotp
+ *   Created TfaTestTotp object.
  */
-function tfa_test_totp_create($context) {
+function tfa_test_totp_create(array $context) {
   return new TfaTestTotp($context);
 }
 
 /**
+ * Create test fallback object.
+ *
  * @param array $context
+ *   TFA context.
+ *
  * @return TfaTestFallback
+ *   Created TfaTestFallback object.
  */
-function tfa_test_fallback($context) {
+function tfa_test_fallback(array $context) {
   return new TfaTestFallback($context);
 }
 
@@ -98,7 +121,6 @@ function tfa_test_fallback($context) {
  * The multi-step form builder for TfaSetup().
  */
 function tfa_test_setup_form($form, &$form_state, $account) {
-
   if (empty($form_state['storage'])) {
     $form['start'] = array(
       '#type' => 'submit',
@@ -117,6 +139,9 @@ function tfa_test_setup_form($form, &$form_state, $account) {
   return $form;
 }
 
+/**
+ * Form validator.
+ */
 function tfa_test_setup_form_validate($form, &$form_state) {
   if (empty($form_state['storage'])) {
     return;
@@ -129,6 +154,9 @@ function tfa_test_setup_form_validate($form, &$form_state) {
   }
 }
 
+/**
+ * Form submit handler.
+ */
 function tfa_test_setup_form_submit($form, &$form_state) {
   $account = $form['account']['#value'];
 
@@ -146,7 +174,7 @@ function tfa_test_setup_form_submit($form, &$form_state) {
   elseif (!empty($form_state['storage']['tfa_setup'])) {
     $tfaSetup = $form_state['storage']['tfa_setup'];
     if ($tfaSetup->submitForm($form, $form_state)) {
-      drupal_set_message('Setup complete');
+      drupal_set_message(t('Setup complete'));
       $form_state['redirect'] = 'user';
     }
     else {
@@ -157,7 +185,7 @@ function tfa_test_setup_form_submit($form, &$form_state) {
 }
 
 /**
- * Alters tfa_context array.
+ * Implements hook_tfa_context_alter().
  */
 function tfa_test_tfa_context_alter(&$context) {
   if (variable_get('tfa_test_context_alter', FALSE) !== FALSE) {
@@ -168,8 +196,6 @@ function tfa_test_tfa_context_alter(&$context) {
 
 /**
  * Implements hook_tfa_flood_hit().
- *
- * @param array $context TFA context.
  */
 function tfa_test_tfa_flood_hit($context) {
   variable_set('tfa_test_flood_hit', $context['uid']);
