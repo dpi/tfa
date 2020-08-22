@@ -3,7 +3,6 @@
 namespace Drupal\tfa\Plugin\TfaSetup;
 
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\tfa\Plugin\TfaSetupInterface;
 use Drupal\tfa\Plugin\TfaValidation\TfaRecoveryCode;
@@ -26,25 +25,16 @@ class TfaRecoveryCodeSetup extends TfaRecoveryCode implements TfaSetupInterface 
   use TfaDataTrait;
 
   /**
-   * Determine if the plugin can run for the current TFA context.
-   *
-   * @return bool
-   *   True or False based on the checks performed.
+   * {@inheritdoc}
    */
   public function ready() {
     return TRUE;
   }
 
   /**
-   * Plugin overview page.
-   *
-   * @param array $params
-   *   Parameters to setup the overview information.
-   *
-   * @return array
-   *   The overview form.
+   * {@inheritdoc}
    */
-  public function getOverview($params) {
+  public function getOverview(array $params) {
     $output = [
       'heading' => [
         '#type' => 'html_tag',
@@ -140,15 +130,7 @@ class TfaRecoveryCodeSetup extends TfaRecoveryCode implements TfaSetupInterface 
   }
 
   /**
-   * Validate the setup data.
-   *
-   * @param array $form
-   *   The configuration form array.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   *
-   * @return bool
-   *   Whether or not form passes validation.
+   * {@inheritdoc}
    */
   public function validateSetupForm(array $form, FormStateInterface $form_state) {
     if (!empty($form_state->getValue('recovery_codes'))) {
@@ -159,15 +141,7 @@ class TfaRecoveryCodeSetup extends TfaRecoveryCode implements TfaSetupInterface 
   }
 
   /**
-   * Submit the setup form.
-   *
-   * @param array $form
-   *   The configuration form array.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   *
-   * @return bool
-   *   TRUE if no errors occur when saving the data.
+   * {@inheritdoc}
    */
   public function submitSetupForm(array $form, FormStateInterface $form_state) {
     $this->storeCodes($form_state->getValue('recovery_codes'));
@@ -175,20 +149,14 @@ class TfaRecoveryCodeSetup extends TfaRecoveryCode implements TfaSetupInterface 
   }
 
   /**
-   * Returns a list of links containing helpful information for plugin use.
-   *
-   * @return string[]
-   *   An array containing help links for e.g., OTP generation.
+   * {@inheritdoc}
    */
   public function getHelpLinks() {
     return [];
   }
 
   /**
-   * Returns a list of messages for plugin step.
-   *
-   * @return string[]
-   *   An array containing messages to be used during plugin setup.
+   * {@inheritdoc}
    */
   public function getSetupMessages() {
     return ($this->pluginDefinition['setupMessages']) ?: [];

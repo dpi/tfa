@@ -30,11 +30,21 @@ class TfaUserLoginBlock extends UserLoginBlock {
   protected $tfaSettings;
 
   /**
+   * Constructs a new UserLoginBlock instance.
+   *
    * @param array $configuration
-   * @param $plugin_id
-   * @param $plugin_definition
+   *   The plugin configuration, i.e. an array with configuration values keyed
+   *   by configuration option name. The special key 'context' may be used to
+   *   initialize the defined contexts by setting it to an array of context
+   *   values keyed by context names.
+   * @param string $plugin_id
+   *   The plugin_id for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The route match.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The configuration factory.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match, ConfigFactoryInterface $config_factory) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $route_match);
@@ -70,9 +80,6 @@ class TfaUserLoginBlock extends UserLoginBlock {
   }
 
   /**
-   * Fully override the UserLoginBlock build() method. Not doing so
-   * does something bad when loading up the UserLoginForm.
-   *
    * {@inheritdoc}
    */
   public function build() {

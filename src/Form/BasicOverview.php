@@ -105,11 +105,10 @@ class BasicOverview extends FormBase {
     }
 
     if ($configuration['enabled']) {
-      $enabled = isset($user_tfa['status'],$user_tfa['data']) && !empty($user_tfa['data']['plugins']) && $user_tfa['status'] ? TRUE : FALSE;
+      $enabled = isset($user_tfa['status'], $user_tfa['data']) && !empty($user_tfa['data']['plugins']) && $user_tfa['status'] ? TRUE : FALSE;
       // Validation plugin setup.
       $allowed_plugins = $configuration['allowed_validation_plugins'];
       $enabled_plugins = isset($user_tfa['data']['plugins']) ? $user_tfa['data']['plugins'] : [];
-      $default_plugin = $configuration['default_validation_plugin'];
 
       foreach ($allowed_plugins as $allowed_plugin) {
         $output[$allowed_plugin] = $this->tfaPluginSetupFormOverview($allowed_plugin, $user, !empty($enabled_plugins[$allowed_plugin]));
@@ -135,7 +134,7 @@ class BasicOverview extends FormBase {
       ];
     }
 
-    if ( $configuration['enabled'] ) {
+    if ($configuration['enabled']) {
       $output['validation_skip_status'] = [
         '#type'   => 'markup',
         '#markup' => $this->t('Number of times validation skipped: @skipped of @limit', [
@@ -181,8 +180,8 @@ class BasicOverview extends FormBase {
       'plugin_id' => $plugin,
     ];
     $output = $this->tfaSetup
-                ->createInstance($plugin . '_setup', ['uid' => $account->id()])
-                ->getOverview($params);
+      ->createInstance($plugin . '_setup', ['uid' => $account->id()])
+      ->getOverview($params);
     return $output;
   }
 

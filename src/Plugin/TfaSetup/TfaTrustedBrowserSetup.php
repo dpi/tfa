@@ -6,11 +6,8 @@ use Drupal\Component\Utility\Html;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
-use Drupal\encrypt\EncryptionProfileManagerInterface;
-use Drupal\encrypt\EncryptServiceInterface;
 use Drupal\tfa\Plugin\TfaLogin\TfaTrustedBrowser;
 use Drupal\tfa\Plugin\TfaSetupInterface;
-use Drupal\user\UserDataInterface;
 
 /**
  * Class TfaTrustedBrowserSetup.
@@ -27,13 +24,6 @@ use Drupal\user\UserDataInterface;
  */
 class TfaTrustedBrowserSetup extends TfaTrustedBrowser implements TfaSetupInterface {
   use StringTranslationTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, UserDataInterface $user_data, EncryptionProfileManagerInterface $encryption_profile_manager, EncryptServiceInterface $encrypt_service) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $user_data, $encryption_profile_manager, $encrypt_service);
-  }
 
   /**
    * {@inheritdoc}
@@ -199,7 +189,7 @@ class TfaTrustedBrowserSetup extends TfaTrustedBrowser implements TfaSetupInterf
   /**
    * {@inheritdoc}
    */
-  public function getOverview($params) {
+  public function getOverview(array $params) {
     $trusted_browsers = [];
     foreach ($this->getTrustedBrowsers() as $device) {
       $date_formatter = \Drupal::service('date.formatter');

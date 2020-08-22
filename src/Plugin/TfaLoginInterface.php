@@ -11,9 +11,10 @@ namespace Drupal\tfa\Plugin;
 interface TfaLoginInterface {
 
   /**
-   * Whether authentication should be interrupted.
+   * Whether login is allowed.
    *
    * @return bool
+   *   Whether login is allowed.
    */
   public function loginAllowed();
 

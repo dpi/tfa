@@ -8,7 +8,6 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\encrypt\EncryptionProfileManagerInterface;
-use Drupal\encrypt\EncryptService;
 use Drupal\encrypt\EncryptServiceInterface;
 use Drupal\user\UserDataInterface;
 
@@ -70,12 +69,12 @@ class TfaValidationPluginManager extends DefaultPluginManager {
    * Create an instance of a validation plugin.
    *
    * @param string $plugin_id
-   *    The id of the setup plugin.
+   *   The id of the setup plugin.
    * @param array $configuration
-   *    Configuration data for the setup plugin.
+   *   Configuration data for the setup plugin.
    *
    * @return object
-   *    Required validation plugin instance
+   *   Required validation plugin instance
    */
   public function createInstance($plugin_id, array $configuration = []) {
     $plugin_definition = $this->getDefinition($plugin_id);

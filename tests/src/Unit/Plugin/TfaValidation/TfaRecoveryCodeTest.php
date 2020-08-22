@@ -6,7 +6,6 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Form\FormState;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\encrypt\EncryptionProfileInterface;
 use Drupal\encrypt\EncryptionProfileManagerInterface;
 use Drupal\encrypt\EncryptServiceInterface;
@@ -92,6 +91,8 @@ class TfaRecoveryCodeTest extends UnitTestCase {
    * Helper method to construct the test fixture.
    *
    * @return \Drupal\tfa\Plugin\TfaValidation\TfaRecoveryCode
+   *   Recovery code.
+   *
    * @throws \Exception
    */
   protected function getFixture() {

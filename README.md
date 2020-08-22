@@ -78,8 +78,8 @@ be defined to be configured properly.
 * Install the Encrypt module
 * Visit the Encrypt module's configuration page and "Add Encryption Profile"
     * Label your Encryption Profile
-    * Encryption method: "Authenticated AES (Real AES)" - or the encryption method
-    of your choice.
+    * Encryption method: "Authenticated AES (Real AES)" - or the encryption
+      method of your choice.
     * Encryption Key: Select the Key you created in the previous step.
     * Save
 

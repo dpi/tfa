@@ -7,21 +7,22 @@ use Drupal\tfa\Plugin\TfaSetupInterface;
 
 /**
  * Class TfaSetup.
+ *
+ * @todo This class is somewhat useless. Deprecate this later.
  */
 class TfaSetup {
-  // @todo This class is somewhat useless. Deprecate this later.
   /**
    * Current setup plugin.
    *
-   * @var $setupPlugin
+   * @var \Drupal\tfa\Plugin\TfaSetupInterface
    */
   protected $setupPlugin;
 
   /**
    * TFA Setup constructor.
    *
-   * @param TfaSetupInterface $plugin
-   *   Plugins to instansiate.
+   * @param \Drupal\tfa\Plugin\TfaSetupInterface $plugin
+   *   Plugins to instantiate.
    */
   public function __construct(TfaSetupInterface $plugin) {
     $this->setupPlugin = $plugin;
@@ -47,8 +48,8 @@ class TfaSetup {
    * @param int $reset
    *   Reset the data or not.
    *
-   * @return array Form API array.
-   *    Form API array.
+   * @return array
+   *   Form API array.
    */
   public function getForm(array $form, FormStateInterface &$form_state, $reset = 0) {
     return $this->setupPlugin->getSetupForm($form, $form_state, $reset);

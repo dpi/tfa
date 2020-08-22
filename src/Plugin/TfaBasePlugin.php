@@ -85,13 +85,13 @@ abstract class TfaBasePlugin extends PluginBase {
    * Constructs a new Tfa plugin object.
    *
    * @param array $configuration
-   *    The plugin configuration.
+   *   The plugin configuration.
    * @param string $plugin_id
-   *    The plugin id.
+   *   The plugin id.
    * @param mixed $plugin_definition
-   *    The plugin definition.
+   *   The plugin definition.
    * @param \Drupal\user\UserDataInterface $user_data
-   *    User data object to store user specific information.
+   *   User data object to store user specific information.
    * @param \Drupal\encrypt\EncryptionProfileManagerInterface $encryption_profile_manager
    *   Encryption profile manager.
    * @param \Drupal\encrypt\EncryptServiceInterface $encrypt_service
@@ -117,7 +117,7 @@ abstract class TfaBasePlugin extends PluginBase {
    * Determine if the plugin can run for the current TFA context.
    *
    * @return bool
-   *    True or False based on the checks performed.
+   *   True or False based on the checks performed.
    */
   abstract public function ready();
 
@@ -139,8 +139,9 @@ abstract class TfaBasePlugin extends PluginBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    *
-   * @return bool Whether plugin form handling is complete.
-   *   Plugins should return FALSE to invoke multi-step.
+   * @return bool
+   *   Whether plugin form handling is complete. Plugins should return FALSE to
+   *   invoke multi-step.
    */
   public function submitForm(array $form, FormStateInterface &$form_state) {
     return $this->isValid;
@@ -156,7 +157,7 @@ abstract class TfaBasePlugin extends PluginBase {
    *   Code to be validated.
    *
    * @return bool
-   *    Whether code is valid.
+   *   Whether code is valid.
    */
   protected function validate($code) {
     if ((string) $code === (string) $this->code) {
@@ -202,7 +203,7 @@ abstract class TfaBasePlugin extends PluginBase {
    * Store validated code to prevent replay attack.
    *
    * @param string $code
-   *    The validated code.
+   *   The validated code.
    */
   protected function storeAcceptedCode($code) {
     $code = preg_replace('/\s+/', '', $code);
@@ -217,10 +218,10 @@ abstract class TfaBasePlugin extends PluginBase {
    * Whether code has already been used.
    *
    * @param string $code
-   *    The code to be checked.
+   *   The code to be checked.
    *
    * @return bool
-   *    TRUE if already used otherwise FALSE
+   *   TRUE if already used otherwise FALSE
    */
   protected function alreadyAcceptedCode($code) {
     $hash = hash('sha1', Settings::getHashSalt() . $code);

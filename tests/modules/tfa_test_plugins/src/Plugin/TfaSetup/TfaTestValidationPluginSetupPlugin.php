@@ -33,15 +33,7 @@ class TfaTestValidationPluginSetupPlugin extends TfaBasePlugin implements TfaSet
   }
 
   /**
-   * Get the setup form for the validation method.
-   *
-   * @param array $form
-   *   The configuration form array.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   *
-   * @return array
-   *   Form API array.
+   * {@inheritdoc}
    */
   public function getSetupForm(array $form, FormStateInterface $form_state) {
     $form['expected_field'] = [
@@ -59,15 +51,7 @@ class TfaTestValidationPluginSetupPlugin extends TfaBasePlugin implements TfaSet
   }
 
   /**
-   * Validate the setup data.
-   *
-   * @param array $form
-   *   The configuration form array.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   *
-   * @return bool
-   *   Whether or not the form is valid.
+   * {@inheritdoc}
    */
   public function validateSetupForm(array $form, FormStateInterface $form_state) {
     $expected_value = $form_state->getValue('expected_field');
@@ -81,15 +65,7 @@ class TfaTestValidationPluginSetupPlugin extends TfaBasePlugin implements TfaSet
   }
 
   /**
-   * Submit the setup form.
-   *
-   * @param array $form
-   *   The configuration form array.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   *
-   * @return bool
-   *   TRUE if no errors occur when saving the data.
+   * {@inheritdoc}
    */
   public function submitSetupForm(array $form, FormStateInterface $form_state) {
     $encrypted = $this->encrypt($form_state->getValue('expected_field'));
@@ -119,35 +95,23 @@ class TfaTestValidationPluginSetupPlugin extends TfaBasePlugin implements TfaSet
   }
 
   /**
-   * Returns a list of links containing helpful information for plugin use.
-   *
-   * @return string[]
-   *   An array containing help links for e.g., OTP generation.
+   * {@inheritdoc}
    */
   public function getHelpLinks() {
     return [];
   }
 
   /**
-   * Returns a list of messages for plugin step.
-   *
-   * @return string[]
-   *   An array containing messages to be used during plugin setup.
+   * {@inheritdoc}
    */
   public function getSetupMessages() {
     return [];
   }
 
   /**
-   * Plugin overview page.
-   *
-   * @param array $params
-   *   Parameters to setup the overview information.
-   *
-   * @return array
-   *   The overview form.
+   * {@inheritdoc}
    */
-  public function getOverview($params) {
+  public function getOverview(array $params) {
     return [
       'heading' => [
         '#type' => 'html_tag',

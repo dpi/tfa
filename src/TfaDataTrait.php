@@ -19,7 +19,7 @@ trait TfaDataTrait {
    * @param int $uid
    *   The user id.
    * @param \Drupal\user\UserDataInterface $user_data
-   *    User data object to store user specific information.
+   *   User data object to store user specific information.
    */
   protected function setUserData($module, array $data, $uid, UserDataInterface $user_data) {
     $user_data->set(
@@ -40,7 +40,7 @@ trait TfaDataTrait {
    * @param int $uid
    *   The user id.
    * @param \Drupal\user\UserDataInterface $user_data
-   *    User data object to store user specific information.
+   *   User data object to store user specific information.
    *
    * @return mixed|array
    *   The stored value is returned, or NULL if no value was found.
@@ -65,7 +65,7 @@ trait TfaDataTrait {
    * @param int $uid
    *   The user id.
    * @param \Drupal\user\UserDataInterface $user_data
-   *    User data object to store user specific information.
+   *   User data object to store user specific information.
    */
   protected function deleteUserData($module, $key, $uid, UserDataInterface $user_data) {
     $user_data->delete(
@@ -83,10 +83,12 @@ trait TfaDataTrait {
    *
    * @param int $uid
    *   The user id.
+   * @param \Drupal\user\UserDataInterface $user_data
+   *   User data.
    * @param array $data
    *   Data to be saved.
    */
-  function tfaSaveTfaData($uid, UserDataInterface $user_data, $data = []) {
+  public function tfaSaveTfaData($uid, UserDataInterface $user_data, array $data = []) {
     // Check if existing data and update.
     $existing = $this->tfaGetTfaData($uid, $user_data);
 

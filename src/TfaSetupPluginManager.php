@@ -66,12 +66,12 @@ class TfaSetupPluginManager extends DefaultPluginManager {
    * Create an instance of a setup plugin.
    *
    * @param string $plugin_id
-   *    The id of the setup plugin.
+   *   The id of the setup plugin.
    * @param array $configuration
-   *    Configuration data for the setup plugin.
+   *   Configuration data for the setup plugin.
    *
    * @return object
-   *    Require setup plugin instance
+   *   Require setup plugin instance
    */
   public function createInstance($plugin_id, array $configuration = []) {
     $plugin_definition = $this->getDefinition($plugin_id);

@@ -94,6 +94,7 @@ class TfaContextTest extends UnitTestCase {
    * Helper method to instantiate the test fixture.
    *
    * @return \Drupal\tfa\TfaContext
+   *   TFA context.
    */
   protected function getFixture() {
     return new TfaContext(

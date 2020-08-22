@@ -163,7 +163,7 @@ class BasicDisable extends FormBase {
     }
 
     // Delete all user data.
-    $this->deleteUserData('tfa', null, $account->id(), $this->userData);
+    $this->deleteUserData('tfa', NULL, $account->id(), $this->userData);
 
     \Drupal::logger('tfa')->notice('TFA disabled for user @name UID @uid', [
       '@name' => $account->getAccountName(),

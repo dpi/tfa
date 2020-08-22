@@ -1,4 +1,5 @@
 <?php
+
 namespace Drupal\services_tfa\Plugin\ServiceDefinition;
 
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
@@ -64,7 +65,7 @@ class GenericValidation extends ServiceDefinitionBase implements ContainerFactor
    * @param \Drupal\tfa\TfaValidationPluginManager $tfa_validation_manager
    *   Validation plugin manager.
    */
-  public function __construct($configuration, $plugin_id, $plugin_definition, UserDataInterface $user_data, TfaValidationPluginManager $tfa_validation_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, UserDataInterface $user_data, TfaValidationPluginManager $tfa_validation_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->userData = $user_data;
     $this->tfaValidationManager = $tfa_validation_manager;
@@ -83,13 +84,15 @@ class GenericValidation extends ServiceDefinitionBase implements ContainerFactor
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  /*
+  public function processRoute(Route $route) {
   // @todo Figure out why this results in 403.
-  //  /**
-  //   * {@inheritdoc}
-  //   */
-  //  public function processRoute(Route $route) {
-  //    $route->setRequirement('_user_is_logged_in', 'FALSE');
-  //  }
+  $route->setRequirement('_user_is_logged_in', 'FALSE');
+  }
+   */
 
   /**
    * {@inheritdoc}

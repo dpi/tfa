@@ -77,9 +77,9 @@ class TfaLoginPluginManager extends DefaultPluginManager {
    * Create an instance of a plugin.
    *
    * @param string $plugin_id
-   *    The id of the setup plugin.
+   *   The id of the setup plugin.
    * @param array $configuration
-   *    Configuration data for the setup plugin.
+   *   Configuration data for the setup plugin.
    *
    * @return object
    *   The plugin instance.
@@ -101,12 +101,12 @@ class TfaLoginPluginManager extends DefaultPluginManager {
    * Returns an array of enabled login plugins.
    *
    * @param array $configuration
-   *    The configuraton array.
+   *   The configuration array.
    *
    * @return array|null
    *   An array of login plugins.
    */
-  public function getPlugins($configuration = []) {
+  public function getPlugins(array $configuration = []) {
     $plugin_ids = $this->tfaSettings->get('login_plugins');
     $plugins = [];
     if (!empty($plugin_ids)) {

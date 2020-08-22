@@ -38,12 +38,27 @@ class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface, C
   protected $codeLimit = 10;
 
   /**
-   * {@inheritdoc}
+   * Constructs a new Tfa plugin object.
+   *
+   * @param array $configuration
+   *   The plugin configuration.
+   * @param string $plugin_id
+   *   The plugin id.
+   * @param mixed $plugin_definition
+   *   The plugin definition.
+   * @param \Drupal\user\UserDataInterface $user_data
+   *   User data object to store user specific information.
+   * @param \Drupal\encrypt\EncryptionProfileManagerInterface $encryption_profile_manager
+   *   Encryption profile manager.
+   * @param \Drupal\encrypt\EncryptServiceInterface $encrypt_service
+   *   Encryption service.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The configuration factory.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, UserDataInterface $user_data, EncryptionProfileManagerInterface $encryption_profile_manager, EncryptServiceInterface $encrypt_service, ConfigFactoryInterface $config_factory) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $user_data, $encryption_profile_manager, $encrypt_service);
-    $codes_amount = $config_factory->get('tfa.settings')->get('validation_plugin_settings.tfa_recovery_code.recovery_codes_amount');
 
+    $codes_amount = $config_factory->get('tfa.settings')->get('validation_plugin_settings.tfa_recovery_code.recovery_codes_amount');
     if (!empty($codes_amount)) {
       $this->codeLimit = $codes_amount;
     }

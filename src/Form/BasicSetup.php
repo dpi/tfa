@@ -162,7 +162,8 @@ class BasicSetup extends FormBase {
     $values = $form_state->getValues();
     $account = $form['account']['#value'];
     if (isset($values['current_pass'])) {
-      // Allow administrators to change TFA settings for another account using their own password.
+      // Allow administrators to change TFA settings for another account using
+      // their own password.
       if ($account->id() != $user->id()) {
         if ($user->hasPermission('administer users')) {
           $account = $user;

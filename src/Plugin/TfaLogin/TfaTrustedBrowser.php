@@ -57,10 +57,7 @@ class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaV
   }
 
   /**
-   * Check whether login is allowed.
-   *
-   * @return bool
-   *   If login cookie is set TRUE otherwise FALSE.
+   * {@inheritdoc}
    */
   public function loginAllowed() {
     if (isset($_COOKIE[$this->cookieName]) && $this->trustedBrowser($_COOKIE[$this->cookieName]) !== FALSE) {

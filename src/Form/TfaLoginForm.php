@@ -156,10 +156,11 @@ class TfaLoginForm extends UserLoginForm {
       $this->getRequest()
     );
 
-    // Uncomment when things go wrong and you get logged out.
-    // user_login_finalize($user);
-    // $form_state->setRedirect('<front>');
-    // return;
+    /* Uncomment when things go wrong and you get logged out.
+    user_login_finalize($user);
+    $form_state->setRedirect('<front>');
+    return;
+     */
 
     // Stop processing if Tfa is not enabled.
     if (!$this->tfaContext->isModuleSetup() || !$this->tfaContext->isTfaRequired()) {

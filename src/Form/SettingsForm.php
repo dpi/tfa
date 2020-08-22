@@ -126,7 +126,6 @@ class SettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $uid = $this->currentUser()->id();
     $config = $this->config('tfa.settings');
     $form = [];
 
@@ -145,7 +144,7 @@ class SettingsForm extends ConfigFormBase {
     $validation_plugins_labels = [];
     foreach ($validation_plugins as $key => $plugin) {
       // Skip this plugin if no setup class is available.
-      if (!isset($setup_plugins[$key . '_setup'])){
+      if (!isset($setup_plugins[$key . '_setup'])) {
         unset($validation_plugins[$key]);
         continue;
       }
@@ -218,13 +217,13 @@ class SettingsForm extends ConfigFormBase {
       '#tree' => TRUE,
       '#states' => $enabled_state,
     ];
-    foreach($validation_plugins_labels as $key => $val) {
+    foreach ($validation_plugins_labels as $key => $val) {
       $instance = $this->tfaValidation->createInstance($key, [
-        'uid' => $this->currentUser()->id()
-        ]
+        'uid' => $this->currentUser()->id(),
+      ]
       );
 
-      if(method_exists($instance, 'buildConfigurationForm')) {
+      if (method_exists($instance, 'buildConfigurationForm')) {
         $validation_enabled_state = [
           'visible' => [
             [
@@ -259,7 +258,7 @@ class SettingsForm extends ConfigFormBase {
       '#type' => 'select',
       '#title' => $this->t('Encryption Profile'),
       '#options' => $encryption_profile_labels,
-      '#description' => 'Encryption profiles to encrypt the secret',
+      '#description' => $this->t('Encryption profiles to encrypt the secret'),
       '#default_value' => $config->get('encryption'),
       '#states' => $enabled_state,
       '#required' => TRUE,
@@ -269,7 +268,7 @@ class SettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#title' => $this->t('Skip Validation'),
       '#default_value' => ($config->get('validation_skip')) ?: 2,
-      '#description' => 'No. of times a user without having setup tfa validation can login.',
+      '#description' => $this->t('No. of times a user without having setup tfa validation can login.'),
       '#size' => 2,
       '#states' => $enabled_state,
       '#required' => TRUE,
@@ -332,7 +331,7 @@ class SettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#title' => $this->t('TFA Flood Window'),
       '#default_value' => ($config->get('tfa_flood_window')) ?: 300,
-      '#description' => 'TFA Flood Window.',
+      '#description' => $this->t('TFA Flood Window.'),
       '#size' => 5,
       '#states' => $enabled_state,
       '#required' => TRUE,
@@ -343,7 +342,7 @@ class SettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#title' => $this->t('TFA Flood Threshold'),
       '#default_value' => ($config->get('tfa_flood_threshold')) ?: 6,
-      '#description' => 'TFA Flood Threshold.',
+      '#description' => $this->t('TFA Flood Threshold.'),
       '#size' => 2,
       '#required' => TRUE,
     ];
@@ -421,13 +420,6 @@ class SettingsForm extends ConfigFormBase {
     $form['#theme'] = 'system_config_form';
 
     return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
-    return parent::validateForm($form, $form_state);
   }
 
   /**

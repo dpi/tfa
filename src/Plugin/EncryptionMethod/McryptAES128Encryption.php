@@ -80,7 +80,7 @@ class McryptAES128Encryption extends EncryptionMethodBase implements EncryptionM
     $crypto_data = Json::decode($text);
     if (empty($crypto_data['version']) || empty($crypto_data['iv_base64']) || empty($crypto_data['ciphertext_base64'])) {
       // Backwards compatibility with the old Mcrypt scheme.
-      return extension_loaded('mcrypt') ? $this->decryptLegacyDataWithMcrypt($text, $key) : $this->decryptLegacyDataWithOpenSSL($text, $key);
+      return extension_loaded('mcrypt') ? $this->decryptLegacyDataWithMcrypt($text, $key) : $this->decryptLegacyDataWithOpenSsl($text, $key);
     }
     else {
       $iv = base64_decode($crypto_data['iv_base64']);

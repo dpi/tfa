@@ -27,7 +27,7 @@ function tfa_requirements($phase) {
         'title' => t('Two-factor authentication'),
         'value' => t('Required PHP extensions'),
         'description' => $description,
-        'severity' => REQUIREMENT_ERROR,
+        'severity' => $severity,
       ];
     }
   }
@@ -35,7 +35,7 @@ function tfa_requirements($phase) {
 }
 
 /**
- * Clear this module's plugin cache after validation plugins moved to ga_login module.
+ * Clear plugin cache as validation plugins moved to ga_login module.
  */
 function tfa_update_8001() {
   \Drupal::cache('discovery')->invalidateMultiple(['tfa_setup', 'tfa_validation']);
@@ -126,7 +126,7 @@ function tfa_update_8005() {
     // But as a validation plugin we only need the settings for one of those, so
     // get the first instance.
     $settings = [];
-    foreach ($config->get('fallback_plugins') as $validation_plugin_id => $fallbacks) {
+    foreach ($config->get('fallback_plugins') as $fallbacks) {
       if (isset($fallbacks['tfa_recovery_code'])) {
         $settings = $fallbacks['tfa_recovery_code']['settings'];
         break;

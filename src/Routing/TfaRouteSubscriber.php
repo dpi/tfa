@@ -18,6 +18,7 @@ class TfaRouteSubscriber extends RouteSubscriberBase {
    * Overrides user.login route with our custom login form.
    *
    * @param \Symfony\Component\Routing\RouteCollection $collection
+   *   Route to be altered.
    */
   public function alterRoutes(RouteCollection $collection) {
     // Change path of user login to our overridden TFA login form.

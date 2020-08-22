@@ -13,12 +13,7 @@ use Symfony\Component\Console\Input\InputInterface;
 class TfaCommands extends DrushCommands implements SanitizePluginInterface {
 
   /**
-   * Run your sanitization logic using standard Drupal APIs.
-   *
-   * @param $result Exit code from the main operation for sql-sanitize.
-   * @param $commandData Information about the current request.
-   *
-   * @hook post-command sql-sanitize
+   * {@inheritdoc}
    */
   public function sanitize($result, CommandData $commandData) {
     // DBTNG does not support expressions in delete queries.
@@ -28,13 +23,7 @@ class TfaCommands extends DrushCommands implements SanitizePluginInterface {
   }
 
   /**
-   * @hook on-event sql-sanitize-confirms
-   *
-   * @param $messages An array of messages to show during confirmation.
-   * @param $input The effective commandline input for this request.
-   *
-   * @return array.
-   *   A messages array.
+   * {@inheritdoc}
    */
   public function messages(&$messages, InputInterface $input) {
     return $messages[] = dt('Remove recovery codes and other user-specific TFA data.');

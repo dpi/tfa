@@ -33,6 +33,9 @@ interface TfaSetupInterface {
    *   The configuration form array.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
+   *
+   * @return bool
+   *   Whether or not form passes validation.
    */
   public function validateSetupForm(array $form, FormStateInterface $form_state);
 
@@ -74,6 +77,6 @@ interface TfaSetupInterface {
    * @return array
    *   The overview form.
    */
-  public function getOverview($params);
+  public function getOverview(array $params);
 
 }
