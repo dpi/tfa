@@ -65,33 +65,33 @@ class Tfa {
    *     - 'plugins'
    *       Array of plugin names indexed by type: 'validate', 'fallback',
    *       'login'.
-   * @param array $fallbackPlugins
+   * @param array $fallback_plugins
    *   Optional TfaBasePlugin objects for use as fallback indexed by name.
-   * @param array $loginPlugins
+   * @param array $login_plugins
    *   Optional TfaLoginPluginInterface objects for use during login indexed by
    *   name.
    */
-  public function __construct(TfaBasePlugin $validate, array $context, array $fallbackPlugins, array $loginPlugins) {
+  public function __construct(TfaBasePlugin $validate, array $context, array $fallback_plugins, array $login_plugins) {
     $validate_plugin = $context['plugins']['validate'];
-    $activePlugins = array('validate' => $validate_plugin);
+    $active_plugins = array('validate' => $validate_plugin);
 
     $this->validatePlugin = $validate;
-    if (!empty($loginPlugins)) {
-      foreach ($loginPlugins as $plugin_name => $loginPlugin) {
-        $this->loginPlugins[$plugin_name] = $loginPlugin;
-        $activePlugins['login'][] = $plugin_name;
+    if (!empty($login_plugins)) {
+      foreach ($login_plugins as $plugin_name => $login_plugin) {
+        $this->loginPlugins[$plugin_name] = $login_plugin;
+        $active_plugins['login'][] = $plugin_name;
       }
     }
-    if (!empty($fallbackPlugins)) {
-      foreach ($fallbackPlugins as $plugin_name => $fallbackPlugin) {
+    if (!empty($fallback_plugins)) {
+      foreach ($fallback_plugins as $plugin_name => $fallback_plugin) {
         // Skip this fallback if its same as validation.
         if ($plugin_name === $validate_plugin) {
           continue;
         }
         // Only use plugins that are ready.
-        if ($fallbackPlugin->ready()) {
-          $this->fallbackPlugins[$plugin_name] = $fallbackPlugin;
-          $activePlugins['fallback'][] = $plugin_name;
+        if ($fallback_plugin->ready()) {
+          $this->fallbackPlugins[$plugin_name] = $fallback_plugin;
+          $active_plugins['fallback'][] = $plugin_name;
         }
       }
       // Mark whether a fallback plugin exists.
@@ -101,7 +101,7 @@ class Tfa {
     }
     $this->context = $context;
     // Save only active plugins.
-    $this->context['plugins'] = $activePlugins;
+    $this->context['plugins'] = $active_plugins;
   }
 
   /**
@@ -278,8 +278,8 @@ class Tfa {
    */
   public function getContext() {
     if (method_exists($this->validatePlugin, 'getPluginContext')) {
-      $pluginContext = $this->validatePlugin->getPluginContext();
-      $this->context['validate_context'] = $pluginContext;
+      $plugin_context = $this->validatePlugin->getPluginContext();
+      $this->context['validate_context'] = $plugin_context;
     }
     return $this->context;
   }
@@ -317,9 +317,16 @@ class TfaSetup {
   protected $setupPlugin;
 
   /**
+   * Context of current TFA process.
+   *
+   * @var array
+   */
+  protected $context;
+
+  /**
    * TFA Setup constructor.
    *
-   * @param TfaBasePlugin $setupPlugin
+   * @param TfaBasePlugin $setup_plugin
    *   Plugin being set up.
    * @param array $context
    *   Context of TFA process.
@@ -327,8 +334,8 @@ class TfaSetup {
    *     - 'uid'
    *       Account uid of user in TFA process.
    */
-  public function __construct(TfaBasePlugin $setupPlugin, array $context) {
-    $this->setupPlugin = $setupPlugin;
+  public function __construct(TfaBasePlugin $setup_plugin, array $context) {
+    $this->setupPlugin = $setup_plugin;
     $this->context = $context;
   }
 
@@ -405,8 +412,8 @@ class TfaSetup {
    */
   public function getContext() {
     if (method_exists($this->setupPlugin, 'getPluginContext')) {
-      $pluginContext = $this->setupPlugin->getPluginContext();
-      $this->context['setup_context'] = $pluginContext;
+      $plugin_context = $this->setupPlugin->getPluginContext();
+      $this->context['setup_context'] = $plugin_context;
     }
     return $this->context;
   }

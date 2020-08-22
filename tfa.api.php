@@ -78,8 +78,8 @@ function my_tfa_setup_form($form, &$form_state, $account) {
   }
   else {
     // Return the setup plugin's form.
-    $tfaSetup = $form_state['storage']['tfa_setup'];
-    $form = $tfaSetup->getForm($form, $form_state);
+    $tfa_setup = $form_state['storage']['tfa_setup'];
+    $form = $tfa_setup->getForm($form, $form_state);
   }
 
   // Required account element.
@@ -100,9 +100,9 @@ function my_tfa_setup_form_validate($form, &$form_state) {
     return;
   }
   // Run setup plugin's form validation.
-  $tfaSetup = $form_state['storage']['tfa_setup'];
-  if (!$tfaSetup->validateForm($form, $form_state)) {
-    foreach ($tfaSetup->getErrorMessages() as $element => $message) {
+  $tfa_setup = $form_state['storage']['tfa_setup'];
+  if (!$tfa_setup->validateForm($form, $form_state)) {
+    foreach ($tfa_setup->getErrorMessages() as $element => $message) {
       form_set_error($element, $message);
     }
   }
@@ -120,16 +120,16 @@ function my_tfa_setup_form_submit($form, &$form_state) {
     // Setup plugin class must be defined somehow (e.g. from a variable).
     $class = 'MyTfaPluginSetup';
     $setup_plugin = new $class($context);
-    $tfaSetup = new TfaSetup($setup_plugin, $context);
+    $tfa_setup = new TfaSetup($setup_plugin, $context);
 
     // Store TfaSetup process for multi-step.
-    $form_state['storage']['tfa_setup'] = $tfaSetup;
+    $form_state['storage']['tfa_setup'] = $tfa_setup;
     $form_state['rebuild'] = TRUE;
   }
   elseif (!empty($form_state['storage']['tfa_setup'])) {
     // Invoke plugin form submission.
-    $tfaSetup = $form_state['storage']['tfa_setup'];
-    if ($tfaSetup->submitForm($form, $form_state)) {
+    $tfa_setup = $form_state['storage']['tfa_setup'];
+    if ($tfa_setup->submitForm($form, $form_state)) {
       drupal_set_message(t('Setup complete'));
       $form_state['redirect'] = 'user';
     }

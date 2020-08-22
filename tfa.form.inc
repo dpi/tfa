@@ -111,7 +111,7 @@ function tfa_form_submit($form, &$form_state) {
  * @param array $context
  *   TFA account context.
  * @param array $form_state
- *   Form API state array from tfa_form_submit()
+ *   Form API state array from tfa_form_submit().
  * @param object $account
  *   User account.
  *

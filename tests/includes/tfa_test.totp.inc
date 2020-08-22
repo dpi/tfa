@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Tests for the TfaValidationPluginInterface.
+ */
+
+/**
  * Class TfaTestTotp.
  */
 class TfaTestTotp extends TfaBasePlugin implements TfaValidationPluginInterface {

@@ -1,12 +1,17 @@
 <?php
 
 /**
+ * @file
+ * Tests for the TfaValidationPluginInterface.
+ */
+
+/**
  * Class TfaTestFallback.
  */
 class TfaTestFallback extends TfaBasePlugin implements TfaValidationPluginInterface {
 
   /**
-   * Constuctor.
+   * Constructor.
    */
   public function __construct(array $context = array()) {
     parent::__construct($context);

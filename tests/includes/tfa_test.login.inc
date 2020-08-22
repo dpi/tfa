@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Tests for the TfaLoginPluginInterface.
+ */
+
+/**
  * Class TfaTestLogin.
  */
 class TfaTestLogin extends TfaBasePlugin implements TfaLoginPluginInterface {

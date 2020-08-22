@@ -128,8 +128,8 @@ function tfa_test_setup_form($form, &$form_state, $account) {
     );
   }
   else {
-    $tfaSetup = $form_state['storage']['tfa_setup'];
-    $form = $tfaSetup->getForm($form, $form_state);
+    $tfa_setup = $form_state['storage']['tfa_setup'];
+    $form = $tfa_setup->getForm($form, $form_state);
   }
   // Set account element.
   $form['account'] = array(
@@ -146,9 +146,9 @@ function tfa_test_setup_form_validate($form, &$form_state) {
   if (empty($form_state['storage'])) {
     return;
   }
-  $tfaSetup = $form_state['storage']['tfa_setup'];
-  if (!$tfaSetup->validateForm($form, $form_state)) {
-    foreach ($tfaSetup->getErrorMessages() as $element => $message) {
+  $tfa_setup = $form_state['storage']['tfa_setup'];
+  if (!$tfa_setup->validateForm($form, $form_state)) {
+    foreach ($tfa_setup->getErrorMessages() as $element => $message) {
       form_set_error($element, $message);
     }
   }
@@ -166,14 +166,14 @@ function tfa_test_setup_form_submit($form, &$form_state) {
     $context = array('uid' => $account->uid);
     $class = variable_get('tfa_test_setup_class', '');
     $setup_plugin = new $class($context);
-    $tfaSetup = new TfaSetup($setup_plugin, array(), $context);
+    $tfa_setup = new TfaSetup($setup_plugin, array(), $context);
 
-    $form_state['storage']['tfa_setup'] = $tfaSetup;
+    $form_state['storage']['tfa_setup'] = $tfa_setup;
     $form_state['rebuild'] = TRUE;
   }
   elseif (!empty($form_state['storage']['tfa_setup'])) {
-    $tfaSetup = $form_state['storage']['tfa_setup'];
-    if ($tfaSetup->submitForm($form, $form_state)) {
+    $tfa_setup = $form_state['storage']['tfa_setup'];
+    if ($tfa_setup->submitForm($form, $form_state)) {
       drupal_set_message(t('Setup complete'));
       $form_state['redirect'] = 'user';
     }
