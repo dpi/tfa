@@ -8,6 +8,33 @@
 use Drupal\Core\Session\AccountInterface;
 
 /**
+ * Implements hook_requirements().
+ */
+function tfa_requirements($phase) {
+  $requirements = [];
+  if ($phase == 'runtime') {
+    if (!extension_loaded('openssl')) {
+      if (extension_loaded('mcrypt')) {
+        $severity = REQUIREMENT_WARNING;
+        $description = t('The TFA module recommends the PHP OpenSSL extension to be installed on the web server.');
+      }
+      else {
+        $severity = REQUIREMENT_ERROR;
+        $description = t('The TFA module requires either the PHP OpenSSL or Mcrypt extensions to be installed on the web server.');
+      }
+
+      $requirements['tfa_extensions'] = [
+        'title' => t('Two-factor authentication'),
+        'value' => t('Required PHP extensions'),
+        'description' => $description,
+        'severity' => REQUIREMENT_ERROR,
+      ];
+    }
+  }
+  return $requirements;
+}
+
+/**
  * Clear this module's plugin cache after validation plugins moved to ga_login module.
  */
 function tfa_update_8001() {

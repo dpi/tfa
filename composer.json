@@ -5,6 +5,7 @@
     "license": "GPL-2.0-or-later",
     "minimum-stability": "dev",
     "require": {
+        "php": ">=7.0",
         "drupal/encrypt": "~3.0"
     },
     "extra": {
