@@ -179,7 +179,9 @@ abstract class TfaBasePlugin extends PluginBase {
    *   The string to be encrypted.
    *
    * @return string
-   *   The enrcypted string.
+   *   The encrypted string.
+   *
+   * @throws \Drupal\encrypt\Exception\EncryptException
    */
   protected function encrypt($data) {
     return $this->encryptService->encrypt($data, $this->encryptionProfile);
@@ -195,6 +197,9 @@ abstract class TfaBasePlugin extends PluginBase {
    *
    * @return string
    *   The decrypted string.
+   *
+   * @throws \Drupal\encrypt\Exception\EncryptionMethodCanNotDecryptException
+   * @throws \Drupal\encrypt\Exception\EncryptException
    */
   protected function decrypt($data) {
     return $this->encryptService->decrypt($data, $this->encryptionProfile);

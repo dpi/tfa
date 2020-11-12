@@ -97,6 +97,8 @@ class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaV
 
   /**
    * Finalize the browser setup.
+   *
+   * @throws \Exception
    */
   public function finalize() {
     if ($this->trustBrowser) {
@@ -110,6 +112,8 @@ class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaV
    *
    * @return string
    *   Base64 encoded browser id.
+   *
+   * @throws \Exception
    */
   protected function generateBrowserId() {
     $id = base64_encode(random_bytes(32));
@@ -128,9 +132,10 @@ class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaV
     // Currently broken.
     // Store id for account.
     $records = $this->getUserData('tfa', 'tfa_trusted_browser', $this->configuration['uid'], $this->userData) ?: [];
+    $request_time = \Drupal::time()->getRequestTime();
 
     $records[$id] = [
-      'created' => \Drupal::time()->getRequestTime(),
+      'created' => $request_time,
       'ip' => \Drupal::request()->getClientIp(),
       'name' => $name,
     ];
@@ -142,12 +147,15 @@ class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaV
     $this->setUserData('tfa', $data, $this->configuration['uid'], $this->userData);
     // Issue cookie with ID.
     $cookie_secure = ini_get('session.cookie_secure');
-    $expiration = \Drupal::time()->getRequestTime() + $this->expiration;
+    $expiration = $request_time + $this->expiration;
     $domain = strpos($_SERVER['HTTP_HOST'], 'localhost') === FALSE ? $_SERVER['HTTP_HOST'] : FALSE;
     setcookie($this->cookieName, $id, $expiration, '/', $domain, (empty($cookie_secure) ? FALSE : TRUE), TRUE);
     $name = empty($name) ? $this->getAgent() : $name;
     // TODO - use services defined in module instead this procedural way.
-    \Drupal::logger('tfa')->info('Set trusted browser for user UID @uid, browser @name', ['@name' => $name, '@uid' => $this->uid]);
+    \Drupal::logger('tfa')->info('Set trusted browser for user UID @uid, browser @name', [
+      '@name' => $name,
+      '@uid' => $this->uid,
+    ]);
   }
 
   /**

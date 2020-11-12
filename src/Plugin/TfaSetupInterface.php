@@ -69,6 +69,14 @@ interface TfaSetupInterface {
   public function getSetupMessages();
 
   /**
+   * Return process error messages.
+   *
+   * @return string[]
+   *   An array containing the setup errors.
+   */
+  public function getErrorMessages();
+
+  /**
    * Plugin overview page.
    *
    * @param array $params

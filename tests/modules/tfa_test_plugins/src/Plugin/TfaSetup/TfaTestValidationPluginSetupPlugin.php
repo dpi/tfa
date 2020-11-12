@@ -84,6 +84,9 @@ class TfaTestValidationPluginSetupPlugin extends TfaBasePlugin implements TfaSet
    *
    * @return null|string
    *   The string if found, otherwise NULL;
+   *
+   * @throws \Drupal\encrypt\Exception\EncryptionMethodCanNotDecryptException
+   * @throws \Drupal\encrypt\Exception\EncryptException
    */
   public function getExpectedFieldData() {
     $data = $this->getUserData($this->pluginDefinition['id'], 'test_data', $this->uid, $this->userData);

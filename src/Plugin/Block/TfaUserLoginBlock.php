@@ -94,7 +94,10 @@ class TfaUserLoginBlock extends UserLoginBlock {
     unset($form['pass']['#attributes']['aria-describedby']);
     $form['name']['#size'] = 15;
     $form['pass']['#size'] = 15;
-    $form['#action'] = Url::fromRoute('<current>', [], ['query' => $this->getDestinationArray(), 'external' => FALSE])->toString();
+    $form['#action'] = Url::fromRoute('<current>', [], [
+      'query' => $this->getDestinationArray(),
+      'external' => FALSE,
+    ])->toString();
     // Build action links.
     $items = [];
     if (\Drupal::config('user.settings')->get('register') != UserInterface::REGISTER_ADMINISTRATORS_ONLY) {

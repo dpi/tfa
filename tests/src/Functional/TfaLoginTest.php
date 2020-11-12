@@ -55,7 +55,10 @@ class TfaLoginTest extends TfaTestBase {
 
     // Check that tfa is presented.
     $this->drupalLogout();
-    $edit = ['name' => $this->webUser->getAccountName(), 'pass' => $this->webUser->passRaw];
+    $edit = [
+      'name' => $this->webUser->getAccountName(),
+      'pass' => $this->webUser->passRaw,
+    ];
     $this->drupalPostForm('user/login', $edit, 'Log in');
     $assert_session->statusCodeEquals(200);
     $assert_session->addressMatches('/\/tfa\/' . $this->webUser->id() . '/');
@@ -97,7 +100,10 @@ class TfaLoginTest extends TfaTestBase {
     $assert_session->pageTextContains('Number of times validation skipped: 0 of 3');
     // Check that tfa is presented.
     $this->drupalLogout();
-    $edit = ['name' => $this->webUser->getAccountName(), 'pass' => $this->webUser->passRaw];
+    $edit = [
+      'name' => $this->webUser->getAccountName(),
+      'pass' => $this->webUser->passRaw,
+    ];
     $this->drupalPostForm('user/login', $edit, 'Log in');
     $assert_session->statusCodeEquals(200);
     $assert_session->addressMatches('/\/tfa\/' . $this->webUser->id() . '/');

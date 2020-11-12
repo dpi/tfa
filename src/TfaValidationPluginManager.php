@@ -75,6 +75,9 @@ class TfaValidationPluginManager extends DefaultPluginManager {
    *
    * @return object
    *   Required validation plugin instance
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
   public function createInstance($plugin_id, array $configuration = []) {
     $plugin_definition = $this->getDefinition($plugin_id);

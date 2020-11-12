@@ -67,7 +67,7 @@ class SettingsForm extends ConfigFormBase {
   protected $encryptionProfileManager;
 
   /**
-   * The admin configuraiton form constructor.
+   * The admin configuration form constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory object.
@@ -96,7 +96,7 @@ class SettingsForm extends ConfigFormBase {
   }
 
   /**
-   * Creates service objects for the class contructor.
+   * Creates service objects for the class constructor.
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
    *   The container to get the required services.
@@ -245,7 +245,10 @@ class SettingsForm extends ConfigFormBase {
           '#value' => $val,
         ];
         $form['validation_plugin_settings'][$key . '_container']['form'] = $instance->buildConfigurationForm($config, $validation_enabled_state);
-        $form['validation_plugin_settings'][$key . '_container']['form']['#parents'] = ['validation_plugin_settings', $key];
+        $form['validation_plugin_settings'][$key . '_container']['form']['#parents'] = [
+          'validation_plugin_settings',
+          $key,
+        ];
       }
     }
 
@@ -326,7 +329,7 @@ class SettingsForm extends ConfigFormBase {
       '#description' => $this->t('Flood control on the basis of uid only.'),
     ];
 
-    // Flood window. Defaults to 5mins.
+    // Flood window. Defaults to 5min.
     $form['tfa_flood']['tfa_flood_window'] = [
       '#type' => 'textfield',
       '#title' => $this->t('TFA Flood Window'),

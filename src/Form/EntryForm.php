@@ -105,7 +105,7 @@ class EntryForm extends FormBase {
   }
 
   /**
-   * Creates service objects for the class contructor.
+   * Creates service objects for the class constructor.
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
    *   The container to get the required services.
@@ -297,13 +297,6 @@ class EntryForm extends FormBase {
         }
       }
     }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEditableConfigNames() {
-    return ['tfa.settings'];
   }
 
 }

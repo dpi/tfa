@@ -73,7 +73,7 @@ class TfaSetup {
   /**
    * Return process error messages.
    *
-   * @return array
+   * @return string[]
    *   An array containing the setup errors.
    */
   public function getErrorMessages() {

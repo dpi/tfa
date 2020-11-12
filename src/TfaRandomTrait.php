@@ -37,6 +37,8 @@ trait TfaRandomTrait {
    *
    * @return int
    *   Random integer of given length.
+   *
+   * @throws \Exception
    */
   public function randomInteger($length) {
     return $this->randomCharacters($length, $this->allowedRandomNumbers);
@@ -50,6 +52,8 @@ trait TfaRandomTrait {
    *
    * @return string
    *   Random integer of given length.
+   *
+   * @throws \Exception
    */
   public function randomString($length) {
     return $this->randomCharacters($length, $this->allowedRandomLetters);
@@ -65,6 +69,8 @@ trait TfaRandomTrait {
    *
    * @return string
    *   Random string of given length and allowed characters.
+   *
+   * @throws \Exception
    */
   protected function randomCharacters($length, $allowable_characters) {
     // Zero-based count of characters in the allowable list:

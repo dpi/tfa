@@ -1,7 +1,7 @@
 ## Two-factor Authentication (TFA) module for Drupal
 
 TFA is a base module for providing two-factor authentication for your Drupal
-site. As a base module, TFA handles all of the Drupal integration work,
+site. As a base module, TFA handles the Drupal integration work,
 providing flexible and well tested interfaces to enable seamless, and
 configurable, choice of various two-factor authentication solutions like
 Time-based One Time Passwords, SMS-delivered codes, recovery codes, or
@@ -49,7 +49,7 @@ This module requires a few dependencies to be setup before it can be configured.
 
 ##### Encryption Method - [Real AES](https://www.drupal.org/project/real_aes)
 
-Some encryption method module is required to be able to use the Key and Encrypt
+An encryption method module is required to be able to use the Key and Encrypt
 modules. Real AES is not the only method available, another is [Sodium](https://www.drupal.org/project/sodium).
 
 * Install an encryption method module according to their instructions.
@@ -73,7 +73,7 @@ up the key module:
 
 The encrypt module allows the site owner to define encryption profiles that
 can be reused throughout Drupal. The TFA module requires an encryption profile
-be defined to be configured properly.
+to be defined to be configured properly.
 
 * Install the Encrypt module
 * Visit the Encrypt module's configuration page and "Add Encryption Profile"

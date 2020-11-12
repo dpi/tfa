@@ -40,7 +40,7 @@ tfa.settings:
       label: 'No. of times a user without tfa validation set-up can login.'
     encryption:
       type: string
-      label: 'The id of the encrpytion profile.'
+      label: 'The id of the encryption profile.'
     trust_cookie_expiration:
       type: integer
       label: 'How long before TFA cookies expire. Default is 30 days.'

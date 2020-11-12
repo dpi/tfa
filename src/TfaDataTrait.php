@@ -46,13 +46,7 @@ trait TfaDataTrait {
    *   The stored value is returned, or NULL if no value was found.
    */
   protected function getUserData($module, $key, $uid, UserDataInterface $user_data) {
-    $result = $user_data->get(
-      $module,
-      $uid,
-      $key
-    );
-
-    return $result;
+    return $user_data->get($module, $uid, $key);
   }
 
   /**
@@ -68,11 +62,7 @@ trait TfaDataTrait {
    *   User data object to store user specific information.
    */
   protected function deleteUserData($module, $key, $uid, UserDataInterface $user_data) {
-    $user_data->delete(
-      $module,
-      $uid,
-      $key
-    );
+    $user_data->delete($module, $uid, $key);
   }
 
   /**
@@ -148,13 +138,12 @@ trait TfaDataTrait {
     $result = $this->getUserData('tfa', 'tfa_user_settings', $uid, $user_data);
 
     if (!empty($result)) {
-      $tfa = [
-        'status' => $result['status'] == '1' ? TRUE : FALSE,
+      return [
+        'status' => $result['status'] == '1',
         'saved' => $result['saved'],
         'data' => $result['data'],
         'validation_skipped' => $result['validation_skipped'],
       ];
-      return $tfa;
     }
     return [];
   }

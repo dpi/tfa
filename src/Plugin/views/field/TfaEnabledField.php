@@ -34,19 +34,20 @@ class TfaEnabledField extends Boolean {
 
   /**
    * Constructs a UserData object.
+   *
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin_id for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   * @param \Drupal\user\UserDataInterface $user_data
+   *   User data object to store user specific information.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, UserDataInterface $user_data) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->userData = $user_data;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function defineOptions() {
-    $options = parent::defineOptions();
-    return $options;
   }
 
   /**

@@ -43,7 +43,7 @@ class BasicDisable extends FormBase {
   }
 
   /**
-   * Creates service objects for the class contructor.
+   * Creates service objects for the class constructor.
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
    *   The container to get the required services.
@@ -68,6 +68,7 @@ class BasicDisable extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, User $user = NULL) {
+    /** @var \Drupal\user\Entity\User $account */
     $account = User::load($this->currentUser()->id());
 
     $storage = $form_state->getStorage();
@@ -134,6 +135,7 @@ class BasicDisable extends FormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
+    /** @var \Drupal\user\Entity\User $user */
     $user = User::load($this->currentUser()->id());
     $storage = $form_state->getStorage();
     $account = $storage['account'];
@@ -179,7 +181,12 @@ class BasicDisable extends FormBase {
   }
 
   /**
-   * {@inheritdoc}
+   * Form cancel handler.
+   *
+   * @param array $form
+   *   An associative array containing the structure of the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
    */
   public function cancelForm(array &$form, FormStateInterface $form_state) {
     $this->messenger()->addWarning($this->t('TFA Disable cancelled.'));

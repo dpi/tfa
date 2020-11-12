@@ -75,7 +75,7 @@ class BasicOverview extends FormBase {
     // $form_state['storage']['account'] = $user;.
     $configuration = $this->config('tfa.settings')->getRawData();
     $user_tfa = $this->tfaGetTfaData($user->id(), $this->userData);
-    $enabled = isset($user_tfa['status']) && $user_tfa['status'] ? TRUE : FALSE;
+    $enabled = isset($user_tfa['status']) && $user_tfa['status'];
 
     if (!empty($user_tfa)) {
       $date_formatter = \Drupal::service('date.formatter');
@@ -105,7 +105,7 @@ class BasicOverview extends FormBase {
     }
 
     if ($configuration['enabled']) {
-      $enabled = isset($user_tfa['status'], $user_tfa['data']) && !empty($user_tfa['data']['plugins']) && $user_tfa['status'] ? TRUE : FALSE;
+      $enabled = isset($user_tfa['status'], $user_tfa['data']) && !empty($user_tfa['data']['plugins']) && $user_tfa['status'];
       // Validation plugin setup.
       $allowed_plugins = $configuration['allowed_validation_plugins'];
       $enabled_plugins = isset($user_tfa['data']['plugins']) ? $user_tfa['data']['plugins'] : [];
@@ -117,13 +117,12 @@ class BasicOverview extends FormBase {
       if ($enabled) {
         $login_plugins = $configuration['login_plugins'];
         foreach ($login_plugins as $lplugin_id) {
-          $output[$lplugin_id] = $this->tfaPluginSetupFormOverview($lplugin_id, $user, $enabled);
-
+          $output[$lplugin_id] = $this->tfaPluginSetupFormOverview($lplugin_id, $user, TRUE);
         }
 
         $send_plugin = $configuration['send_plugins'];
         if ($send_plugin) {
-          $output[$send_plugin] = $this->tfaPluginSetupFormOverview($send_plugin, $user, $enabled);
+          $output[$send_plugin] = $this->tfaPluginSetupFormOverview($send_plugin, $user, TRUE);
         }
       }
     }
@@ -179,10 +178,14 @@ class BasicOverview extends FormBase {
       'account' => $account,
       'plugin_id' => $plugin,
     ];
-    $output = $this->tfaSetup
-      ->createInstance($plugin . '_setup', ['uid' => $account->id()])
-      ->getOverview($params);
-    return $output;
+    try {
+      return $this->tfaSetup
+        ->createInstance($plugin . '_setup', ['uid' => $account->id()])
+        ->getOverview($params);
+    }
+    catch (\Exception $e) {
+      return [];
+    }
   }
 
   /**
@@ -224,6 +227,9 @@ class BasicOverview extends FormBase {
    *
    * @param \Drupal\user\UserInterface $account
    *   The account that TFA is for.
+   *
+   * @return bool
+   *   Whether the user can perform a TFA reset.
    */
   protected function canPerformReset(UserInterface $account) {
     $current_user = $this->currentUser();

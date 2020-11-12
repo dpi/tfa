@@ -5,6 +5,7 @@ namespace Drupal\tfa\Form;
 use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\tfa\TfaDataTrait;
 use Drupal\tfa\TfaSetup;
 use Drupal\user\Entity\User;
@@ -17,6 +18,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 class BasicSetup extends FormBase {
   use TfaDataTrait;
+  use StringTranslationTrait;
 
   /**
    * The TfaSetupPluginManager.
@@ -43,7 +45,12 @@ class BasicSetup extends FormBase {
   }
 
   /**
-   * {@inheritdoc}
+   * BasicSetup constructor.
+   *
+   * @param \Drupal\Component\Plugin\PluginManagerInterface $manager
+   *   The plugin manager to fetch plugin information.
+   * @param \Drupal\user\UserDataInterface $user_data
+   *   The user data object to store user information.
    */
   public function __construct(PluginManagerInterface $manager, UserDataInterface $user_data) {
     $this->manager = $manager;
@@ -61,6 +68,7 @@ class BasicSetup extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, User $user = NULL, $method = 'tfa_totp', $reset = 0) {
+    /** @var \Drupal\user\Entity\User $account */
     $account = User::load($this->currentUser()->id());
 
     $form['account'] = [
@@ -68,7 +76,7 @@ class BasicSetup extends FormBase {
       '#value' => $user,
     ];
     $tfa_data = $this->tfaGetTfaData($user->id(), $this->userData);
-    $enabled = isset($tfa_data['status'], $tfa_data['data']) && !empty($tfa_data['data']['plugins']) && $tfa_data['status'] ? TRUE : FALSE;
+    $enabled = isset($tfa_data['status'], $tfa_data['data']) && !empty($tfa_data['data']['plugins']) && $tfa_data['status'];
 
     $storage = $form_state->getStorage();
     // Always require a password on the first time through.
@@ -157,6 +165,7 @@ class BasicSetup extends FormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
+    /** @var \Drupal\user\Entity\User $user */
     $user = User::load($this->currentUser()->id());
     $storage = $form_state->getStorage();
     $values = $form_state->getValues();
@@ -168,7 +177,7 @@ class BasicSetup extends FormBase {
         if ($user->hasPermission('administer users')) {
           $account = $user;
         }
-        // Susp & belt: If current user lacks admin permissions, kick them out.
+        // If current user lacks admin permissions, kick them out.
         else {
           throw new NotFoundHttpException();
         }
@@ -193,7 +202,12 @@ class BasicSetup extends FormBase {
   }
 
   /**
-   * {@inheritdoc}
+   * Form cancel handler.
+   *
+   * @param array $form
+   *   An associative array containing the structure of the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
    */
   public function cancelForm(array &$form, FormStateInterface $form_state) {
     $account = $form['account']['#value'];
@@ -306,7 +320,7 @@ class BasicSetup extends FormBase {
         $output = $skipped_step ? $output['skipped'] : $output['saved'];
       }
       $count = count($storage['steps_left']);
-      $output .= ' ' . \Drupal::translation()->formatPlural($count, 'One setup step remaining.', '@count TFA setup steps remain.', ['@count' => $count]);
+      $output .= ' ' . $this->formatPlural($count, 'One setup step remaining.', '@count TFA setup steps remain.', ['@count' => $count]);
       if ($output) {
         $this->messenger()->addStatus($output);
       }

@@ -35,7 +35,7 @@ class TfaRecoveryCodeSetup extends TfaRecoveryCode implements TfaSetupInterface 
    * {@inheritdoc}
    */
   public function getOverview(array $params) {
-    $output = [
+    return [
       'heading' => [
         '#type' => 'html_tag',
         '#tag' => 'h2',
@@ -73,7 +73,6 @@ class TfaRecoveryCodeSetup extends TfaRecoveryCode implements TfaSetupInterface 
         ],
       ],
     ];
-    return $output;
   }
 
   /**

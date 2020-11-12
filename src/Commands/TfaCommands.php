@@ -8,7 +8,7 @@ use Drush\Drupal\Commands\sql\SanitizePluginInterface;
 use Symfony\Component\Console\Input\InputInterface;
 
 /**
- * A Drush commandfile.
+ * A Drush command file.
  */
 class TfaCommands extends DrushCommands implements SanitizePluginInterface {
 

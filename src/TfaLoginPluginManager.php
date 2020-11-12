@@ -83,9 +83,13 @@ class TfaLoginPluginManager extends DefaultPluginManager {
    *
    * @return object
    *   The plugin instance.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
   public function createInstance($plugin_id, array $configuration = []) {
     $plugin_definition = $this->getDefinition($plugin_id);
+    /** @var \Drupal\tfa\Plugin\TfaBasePlugin $plugin_class */
     $plugin_class = DefaultFactory::getPluginClass($plugin_id, $plugin_definition);
     // If the plugin provides a factory method, pass the container to it.
     if (is_subclass_of($plugin_class, 'Drupal\Core\Plugin\ContainerFactoryPluginInterface')) {
@@ -105,6 +109,9 @@ class TfaLoginPluginManager extends DefaultPluginManager {
    *
    * @return array|null
    *   An array of login plugins.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
   public function getPlugins(array $configuration = []) {
     $plugin_ids = $this->tfaSettings->get('login_plugins');

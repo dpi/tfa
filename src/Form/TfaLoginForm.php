@@ -146,6 +146,7 @@ class TfaLoginForm extends UserLoginForm {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // Similar to tfa_user_login() but not required to force user logout.
+    /** @var \Drupal\user\Entity\User $user */
     $user = $this->userStorage->load($form_state->get('uid'));
     $this->tfaContext = new TfaContext(
       $this->tfaValidationManager,
@@ -164,15 +165,16 @@ class TfaLoginForm extends UserLoginForm {
 
     // Stop processing if Tfa is not enabled.
     if (!$this->tfaContext->isModuleSetup() || !$this->tfaContext->isTfaRequired()) {
-      return parent::submitForm($form, $form_state);
-    }
-
-    // Setup TFA.
-    if ($this->tfaContext->isReady()) {
-      $this->loginWithTfa($form_state);
+      parent::submitForm($form, $form_state);
     }
     else {
-      $this->loginWithoutTfa($form_state);
+      // Setup TFA.
+      if ($this->tfaContext->isReady()) {
+        $this->loginWithTfa($form_state);
+      }
+      else {
+        $this->loginWithoutTfa($form_state);
+      }
     }
   }
 

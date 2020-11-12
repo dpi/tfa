@@ -77,7 +77,8 @@ class TfaRecoveryCodePluginTest extends TfaTestBase {
       ])
       ->save();
 
-    $this->userAccount = $this->createUser(['setup own tfa', 'disable own tfa']);
+    $permissions = ['setup own tfa', 'disable own tfa'];
+    $this->userAccount = $this->createUser($permissions);
 
     $this->tfaSetupManager = \Drupal::service('plugin.manager.tfa.setup');
     $this->setupPlugin = $this->tfaSetupManager->createInstance($this->validationPluginId . '_setup', ['uid' => $this->userAccount->id()]);

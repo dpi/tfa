@@ -15,29 +15,29 @@ use Drupal\Core\Access\AccessResult;
  * Implements hook_help().
  */
 function tfa_help($route_name, RouteMatchInterface $route_match) {
+  $output = '';
   switch ($route_name) {
     // Main module help for the tfa module.
     case 'help.page.tfa':
-      $output = '';
       $output .= '<h3>' . \Drupal::translation()->translate('About') . '</h3>';
       $output .= '<p>' . \Drupal::translation()->translate('Pluggable provider of second factor authentication for Drupal. For more information, see the online documentation for the <a href=":tfa">Two-factor Authentication</a> module.',
-          [
-            ':tfa' => 'https://www.drupal.org/project/tfa',
-          ]) . '</p>';
-      return $output;
+        [':tfa' => 'https://www.drupal.org/project/tfa']
+      ) . '</p>';
   }
+  return $output;
 }
 
 /**
  * Implements hook_block_access().
- *
- * Remove access to the core user_login_block so we can replace with the TFA
- * login block.
  */
 function tfa_block_access(Block $block, $operation, AccountInterface $account) {
+  // Remove access to the core user_login_block so we can replace with the TFA
+  // login block.
   if (\Drupal::config('tfa.settings')->get('enabled') && $block->getPluginId() === 'user_login_block') {
     return AccessResult::forbidden();
   }
+  // No opinion.
+  return AccessResult::neutral();
 }
 
 /**

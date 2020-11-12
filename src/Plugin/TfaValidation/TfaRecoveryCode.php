@@ -163,6 +163,8 @@ class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface, C
    *
    * @return array
    *   An array of randomly generated codes.
+   *
+   * @throws \Exception
    */
   public function generateCodes() {
     $codes = [];
@@ -182,6 +184,9 @@ class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface, C
    *
    * @return array
    *   Array of codes indexed by ID.
+   *
+   * @throws \Drupal\encrypt\Exception\EncryptionMethodCanNotDecryptException
+   * @throws \Drupal\encrypt\Exception\EncryptException
    */
   public function getCodes() {
     $codes = $this->getUserData('tfa', 'tfa_recovery_code', $this->uid, $this->userData) ?: [];
@@ -196,6 +201,8 @@ class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface, C
    *
    * @param array $codes
    *   Recovery codes for current account.
+   *
+   * @throws \Drupal\encrypt\Exception\EncryptException
    */
   public function storeCodes(array $codes) {
     $this->deleteCodes();

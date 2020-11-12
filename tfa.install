@@ -38,7 +38,8 @@ function tfa_requirements($phase) {
  * Clear plugin cache as validation plugins moved to ga_login module.
  */
 function tfa_update_8001() {
-  \Drupal::cache('discovery')->invalidateMultiple(['tfa_setup', 'tfa_validation']);
+  \Drupal::cache('discovery')
+    ->invalidateMultiple(['tfa_setup', 'tfa_validation']);
 }
 
 /**

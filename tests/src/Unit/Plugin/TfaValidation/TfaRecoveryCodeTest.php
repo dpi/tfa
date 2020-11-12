@@ -125,7 +125,8 @@ class TfaRecoveryCodeTest extends UnitTestCase {
     $this->assertFalse($fixture->ready());
 
     // Fake some codes for user 3.
-    $this->userData->get('tfa', 3, 'tfa_recovery_code')->willReturn(['foo', 'bar']);
+    $this->userData->get('tfa', 3, 'tfa_recovery_code')
+      ->willReturn(['foo', 'bar']);
     $this->encryptionService->decrypt('foo', $this->encryptionProfile->reveal())->willReturn('foo_decrypted');
     $this->encryptionService->decrypt('bar', $this->encryptionProfile->reveal())->willReturn('bar_decrypted');
     $this->tfaSettings->get('validation_plugin_settings.tfa_recovery_code.recovery_codes_amount')->willReturn(10);
@@ -135,7 +136,10 @@ class TfaRecoveryCodeTest extends UnitTestCase {
     $fixture = $this->getFixture();
     $this->assertTrue($fixture->ready());
 
-    $this->assertEquals(['foo_decrypted', 'bar_decrypted'], $fixture->getCodes());
+    $this->assertEquals([
+      'foo_decrypted',
+      'bar_decrypted',
+    ], $fixture->getCodes());
 
     // Validate with a bad code. Prophecy doesn't support reference returns.
     $this->userData->delete('tfa', 3, 'tfa_recovery_code')->shouldBeCalled();
