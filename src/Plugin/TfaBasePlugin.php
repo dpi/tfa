@@ -10,6 +10,7 @@ use Drupal\encrypt\EncryptionProfileManagerInterface;
 use Drupal\encrypt\EncryptServiceInterface;
 use Drupal\tfa\TfaDataTrait;
 use Drupal\user\UserDataInterface;
+use Drupal\Component\Utility\Crypt;
 
 /**
  * Base plugin class.
@@ -207,7 +208,7 @@ abstract class TfaBasePlugin extends PluginBase {
    */
   protected function storeAcceptedCode($code) {
     $code = preg_replace('/\s+/', '', $code);
-    $hash = hash('sha1', Settings::getHashSalt() . $code);
+    $hash = Crypt::hashBase64(Settings::getHashSalt() . $code);
 
     // Store the hash made using the code in users_data.
     $store_data = ['tfa_accepted_code_' . $hash => \Drupal::time()->getRequestTime()];
@@ -224,7 +225,7 @@ abstract class TfaBasePlugin extends PluginBase {
    *   TRUE if already used otherwise FALSE
    */
   protected function alreadyAcceptedCode($code) {
-    $hash = hash('sha1', Settings::getHashSalt() . $code);
+    $hash = Crypt::hashBase64(Settings::getHashSalt() . $code);
     // Check if the code has already been used or not.
     $key    = 'tfa_accepted_code_' . $hash;
     $result = $this->getUserData('tfa', $key, $this->uid, $this->userData);
