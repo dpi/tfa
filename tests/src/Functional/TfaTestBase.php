@@ -12,6 +12,11 @@ use Drupal\Tests\BrowserTestBase;
 abstract class TfaTestBase extends BrowserTestBase {
 
   /**
+   * {@inheritdoc}
+   */
+  protected $defaultTheme = 'stark';
+
+  /**
    * A test key.
    *
    * @var \Drupal\key\Entity\Key
