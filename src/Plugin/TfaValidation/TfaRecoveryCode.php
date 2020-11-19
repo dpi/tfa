@@ -239,7 +239,7 @@ class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface, C
     $code = str_replace(' ', '', $code);
     foreach ($codes as $id => $stored) {
       // Remove spaces from stored code.
-      if (trim(str_replace(' ', '', $stored)) === $code) {
+      if (hash_equals(trim(str_replace(' ', '', $stored)), $code)) {
         $this->isValid = TRUE;
         unset($codes[$id]);
         $this->storeCodes($codes);

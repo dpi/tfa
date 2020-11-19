@@ -161,7 +161,7 @@ abstract class TfaBasePlugin extends PluginBase {
    *   Whether code is valid.
    */
   protected function validate($code) {
-    if ((string) $code === (string) $this->code) {
+    if (hash_equals((string) $code, (string) $this->code)) {
       $this->isValid = TRUE;
       return TRUE;
     }
