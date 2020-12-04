@@ -160,7 +160,7 @@ class TfaTrustedBrowserSetup extends TfaTrustedBrowser implements TfaSetupInterf
    *   List of current trusted browsers.
    */
   public function getTrustedBrowsers() {
-    return $this->getUserData('tfa', 'tfa_trusted_browser', $this->uid, $this->userData);
+    return $this->getUserData('tfa', 'tfa_trusted_browser', $this->uid, $this->userData) ?: [];
   }
 
   /**
