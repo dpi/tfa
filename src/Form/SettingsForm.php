@@ -6,7 +6,6 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\encrypt\EncryptionProfileManagerInterface;
 use Drupal\tfa\TfaDataTrait;
@@ -22,7 +21,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class SettingsForm extends ConfigFormBase {
   use TfaDataTrait;
-  use StringTranslationTrait;
 
   /**
    * The login plugin manager to fetch plugin information.
@@ -96,12 +94,7 @@ class SettingsForm extends ConfigFormBase {
   }
 
   /**
-   * Creates service objects for the class constructor.
-   *
-   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
-   *   The container to get the required services.
-   *
-   * @return static
+   * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
     return new static(
@@ -291,9 +284,7 @@ class SettingsForm extends ConfigFormBase {
       '#title' => $this->t('Login plugins'),
       '#options' => $login_form_array,
       '#default_value' => ($config->get('login_plugins')) ? $config->get('login_plugins') : [],
-      '#description' => $this->t('Plugins that can allow a user to skip the
-      TFA process. If any plugin returns true the user will not be required
-      to follow TFA. <strong>Use with caution.</strong>'),
+      '#description' => $this->t('Plugins that can allow a user to skip the TFA process. If any plugin returns true the user will not be required to follow TFA. <strong>Use with caution.</strong>'),
     ];
 
     // Enable send plugins.
@@ -412,17 +403,7 @@ class SettingsForm extends ConfigFormBase {
       '#required' => TRUE,
     ];
 
-    $form['actions']['#type'] = 'actions';
-    $form['actions']['submit'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Save configuration'),
-      '#button_type' => 'primary',
-    ];
-
-    // By default, render the form using theme_system_config_form().
-    $form['#theme'] = 'system_config_form';
-
-    return $form;
+    return parent::buildForm($form, $form_state);
   }
 
   /**
@@ -493,18 +474,6 @@ class SettingsForm extends ConfigFormBase {
     }
 
     return FALSE;
-  }
-
-  /**
-   * Resets TFA settings.
-   *
-   * @param array $form
-   *   An associative array containing the structure of the form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   */
-  public function resetForm(array &$form, FormStateInterface $form_state) {
-    $form_state->setRedirect('tfa.settings.reset');
   }
 
 }
