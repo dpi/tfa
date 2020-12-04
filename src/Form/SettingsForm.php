@@ -260,10 +260,11 @@ class SettingsForm extends ConfigFormBase {
       '#required' => TRUE,
     ];
 
+    $skip_value = $config->get('validation_skip');
     $form['validation_skip'] = [
-      '#type' => 'textfield',
+      '#type' => 'number',
       '#title' => $this->t('Skip Validation'),
-      '#default_value' => ($config->get('validation_skip')) ?: 2,
+      '#default_value' => isset($skip_value) ? $skip_value : 3,
       '#description' => $this->t('No. of times a user without having setup tfa validation can login.'),
       '#size' => 2,
       '#states' => $enabled_state,
@@ -310,6 +311,7 @@ class SettingsForm extends ConfigFormBase {
       '#type' => 'fieldset',
       '#title' => $this->t('TFA Flood Settings'),
       '#description' => $this->t('Configure the TFA Flood Settings.'),
+      '#states' => $enabled_state,
     ];
 
     // Flood control identifier.
@@ -322,21 +324,22 @@ class SettingsForm extends ConfigFormBase {
 
     // Flood window. Defaults to 5min.
     $form['tfa_flood']['tfa_flood_window'] = [
-      '#type' => 'textfield',
+      '#type' => 'number',
       '#title' => $this->t('TFA Flood Window'),
       '#default_value' => ($config->get('tfa_flood_window')) ?: 300,
       '#description' => $this->t('TFA Flood Window.'),
+      '#min' => 1,
       '#size' => 5,
-      '#states' => $enabled_state,
       '#required' => TRUE,
     ];
 
     // Flood threshold. Defaults to 6 failed attempts.
     $form['tfa_flood']['tfa_flood_threshold'] = [
-      '#type' => 'textfield',
+      '#type' => 'number',
       '#title' => $this->t('TFA Flood Threshold'),
       '#default_value' => ($config->get('tfa_flood_threshold')) ?: 6,
       '#description' => $this->t('TFA Flood Threshold.'),
+      '#min' => 1,
       '#size' => 2,
       '#required' => TRUE,
     ];

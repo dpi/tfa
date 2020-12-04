@@ -108,7 +108,7 @@ class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface, C
   }
 
   /**
-   * The configuration form for this validation plugin.
+   * Configuration form for the recovery code plugin.
    *
    * @param \Drupal\Core\Config\Config $config
    *   Config object for tfa settings.
@@ -120,10 +120,11 @@ class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface, C
    */
   public function buildConfigurationForm(Config $config, array $state = []) {
     $settings_form['recovery_codes_amount'] = [
-      '#type' => 'textfield',
+      '#type' => 'number',
       '#title' => $this->t('Recovery Codes Amount'),
       '#default_value' => $this->codeLimit,
       '#description' => $this->t('Number of Recovery Codes To Generate.'),
+      '#min' => 1,
       '#size' => 2,
       '#states' => $state,
       '#required' => TRUE,
