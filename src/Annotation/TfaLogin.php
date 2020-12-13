@@ -36,4 +36,11 @@ class TfaLogin extends Plugin {
    */
   public $description;
 
+  /**
+   * Plugin ID for user-specific setup plugin for this login plugin.
+   *
+   * @var string
+   */
+  public $setupPluginId;
+
 }

@@ -7,8 +7,6 @@ use Drupal\tfa\Plugin\TfaSetupInterface;
 
 /**
  * Class TfaSetup.
- *
- * @todo This class is somewhat useless. Deprecate this later.
  */
 class TfaSetup {
   /**

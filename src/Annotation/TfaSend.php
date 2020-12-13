@@ -36,4 +36,11 @@ class TfaSend extends Plugin {
    */
   public $description;
 
+  /**
+   * Plugin ID for user-specific setup plugin for this send plugin.
+   *
+   * @var string
+   */
+  public $setupPluginId;
+
 }

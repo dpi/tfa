@@ -125,4 +125,42 @@ class TfaLoginPluginManager extends DefaultPluginManager {
     return NULL;
   }
 
+  /**
+   * {@inheritdoc}
+   *
+   * Provide some backwards compatibility with the old implicit setupPluginId.
+   * This will give other modules more time to update their plugins.
+   *
+   * @deprecated in tfa:8.x-1.0-alpha7 and is removed from tfa:8.x-2.0. Please
+   * specify the setupPluginId property in the plugin annotation.
+   * @see https://www.drupal.org/project/tfa/issues/2925066
+   */
+  public function getDefinitions() {
+    $definitions = parent::getDefinitions();
+    foreach ($definitions as &$definition) {
+      if (empty($definition['setupPluginId'])) {
+        $definition['setupPluginId'] = $definition['id'] . '_setup';
+      }
+    }
+    return $definitions;
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * Provide some backwards compatibility with the old implicit setupPluginId.
+   * This will give other modules more time to update their plugins.
+   *
+   * @deprecated in tfa:8.x-1.0-alpha7 and is removed from tfa:8.x-2.0. Please
+   * specify the setupPluginId property in the plugin annotation.
+   * @see https://www.drupal.org/project/tfa/issues/2925066
+   */
+  public function getDefinition($plugin_id, $exception_on_invalid = TRUE) {
+    $plugin = parent::getDefinition($plugin_id, $exception_on_invalid);
+    if (is_array($plugin) && empty($plugin['setupPluginId'])) {
+      $plugin['setupPluginId'] = $plugin_id . '_setup';
+    }
+    return $plugin;
+  }
+
 }

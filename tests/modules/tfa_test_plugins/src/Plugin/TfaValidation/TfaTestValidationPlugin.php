@@ -15,6 +15,7 @@ use Drupal\tfa\Plugin\TfaValidationInterface;
  *   id = "tfa_test_plugins_validation",
  *   label = @Translation("TFA Test Validation Plugin"),
  *   description = @Translation("TFA Test Validation Plugin"),
+ *   setupPluginId = "tfa_test_plugins_validation_setup",
  * )
  */
 class TfaTestValidationPlugin extends TfaBasePlugin implements TfaValidationInterface {

@@ -18,6 +18,7 @@ use Drupal\user\UserDataInterface;
  *   id = "tfa_trusted_browser",
  *   label = @Translation("TFA Trusted Browser"),
  *   description = @Translation("TFA Trusted Browser Plugin"),
+ *   setupPluginId = "tfa_trusted_browser_setup",
  * )
  */
 class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaValidationInterface {

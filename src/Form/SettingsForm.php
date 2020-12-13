@@ -128,19 +128,11 @@ class SettingsForm extends ConfigFormBase {
     // Get Send Plugins.
     $send_plugins = $this->tfaSend->getDefinitions();
 
-    // Get Setup Plugins.
-    $setup_plugins = $this->tfaSetup->getDefinitions();
-
     // Get Validation Plugins.
     $validation_plugins = $this->tfaValidation->getDefinitions();
     // Get validation plugin labels.
     $validation_plugins_labels = [];
     foreach ($validation_plugins as $key => $plugin) {
-      // Skip this plugin if no setup class is available.
-      if (!isset($setup_plugins[$key . '_setup'])) {
-        unset($validation_plugins[$key]);
-        continue;
-      }
       $validation_plugins_labels[$plugin['id']] = $plugin['label']->render();
     }
     // Fetching all available encryption profiles.

@@ -6,7 +6,10 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\tfa\TfaDataTrait;
+use Drupal\tfa\TfaLoginPluginManager;
+use Drupal\tfa\TfaSendPluginManager;
 use Drupal\tfa\TfaSetupPluginManager;
+use Drupal\tfa\TfaValidationPluginManager;
 use Drupal\user\UserDataInterface;
 use Drupal\user\UserInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -25,6 +28,27 @@ class BasicOverview extends FormBase {
   protected $tfaSetup;
 
   /**
+   * Validation plugin manager.
+   *
+   * @var \Drupal\tfa\TfaValidationPluginManager
+   */
+  protected $tfaValidation;
+
+  /**
+   * Login plugin manager.
+   *
+   * @var \Drupal\tfa\TfaLoginPluginManager
+   */
+  protected $tfaLogin;
+
+  /**
+   * Send plugin manager.
+   *
+   * @var \Drupal\tfa\TfaSendPluginManager
+   */
+  protected $tfaSend;
+
+  /**
    * Provides the user data service object.
    *
    * @var \Drupal\user\UserDataInterface
@@ -38,10 +62,19 @@ class BasicOverview extends FormBase {
    *   The user data service.
    * @param \Drupal\tfa\TfaSetupPluginManager $tfa_setup_manager
    *   The setup plugin manager.
+   * @param \Drupal\tfa\TfaValidationPluginManager $tfa_validation_manager
+   *   The validation plugin manager.
+   * @param \Drupal\tfa\TfaLoginPluginManager $tfa_login_manager
+   *   The login plugin manager.
+   * @param \Drupal\tfa\TfaSendPluginManager $tfa_send_manager
+   *   The send plugin manager.
    */
-  public function __construct(UserDataInterface $user_data, TfaSetupPluginManager $tfa_setup_manager) {
+  public function __construct(UserDataInterface $user_data, TfaSetupPluginManager $tfa_setup_manager, TfaValidationPluginManager $tfa_validation_manager, TfaLoginPluginManager $tfa_login_manager, TfaSendPluginManager $tfa_send_manager) {
     $this->userData = $user_data;
     $this->tfaSetup = $tfa_setup_manager;
+    $this->tfaValidation = $tfa_validation_manager;
+    $this->tfaLogin = $tfa_login_manager;
+    $this->tfaSend = $tfa_send_manager;
   }
 
   /**
@@ -50,7 +83,10 @@ class BasicOverview extends FormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('user.data'),
-      $container->get('plugin.manager.tfa.setup')
+      $container->get('plugin.manager.tfa.setup'),
+      $container->get('plugin.manager.tfa.validation'),
+      $container->get('plugin.manager.tfa.login'),
+      $container->get('plugin.manager.tfa.send')
     );
   }
 
@@ -106,23 +142,28 @@ class BasicOverview extends FormBase {
 
     if ($configuration['enabled']) {
       $enabled = isset($user_tfa['status'], $user_tfa['data']) && !empty($user_tfa['data']['plugins']) && $user_tfa['status'];
-      // Validation plugin setup.
-      $allowed_plugins = $configuration['allowed_validation_plugins'];
       $enabled_plugins = isset($user_tfa['data']['plugins']) ? $user_tfa['data']['plugins'] : [];
 
-      foreach ($allowed_plugins as $allowed_plugin) {
-        $output[$allowed_plugin] = $this->tfaPluginSetupFormOverview($allowed_plugin, $user, !empty($enabled_plugins[$allowed_plugin]));
+      $validation_plugins = $this->tfaValidation->getDefinitions();
+      foreach ($validation_plugins as $plugin_id => $plugin) {
+        if (!empty($configuration['allowed_validation_plugins'][$plugin_id])) {
+          $output[$plugin_id] = $this->tfaPluginSetupFormOverview($plugin, $user, !empty($enabled_plugins[$plugin_id]));
+        }
       }
 
       if ($enabled) {
-        $login_plugins = $configuration['login_plugins'];
-        foreach ($login_plugins as $lplugin_id) {
-          $output[$lplugin_id] = $this->tfaPluginSetupFormOverview($lplugin_id, $user, TRUE);
+        $login_plugins = $this->tfaLogin->getDefinitions();
+        foreach ($login_plugins as $plugin_id => $plugin) {
+          if (!empty($configuration['login_plugins'][$plugin_id])) {
+            $output[$plugin_id] = $this->tfaPluginSetupFormOverview($plugin, $user, TRUE);
+          }
         }
 
-        $send_plugin = $configuration['send_plugins'];
-        if ($send_plugin) {
-          $output[$send_plugin] = $this->tfaPluginSetupFormOverview($send_plugin, $user, TRUE);
+        $send_plugins = $this->tfaSend->getDefinitions();
+        foreach ($send_plugins as $plugin_id => $plugin) {
+          if (!empty($configuration['send_plugins'][$plugin_id])) {
+            $output[$plugin_id] = $this->tfaPluginSetupFormOverview($plugin, $user, TRUE);
+          }
         }
       }
     }
@@ -162,8 +203,8 @@ class BasicOverview extends FormBase {
   /**
    * Get TFA basic setup action links for use on overview page.
    *
-   * @param string $plugin
-   *   The setup plugin.
+   * @param array $plugin
+   *   Plugin definition.
    * @param object $account
    *   Current user account.
    * @param bool $enabled
@@ -172,15 +213,15 @@ class BasicOverview extends FormBase {
    * @return array
    *   Render array
    */
-  protected function tfaPluginSetupFormOverview($plugin, $account, $enabled) {
+  protected function tfaPluginSetupFormOverview(array $plugin, $account, $enabled) {
     $params = [
       'enabled' => $enabled,
       'account' => $account,
-      'plugin_id' => $plugin,
+      'plugin_id' => $plugin['id'],
     ];
     try {
       return $this->tfaSetup
-        ->createInstance($plugin . '_setup', ['uid' => $account->id()])
+        ->createInstance($plugin['setupPluginId'], ['uid' => $account->id()])
         ->getOverview($params);
     }
     catch (\Exception $e) {

@@ -22,6 +22,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   id = "tfa_recovery_code",
  *   label = @Translation("TFA Recovery Code"),
  *   description = @Translation("TFA Recovery Code Validation Plugin"),
+ *   setupPluginId = "tfa_recovery_code_setup",
  * )
  */
 class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface, ContainerFactoryPluginInterface {
