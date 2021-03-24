@@ -145,9 +145,14 @@ class TfaLoginForm extends UserLoginForm {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    // The user ID must not be NULL.
+    if (empty($uid = $form_state->get('uid'))) {
+      return;
+    }
+
     // Similar to tfa_user_login() but not required to force user logout.
     /** @var \Drupal\user\Entity\User $user */
-    $user = $this->userStorage->load($form_state->get('uid'));
+    $user = $this->userStorage->load($uid);
     $this->tfaContext = new TfaContext(
       $this->tfaValidationManager,
       $this->tfaLoginManager,
