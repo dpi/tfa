@@ -18,7 +18,6 @@ use Drupal\user\UserAuthInterface;
 use Drupal\user\UserDataInterface;
 use Drupal\user\UserStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\Request;
 
 /**
  * TFA user login form.
@@ -63,13 +62,6 @@ class TfaLoginForm extends UserLoginForm {
   protected $destination;
 
   /**
-   * Current Request object.
-   *
-   * @var \Symfony\Component\HttpFoundation\Request
-   */
-  protected $request;
-
-  /**
    * Tfa login context object.
    *
    * This will be initialized in the submitForm() method.
@@ -97,16 +89,13 @@ class TfaLoginForm extends UserLoginForm {
    *   User data service.
    * @param \Drupal\Core\Routing\RedirectDestinationInterface $destination
    *   Redirect destination.
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   Request stack for getting current request.
    */
-  public function __construct(FloodInterface $flood, UserStorageInterface $user_storage, UserAuthInterface $user_auth, RendererInterface $renderer, TfaValidationPluginManager $tfa_validation_manager, TfaLoginPluginManager $tfa_plugin_manager, UserDataInterface $user_data, RedirectDestinationInterface $destination, Request $request) {
+  public function __construct(FloodInterface $flood, UserStorageInterface $user_storage, UserAuthInterface $user_auth, RendererInterface $renderer, TfaValidationPluginManager $tfa_validation_manager, TfaLoginPluginManager $tfa_plugin_manager, UserDataInterface $user_data, RedirectDestinationInterface $destination) {
     parent::__construct($flood, $user_storage, $user_auth, $renderer);
     $this->tfaValidationManager = $tfa_validation_manager;
     $this->tfaLoginManager = $tfa_plugin_manager;
     $this->userData = $user_data;
     $this->destination = $destination;
-    $this->request = $request;
   }
 
   /**
@@ -121,8 +110,7 @@ class TfaLoginForm extends UserLoginForm {
       $container->get('plugin.manager.tfa.validation'),
       $container->get('plugin.manager.tfa.login'),
       $container->get('user.data'),
-      $container->get('redirect.destination'),
-      $container->get('request_stack')->getCurrentRequest()
+      $container->get('redirect.destination')
     );
   }
 
@@ -208,7 +196,7 @@ class TfaLoginForm extends UserLoginForm {
       $parameters = $this->destination->getAsArray();
       $parameters['user'] = $user->id();
       $parameters['hash'] = $this->getLoginHash($user);
-      $this->request->query->remove('destination');
+      $this->getRequest()->query->remove('destination');
       $form_state->setRedirect('tfa.entry', $parameters);
     }
   }
