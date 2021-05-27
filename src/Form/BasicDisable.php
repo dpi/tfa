@@ -5,6 +5,8 @@ namespace Drupal\tfa\Form;
 use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Mail\MailManagerInterface;
+use Drupal\Core\Password\PasswordInterface;
 use Drupal\tfa\TfaDataTrait;
 use Drupal\user\Entity\User;
 use Drupal\user\UserDataInterface;
@@ -30,16 +32,36 @@ class BasicDisable extends FormBase {
   protected $userData;
 
   /**
+   * The password hashing service.
+   *
+   * @var \Drupal\Core\Password\PasswordInterface
+   */
+  protected $passwordChecker;
+
+  /**
+   * The mail manager.
+   *
+   * @var \Drupal\Core\Mail\MailManagerInterface
+   */
+  protected $mailManager;
+
+  /**
    * BasicDisable constructor.
    *
    * @param \Drupal\Component\Plugin\PluginManagerInterface $manager
    *   The plugin manager to fetch plugin information.
    * @param \Drupal\user\UserDataInterface $user_data
    *   The user data object to store user information.
+   * @param \Drupal\Core\Password\PasswordInterface $password_checker
+   *   The password service.
+   * @param \Drupal\Core\Mail\MailManagerInterface $mail_manager
+   *   The mail manager.
    */
-  public function __construct(PluginManagerInterface $manager, UserDataInterface $user_data) {
+  public function __construct(PluginManagerInterface $manager, UserDataInterface $user_data, PasswordInterface $password_checker, MailManagerInterface $mail_manager) {
     $this->manager = $manager;
     $this->userData = $user_data;
+    $this->passwordChecker = $password_checker;
+    $this->mailManager = $mail_manager;
   }
 
   /**
@@ -53,7 +75,9 @@ class BasicDisable extends FormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('plugin.manager.tfa.validation'),
-      $container->get('user.data')
+      $container->get('user.data'),
+      $container->get('password'),
+      $container->get('plugin.manager.mail')
     );
   }
 
@@ -144,7 +168,7 @@ class BasicDisable extends FormBase {
       $account = $user;
     }
     // Check password.
-    $current_pass = \Drupal::service('password')->check(trim($form_state->getValue('current_pass')), $account->getPassword());
+    $current_pass = $this->passwordChecker->check(trim($form_state->getValue('current_pass')), $account->getPassword());
     if (!$current_pass) {
       $form_state->setErrorByName('current_pass', $this->t("Incorrect password."));
     }
@@ -167,14 +191,14 @@ class BasicDisable extends FormBase {
     // Delete all user data.
     $this->deleteUserData('tfa', NULL, $account->id(), $this->userData);
 
-    \Drupal::logger('tfa')->notice('TFA disabled for user @name UID @uid', [
+    $this->logger('tfa')->notice('TFA disabled for user @name UID @uid', [
       '@name' => $account->getAccountName(),
       '@uid' => $account->id(),
     ]);
 
     // E-mail account to inform user that it has been disabled.
     $params = ['account' => $account];
-    \Drupal::service('plugin.manager.mail')->mail('tfa', 'tfa_disabled_configuration', $account->getEmail(), $account->getPreferredLangcode(), $params);
+    $this->mailManager->mail('tfa', 'tfa_disabled_configuration', $account->getEmail(), $account->getPreferredLangcode(), $params);
 
     $this->messenger()->addStatus($this->t('TFA has been disabled.'));
     $form_state->setRedirect('tfa.overview', ['user' => $account->id()]);
