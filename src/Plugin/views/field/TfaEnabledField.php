@@ -56,7 +56,7 @@ class TfaEnabledField extends Boolean {
   public function render(ResultRow $values) {
     $uid = $this->getValue($values);
     $data = $this->userData->get('tfa', $uid, 'tfa_user_settings');
-    $value = $data['saved'] ?: FALSE;
+    $value = $data['saved'] ?? FALSE;
 
     if ($this->options['type'] == 'custom') {
       $custom_value = $value ? $this->options['type_custom_true'] : $this->options['type_custom_false'];
