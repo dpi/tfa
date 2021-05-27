@@ -3,7 +3,7 @@
 namespace Drupal\tfa\Controller;
 
 use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Routing\RouteMatch;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\tfa\TfaLoginTrait;
 use Drupal\user\UserInterface;
@@ -19,7 +19,7 @@ class TfaLoginController {
   /**
    * Denies access unless user matches hash value.
    *
-   * @param \Drupal\Core\Routing\RouteMatch $route
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route
    *   The route to be checked.
    * @param \Drupal\Core\Session\AccountInterface $account
    *   The current logged in user, if any.
@@ -27,7 +27,7 @@ class TfaLoginController {
    * @return \Drupal\Core\Access\AccessResult
    *   The access result.
    */
-  public function access(RouteMatch $route, AccountInterface $account) {
+  public function access(RouteMatchInterface $route, AccountInterface $account) {
     $user = $route->getParameter('user');
 
     // Start with a positive access check which is cacheable for the current
@@ -60,7 +60,7 @@ class TfaLoginController {
   /**
    * Checks that current user is selected user or is admin.
    *
-   * @param \Drupal\Core\Routing\RouteMatch $route
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route
    *   The route to be checked.
    * @param \Drupal\Core\Session\AccountInterface $account
    *   The current user.
@@ -68,7 +68,7 @@ class TfaLoginController {
    * @return \Drupal\Core\Access\AccessResult
    *   The access result.
    */
-  public function accessSelfOrAdmin(RouteMatch $route, AccountInterface $account) {
+  public function accessSelfOrAdmin(RouteMatchInterface $route, AccountInterface $account) {
     $target_user = $route->getParameter('user');
 
     // Start with a positive access result that can be cached based on the
