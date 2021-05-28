@@ -2,6 +2,7 @@
 
 namespace Drupal\tfa\Form;
 
+use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
@@ -56,10 +57,19 @@ class BasicOverview extends FormBase {
   protected $userData;
 
   /**
+   * The date formatter service.
+   *
+   * @var \Drupal\Core\Datetime\DateFormatterInterface
+   */
+  protected $dateFormatter;
+
+  /**
    * BasicOverview constructor.
    *
    * @param \Drupal\user\UserDataInterface $user_data
    *   The user data service.
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   *   The date formatter service.
    * @param \Drupal\tfa\TfaSetupPluginManager $tfa_setup_manager
    *   The setup plugin manager.
    * @param \Drupal\tfa\TfaValidationPluginManager $tfa_validation_manager
@@ -69,8 +79,9 @@ class BasicOverview extends FormBase {
    * @param \Drupal\tfa\TfaSendPluginManager $tfa_send_manager
    *   The send plugin manager.
    */
-  public function __construct(UserDataInterface $user_data, TfaSetupPluginManager $tfa_setup_manager, TfaValidationPluginManager $tfa_validation_manager, TfaLoginPluginManager $tfa_login_manager, TfaSendPluginManager $tfa_send_manager) {
+  public function __construct(UserDataInterface $user_data, DateFormatterInterface $date_formatter, TfaSetupPluginManager $tfa_setup_manager, TfaValidationPluginManager $tfa_validation_manager, TfaLoginPluginManager $tfa_login_manager, TfaSendPluginManager $tfa_send_manager) {
     $this->userData = $user_data;
+    $this->dateFormatter = $date_formatter;
     $this->tfaSetup = $tfa_setup_manager;
     $this->tfaValidation = $tfa_validation_manager;
     $this->tfaLogin = $tfa_login_manager;
@@ -83,6 +94,7 @@ class BasicOverview extends FormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('user.data'),
+      $container->get('date.formatter'),
       $container->get('plugin.manager.tfa.setup'),
       $container->get('plugin.manager.tfa.validation'),
       $container->get('plugin.manager.tfa.login'),
@@ -114,24 +126,23 @@ class BasicOverview extends FormBase {
     $enabled = isset($user_tfa['status']) && $user_tfa['status'];
 
     if (!empty($user_tfa)) {
-      $date_formatter = \Drupal::service('date.formatter');
       if ($enabled && !empty($user_tfa['data']['plugins'])) {
         if ($this->currentUser()->hasPermission('disable own tfa')) {
           $status_text = $this->t('Status: <strong>TFA enabled</strong>, set
           @time. <a href=":url">Disable TFA</a>', [
-            '@time' => $date_formatter->format($user_tfa['saved']),
+            '@time' => $this->dateFormatter->format($user_tfa['saved']),
             ':url' => Url::fromRoute('tfa.disable', ['user' => $user->id()])->toString(),
           ]);
         }
         else {
           $status_text = $this->t('Status: <strong>TFA enabled</strong>, set @time.', [
-            '@time' => $date_formatter->format($user_tfa['saved']),
+            '@time' => $this->dateFormatter->format($user_tfa['saved']),
           ]);
         }
       }
       else {
         $status_text = $this->t('Status: <strong>TFA disabled</strong>, set @time.', [
-          '@time' => $date_formatter->format($user_tfa['saved']),
+          '@time' => $this->dateFormatter->format($user_tfa['saved']),
         ]);
       }
       $output['status'] = [

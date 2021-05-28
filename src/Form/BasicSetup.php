@@ -6,6 +6,8 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Mail\MailManagerInterface;
+use Drupal\Core\Password\PasswordInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\tfa\TfaDataTrait;
 use Drupal\tfa\TfaLoginPluginManager;
@@ -14,6 +16,7 @@ use Drupal\tfa\TfaSetup;
 use Drupal\tfa\TfaValidationPluginManager;
 use Drupal\user\Entity\User;
 use Drupal\user\UserDataInterface;
+use Drupal\user\UserStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -60,17 +63,25 @@ class BasicSetup extends FormBase {
   protected $userData;
 
   /**
-   * {@inheritdoc}
+   * The password hashing service.
+   *
+   * @var \Drupal\Core\Password\PasswordInterface
    */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('plugin.manager.tfa.setup'),
-      $container->get('user.data'),
-      $container->get('plugin.manager.tfa.validation'),
-      $container->get('plugin.manager.tfa.login'),
-      $container->get('plugin.manager.tfa.send')
-    );
-  }
+  protected $passwordChecker;
+
+  /**
+   * The mail manager.
+   *
+   * @var \Drupal\Core\Mail\MailManagerInterface
+   */
+  protected $mailManager;
+
+  /**
+   * The user storage.
+   *
+   * @var \Drupal\user\UserStorageInterface
+   */
+  protected $userStorage;
 
   /**
    * BasicSetup constructor.
@@ -85,13 +96,38 @@ class BasicSetup extends FormBase {
    *   The login plugin manager.
    * @param \Drupal\tfa\TfaSendPluginManager $tfa_send_manager
    *   The send plugin manager.
+   * @param \Drupal\Core\Password\PasswordInterface $password_checker
+   *   The password service.
+   * @param \Drupal\Core\Mail\MailManagerInterface $mail_manager
+   *   The mail manager.
+   * @param \Drupal\user\UserStorageInterface $user_storage
+   *   The user storage.
    */
-  public function __construct(PluginManagerInterface $manager, UserDataInterface $user_data, TfaValidationPluginManager $tfa_validation_manager, TfaLoginPluginManager $tfa_login_manager, TfaSendPluginManager $tfa_send_manager) {
+  public function __construct(PluginManagerInterface $manager, UserDataInterface $user_data, TfaValidationPluginManager $tfa_validation_manager, TfaLoginPluginManager $tfa_login_manager, TfaSendPluginManager $tfa_send_manager, PasswordInterface $password_checker, MailManagerInterface $mail_manager, UserStorageInterface $user_storage) {
     $this->manager = $manager;
     $this->userData = $user_data;
     $this->tfaValidation = $tfa_validation_manager;
     $this->tfaLogin = $tfa_login_manager;
     $this->tfaSend = $tfa_send_manager;
+    $this->passwordChecker = $password_checker;
+    $this->mailManager = $mail_manager;
+    $this->userStorage = $user_storage;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('plugin.manager.tfa.setup'),
+      $container->get('user.data'),
+      $container->get('plugin.manager.tfa.validation'),
+      $container->get('plugin.manager.tfa.login'),
+      $container->get('plugin.manager.tfa.send'),
+      $container->get('password'),
+      $container->get('plugin.manager.mail'),
+      $container->get('entity_type.manager')->getStorage('user')
+    );
   }
 
   /**
@@ -133,7 +169,7 @@ class BasicSetup extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state, User $user = NULL, $method = 'tfa_totp', $reset = 0) {
     /** @var \Drupal\user\Entity\User $account */
-    $account = User::load($this->currentUser()->id());
+    $account = $this->userStorage->load($this->currentUser()->id());
 
     $form['account'] = [
       '#type' => 'value',
@@ -228,7 +264,7 @@ class BasicSetup extends FormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     /** @var \Drupal\user\Entity\User $user */
-    $user = User::load($this->currentUser()->id());
+    $user = $this->userStorage->load($this->currentUser()->id());
     $storage = $form_state->getStorage();
     $values = $form_state->getValues();
     $account = $form['account']['#value'];
@@ -244,8 +280,7 @@ class BasicSetup extends FormBase {
           throw new NotFoundHttpException();
         }
       }
-      $current_pass = \Drupal::service('password')
-        ->check(trim($form_state->getValue('current_pass')), $account->getPassword());
+      $current_pass = $this->passwordChecker->check(trim($form_state->getValue('current_pass')), $account->getPassword());
       if (!$current_pass) {
         $form_state->setErrorByName('current_pass', $this->t("Incorrect password."));
       }
@@ -330,13 +365,13 @@ class BasicSetup extends FormBase {
       if (!empty($storage['step_method'])) {
         $data = ['plugins' => $storage['step_method']];
         $this->tfaSaveTfaData($account->id(), $this->userData, $data);
-        \Drupal::logger('tfa')->info('TFA enabled for user @name UID @uid', [
+        $this->logger('tfa')->info('TFA enabled for user @name UID @uid', [
           '@name' => $account->getAccountName(),
           '@uid' => $account->id(),
         ]);
 
         $params = ['account' => $account];
-        \Drupal::service('plugin.manager.mail')->mail('tfa', 'tfa_enabled_configuration', $account->getEmail(), $account->getPreferredLangcode(), $params);
+        $this->mailManager->mail('tfa', 'tfa_enabled_configuration', $account->getEmail(), $account->getPreferredLangcode(), $params);
       }
     }
   }

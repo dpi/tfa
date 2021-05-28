@@ -10,6 +10,7 @@ use Drupal\Core\Password\PasswordInterface;
 use Drupal\tfa\TfaDataTrait;
 use Drupal\user\Entity\User;
 use Drupal\user\UserDataInterface;
+use Drupal\user\UserStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -46,6 +47,13 @@ class BasicDisable extends FormBase {
   protected $mailManager;
 
   /**
+   * The user storage.
+   *
+   * @var \Drupal\user\UserStorageInterface
+   */
+  protected $userStorage;
+
+  /**
    * BasicDisable constructor.
    *
    * @param \Drupal\Component\Plugin\PluginManagerInterface $manager
@@ -56,12 +64,15 @@ class BasicDisable extends FormBase {
    *   The password service.
    * @param \Drupal\Core\Mail\MailManagerInterface $mail_manager
    *   The mail manager.
+   * @param \Drupal\user\UserStorageInterface $user_storage
+   *   The user storage.
    */
-  public function __construct(PluginManagerInterface $manager, UserDataInterface $user_data, PasswordInterface $password_checker, MailManagerInterface $mail_manager) {
+  public function __construct(PluginManagerInterface $manager, UserDataInterface $user_data, PasswordInterface $password_checker, MailManagerInterface $mail_manager, UserStorageInterface $user_storage) {
     $this->manager = $manager;
     $this->userData = $user_data;
     $this->passwordChecker = $password_checker;
     $this->mailManager = $mail_manager;
+    $this->userStorage = $user_storage;
   }
 
   /**
@@ -77,7 +88,8 @@ class BasicDisable extends FormBase {
       $container->get('plugin.manager.tfa.validation'),
       $container->get('user.data'),
       $container->get('password'),
-      $container->get('plugin.manager.mail')
+      $container->get('plugin.manager.mail'),
+      $container->get('entity_type.manager')->getStorage('user')
     );
   }
 
@@ -93,7 +105,7 @@ class BasicDisable extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state, User $user = NULL) {
     /** @var \Drupal\user\Entity\User $account */
-    $account = User::load($this->currentUser()->id());
+    $account = $this->userStorage->load($this->currentUser()->id());
 
     $storage = $form_state->getStorage();
     $storage['account'] = $user;
@@ -160,7 +172,7 @@ class BasicDisable extends FormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     /** @var \Drupal\user\Entity\User $user */
-    $user = User::load($this->currentUser()->id());
+    $user = $this->userStorage->load($this->currentUser()->id());
     $storage = $form_state->getStorage();
     $account = $storage['account'];
     // Allow administrators to disable TFA for another account.
