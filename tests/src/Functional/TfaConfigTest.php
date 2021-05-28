@@ -25,7 +25,7 @@ class TfaConfigTest extends TfaTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'tfa_test_plugins',
     'tfa',
     'encrypt',
@@ -36,7 +36,7 @@ class TfaConfigTest extends TfaTestBase {
   /**
    * {@inheritdoc}
    */
-  public function setUp() {
+  public function setUp(): void {
     // Enable TFA module and the test module.
     parent::setUp();
     $this->webUser = $this->drupalCreateUser(['setup own tfa']);

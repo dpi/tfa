@@ -74,7 +74,7 @@ class TfaRecoveryCodeTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     // Stub out default mocked services. These can be overridden prior to

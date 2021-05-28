@@ -72,7 +72,7 @@ class TfaContextTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     // Setup default mocked services. These can be overridden by

@@ -61,7 +61,7 @@ class TfaRecoveryCodePluginTest extends TfaTestBase {
   /**
    * {@inheritdoc}
    */
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
 
     $config = $this->config('tfa.settings');
@@ -117,10 +117,10 @@ class TfaRecoveryCodePluginTest extends TfaTestBase {
 
     // Provide the user's password to continue.
     $edit = ['current_pass' => $this->userAccount->passRaw];
-    $this->drupalPostForm(NULL, $edit, 'Confirm');
+    $this->submitForm($edit, 'Confirm');
 
     $assert->responseContains('Save codes to account');
-    $this->drupalPostForm(NULL, [], 'Save codes to account');
+    $this->submitForm([], 'Save codes to account');
     $assert->pageTextContains('TFA setup complete.');
 
     // Make sure codes were saved to the account.
@@ -132,7 +132,7 @@ class TfaRecoveryCodePluginTest extends TfaTestBase {
     $this->drupalGet('user/' . $this->userAccount->id() . '/security/tfa/' . $this->validationPluginId);
 
     $edit = ['current_pass' => $this->userAccount->passRaw];
-    $this->drupalPostForm(NULL, $edit, 'Confirm');
+    $this->submitForm($edit, 'Confirm');
     $assert->statusCodeEquals(200);
     // The "save" button should not exists when viewing existing codes.
     $assert->responseNotContains('Save codes to account');
@@ -161,13 +161,13 @@ class TfaRecoveryCodePluginTest extends TfaTestBase {
 
     // Try an invalid code.
     $edit = ['code' => 'definitely not real'];
-    $this->drupalPostForm(NULL, $edit, 'Verify');
+    $this->submitForm($edit, 'Verify');
     $assert->statusCodeEquals(200);
     $assert->pageTextContains('Invalid recovery code.');
 
     // Try a valid code.
     $edit['code'] = $codes[0];
-    $this->drupalPostForm(NULL, $edit, 'Verify');
+    $this->submitForm($edit, 'Verify');
     $assert->statusCodeEquals(200);
     $assert->pageTextContains($this->userAccount->getDisplayName());
     $assert->assert($this->userAccount->isAuthenticated(), 'User is logged in.');
@@ -183,7 +183,7 @@ class TfaRecoveryCodePluginTest extends TfaTestBase {
     $assert->pageTextContains('Enter one of your recovery codes');
 
     $edit = ['code' => $codes[0]];
-    $this->drupalPostForm(NULL, $edit, 'Verify');
+    $this->submitForm($edit, 'Verify');
     $assert->statusCodeEquals(200);
     $assert->pageTextContains('Invalid recovery code.');
   }

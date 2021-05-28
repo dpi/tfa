@@ -26,7 +26,7 @@ class TfaLoginTest extends TfaTestBase {
   /**
    * {@inheritdoc}
    */
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
     $this->webUser = $this->drupalCreateUser(['setup own tfa']);
     $this->adminUser = $this->drupalCreateUser(['admin tfa settings']);
@@ -41,7 +41,7 @@ class TfaLoginTest extends TfaTestBase {
     // Check that tfa is not presented if no roles selected.
     $this->drupalLogin($this->webUser);
     $assert_session->statusCodeEquals(200);
-    $this->assertUrl('user/' . $this->webUser->id());
+    $assert_session->addressEquals('user/' . $this->webUser->id());
 
     // Enable TFA for the webUser role only.
     $this->drupalLogin($this->adminUser);
@@ -87,12 +87,12 @@ class TfaLoginTest extends TfaTestBase {
     $edit = [
       'current_pass' => $this->webUser->passRaw,
     ];
-    $this->drupalPostForm(NULL, $edit, 'Confirm');
+    $this->submitForm($edit, 'Confirm');
     $assert_session->statusCodeEquals(200);
     $edit = [
       'expected_field' => 'Expected field content',
     ];
-    $this->drupalPostForm(NULL, $edit, 'Verify and save');
+    $this->submitForm($edit, 'Verify and save');
     $assert_session->statusCodeEquals(200);
     $assert_session->pageTextContains('TFA setup complete.');
     $assert_session->pageTextContains('Status: TFA enabled');

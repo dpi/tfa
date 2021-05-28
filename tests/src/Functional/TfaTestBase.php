@@ -33,7 +33,7 @@ abstract class TfaTestBase extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'tfa_test_plugins',
     'tfa',
     'encrypt',
@@ -44,7 +44,7 @@ abstract class TfaTestBase extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $user = $this->drupalCreateUser([
@@ -109,7 +109,7 @@ abstract class TfaTestBase extends BrowserTestBase {
       'encryption_profile' => $this->encryptionProfile->id(),
     ];
 
-    $this->drupalPostForm(NULL, $edit, 'Save configuration');
+    $this->submitForm($edit, 'Save configuration');
     $assert->statusCodeEquals(200);
     $assert->pageTextContains('The configuration options have been saved.');
     $select_field_id = 'edit-tfa-validate';
