@@ -9,7 +9,7 @@ use Drupal\tfa\Plugin\TfaValidation\TfaRecoveryCode;
 use Drupal\tfa\TfaDataTrait;
 
 /**
- * Class TfaRecoveryCodeSetup.
+ * TFA Recovery Code Setup Plugin.
  *
  * @TfaSetup(
  *   id = "tfa_recovery_code_setup",

@@ -205,8 +205,7 @@ class SettingsForm extends ConfigFormBase {
     foreach ($validation_plugins_labels as $key => $val) {
       $instance = $this->tfaValidation->createInstance($key, [
         'uid' => $this->currentUser()->id(),
-      ]
-      );
+      ]);
 
       if (method_exists($instance, 'buildConfigurationForm')) {
         $validation_enabled_state = [

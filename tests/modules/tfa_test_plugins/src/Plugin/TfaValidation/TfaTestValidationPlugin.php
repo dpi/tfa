@@ -7,7 +7,7 @@ use Drupal\tfa\Plugin\TfaBasePlugin;
 use Drupal\tfa\Plugin\TfaValidationInterface;
 
 /**
- * Class TfaTestValidationPlugin.
+ * TFA Test Validation Plugin.
  *
  * @package Drupal\tfa_test_plugins
  *

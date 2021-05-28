@@ -8,7 +8,7 @@ use Drupal\encrypt\EncryptionMethodInterface;
 use Drupal\encrypt\Plugin\EncryptionMethod\EncryptionMethodBase;
 
 /**
- * Class McryptAES128Encryption.
+ * Deprecated Mcrypt AES 128 encryption plugin.
  *
  * @package Drupal\encrypt\Plugin\EncryptionMethod
  *

@@ -244,7 +244,7 @@ class EntryForm extends FormBase {
 
     $validated = $this->tfaValidationPlugin->validateForm($form, $form_state);
     if (!$validated) {
-      // @todo - Either define getErrorMessages in the TfaValidationInterface, or don't use it.
+      // @todo Either define getErrorMessages in the TfaValidationInterface, or don't use it.
       // For now, let's just check that it exists before assuming.
       if (method_exists($this->tfaValidationPlugin, 'getErrorMessages')) {
         $form_state->clearErrors();
@@ -263,7 +263,7 @@ class EntryForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $user = $form_state->getValue('account');
-    // TODO This could be improved with EventDispatcher.
+    // @todo This could be improved with EventDispatcher.
     if (!empty($this->tfaLoginPlugins)) {
       foreach ($this->tfaLoginPlugins as $plugin) {
         if (method_exists($plugin, 'submitForm')) {
@@ -274,8 +274,8 @@ class EntryForm extends FormBase {
 
     user_login_finalize($user);
 
-    // TODO Should finalize() be after user_login_finalize or before?!
-    // TODO This could be improved with EventDispatcher.
+    // @todo Should finalize() be after user_login_finalize or before?!
+    // @todo This could be improved with EventDispatcher.
     $this->finalize();
     $this->flood->clear('tfa.failed_validation', $this->floodIdentifier);
     $form_state->setRedirect('<front>');

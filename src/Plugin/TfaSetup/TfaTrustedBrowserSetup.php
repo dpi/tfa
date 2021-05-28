@@ -10,7 +10,7 @@ use Drupal\tfa\Plugin\TfaLogin\TfaTrustedBrowser;
 use Drupal\tfa\Plugin\TfaSetupInterface;
 
 /**
- * Class TfaTrustedBrowserSetup.
+ * TFA Trusted Browser Setup Plugin.
  *
  * @TfaSetup(
  *   id = "tfa_trusted_browser_setup",

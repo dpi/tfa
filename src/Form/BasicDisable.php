@@ -76,12 +76,7 @@ class BasicDisable extends FormBase {
   }
 
   /**
-   * Creates service objects for the class constructor.
-   *
-   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
-   *   The container to get the required services.
-   *
-   * @return static
+   * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
     return new static(
@@ -112,18 +107,12 @@ class BasicDisable extends FormBase {
 
     // @todo Check require permissions and give warning about being locked out.
     if ($account->id() != $user->id() && $account->hasPermission('administer users')) {
-      $preamble_desc = $this->t('Are you sure you want to disable TFA for user
-      %name?', ['%name' => $user->getDisplayName()]);
-
-      $notice_desc = $this->t('TFA settings and data will be lost. %name can
-      re-enable TFA again from their profile.', ['%name' => $user->getDisplayName()]);
+      $preamble_desc = $this->t('Are you sure you want to disable TFA for user %name?', ['%name' => $user->getDisplayName()]);
+      $notice_desc = $this->t('TFA settings and data will be lost. %name can re-enable TFA again from their profile.', ['%name' => $user->getDisplayName()]);
     }
     else {
-      $preamble_desc = $this->t('Are you sure you want to disable your
-      two-factor authentication setup?');
-
-      $notice_desc = $this->t("Your settings and data will be lost. You can
-      re-enable two-factor authentication again from your profile.");
+      $preamble_desc = $this->t('Are you sure you want to disable your two-factor authentication setup?');
+      $notice_desc = $this->t("Your settings and data will be lost. You can re-enable two-factor authentication again from your profile.");
     }
     $form['preamble'] = [
       '#prefix' => '<p class="preamble">',
@@ -190,7 +179,6 @@ class BasicDisable extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-
     $storage = $form_state->getStorage();
     $values = $form_state->getValues();
     $account = $storage['account'];

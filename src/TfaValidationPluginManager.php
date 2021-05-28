@@ -87,6 +87,7 @@ class TfaValidationPluginManager extends DefaultPluginManager {
 
     // If the plugin provides a factory method, pass the container to it.
     if (is_subclass_of($plugin_class, 'Drupal\Core\Plugin\ContainerFactoryPluginInterface')) {
+      // phpcs:ignore DrupalPractice.Objects.GlobalDrupal.GlobalDrupal
       $plugin = $plugin_class::create(\Drupal::getContainer(), $configuration, $plugin_id, $plugin_definition, $this->userData, $this->encryptionProfileManager, $this->encryptService);
     }
     else {

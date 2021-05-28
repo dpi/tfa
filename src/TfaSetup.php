@@ -6,9 +6,10 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\tfa\Plugin\TfaSetupInterface;
 
 /**
- * Class TfaSetup.
+ * TFA Setup.
  */
 class TfaSetup {
+
   /**
    * Current setup plugin.
    *

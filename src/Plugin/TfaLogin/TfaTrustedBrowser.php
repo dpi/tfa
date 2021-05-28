@@ -152,7 +152,7 @@ class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaV
     $domain = strpos($_SERVER['HTTP_HOST'], 'localhost') === FALSE ? $_SERVER['HTTP_HOST'] : FALSE;
     setcookie($this->cookieName, $id, $expiration, '/', $domain, (empty($cookie_secure) ? FALSE : TRUE), TRUE);
     $name = empty($name) ? $this->getAgent() : $name;
-    // TODO - use services defined in module instead this procedural way.
+    // @todo use services defined in module instead this procedural way.
     \Drupal::logger('tfa')->info('Set trusted browser for user UID @uid, browser @name', [
       '@name' => $name,
       '@uid' => $this->uid,
@@ -260,13 +260,6 @@ class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaV
    */
   public function ready() {
     return TRUE;
-  }
-
-  /**
-   * Purge all the plugin related data.
-   */
-  public function purge() {
-    $this->deleteTrusted();
   }
 
 }

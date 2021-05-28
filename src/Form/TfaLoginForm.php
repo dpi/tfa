@@ -21,6 +21,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * TFA user login form.
+ *
+ * @noinspection PhpInternalEntityUsedInspection
  */
 class TfaLoginForm extends UserLoginForm {
   use TfaDataTrait;

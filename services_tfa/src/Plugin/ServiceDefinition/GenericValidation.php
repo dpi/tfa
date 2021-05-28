@@ -55,11 +55,11 @@ class GenericValidation extends ServiceDefinitionBase implements ContainerFactor
    * TFA Web Services constructor.
    *
    * @param array $configuration
-   *   The configuration array.
+   *   The plugin configuration.
    * @param string $plugin_id
-   *   The plugin id.
+   *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
-   *   The plugin definition.
+   *   The plugin implementation definition.
    * @param \Drupal\user\UserDataInterface $user_data
    *   User data service.
    * @param \Drupal\tfa\TfaValidationPluginManager $tfa_validation_manager
@@ -104,6 +104,7 @@ class GenericValidation extends ServiceDefinitionBase implements ContainerFactor
 
     if ($uid && $code && $plugin_id) {
       $this->validationPlugin = $this->tfaValidationManager->createInstance($plugin_id, ['uid' => $uid]);
+      // @todo validateRequest is not part of TfaValidationInterface.
       $valid = $this->validationPlugin->validateRequest($code);
       if ($this->validationPlugin->isAlreadyAccepted()) {
         throw new AccessDeniedHttpException('Invalid code, it was recently used for a login. Please try a new code.');
