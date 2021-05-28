@@ -20,6 +20,8 @@ use Drupal\encrypt\Plugin\EncryptionMethod\EncryptionMethodBase;
  *   can_decrypt = TRUE,
  *   deprecated = TRUE
  * )
+ *
+ * phpcs:disable PHPCompatibility
  */
 class McryptAES128Encryption extends EncryptionMethodBase implements EncryptionMethodInterface {
   use StringTranslationTrait;
