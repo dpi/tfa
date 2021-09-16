@@ -57,7 +57,7 @@ tfa.settings:
       type: integer
       label: 'TFA Flood Threshold'
     help_text:
-      type: string
+      type: label
       label: 'Text to display on help page. Plain text only.'
     mail:
       type: config_object

@@ -1,3 +1,4 @@
+langcode: en
 enabled: 0
 required_roles: { }
 send_plugins: { }
