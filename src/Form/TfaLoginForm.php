@@ -225,8 +225,8 @@ class TfaLoginForm extends UserLoginForm {
       ])->toString();
       $message = $this->formatPlural(
         $remaining - 1,
-        'You are required to setup two-factor authentication <a href="@link">here.</a> You have @remaining attempt left. After this you will be unable to login.',
-        'You are required to setup two-factor authentication <a href="@link">here.</a> You have @remaining attempts left. After this you will be unable to login.',
+        'You are required to <a href="@link">setup two-factor authentication</a>. You have @remaining attempt left. After this you will be unable to login.',
+        'You are required to <a href="@link">setup two-factor authentication</a>. You have @remaining attempts left. After this you will be unable to login.',
         ['@remaining' => $remaining - 1, '@link' => $tfa_setup_link]
       );
       $this->messenger()->addError($message);
