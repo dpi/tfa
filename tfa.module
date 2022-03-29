@@ -33,7 +33,7 @@ function tfa_help($route_name, RouteMatchInterface $route_match) {
 function tfa_block_access(Block $block, $operation, AccountInterface $account) {
   // Remove access to the core user_login_block so we can replace with the TFA
   // login block.
-  if (\Drupal::config('tfa.settings')->get('enabled') && $block->getPluginId() === 'user_login_block') {
+  if (\Drupal::config('tfa.settings')->get('enabled') && $block->getPluginId() === 'user_login_block' && $operation != 'update' && $operation != 'delete') {
     return AccessResult::forbidden();
   }
   // No opinion.
