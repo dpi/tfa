@@ -153,7 +153,7 @@ class BasicOverview extends FormBase {
 
     if ($configuration['enabled']) {
       $enabled = isset($user_tfa['status'], $user_tfa['data']) && !empty($user_tfa['data']['plugins']) && $user_tfa['status'];
-      $enabled_plugins = isset($user_tfa['data']['plugins']) ? $user_tfa['data']['plugins'] : [];
+      $enabled_plugins = $user_tfa['data']['plugins'] ?? [];
 
       $validation_plugins = $this->tfaValidation->getDefinitions();
       if ($validation_plugins) {
@@ -205,7 +205,7 @@ class BasicOverview extends FormBase {
       $output['validation_skip_status'] = [
         '#type'   => 'markup',
         '#markup' => $this->t('Number of times validation skipped: @skipped of @limit', [
-          '@skipped' => isset($user_tfa['validation_skipped']) ? $user_tfa['validation_skipped'] : 0,
+          '@skipped' => $user_tfa['validation_skipped'] ?? 0,
           '@limit' => $configuration['validation_skip'],
         ]),
       ];

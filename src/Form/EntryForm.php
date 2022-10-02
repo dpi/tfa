@@ -136,7 +136,7 @@ class EntryForm extends FormBase {
     $alternate_plugin = $this->getRequest()->get('plugin');
     $validation_plugin_definitions = $this->tfaValidationManager->getDefinitions();
     $user_settings = $this->userData->get('tfa', $user->id(), 'tfa_user_settings');
-    $user_enabled_validation_plugins = isset($user_settings['data']['plugins']) ? $user_settings['data']['plugins'] : [];
+    $user_enabled_validation_plugins = $user_settings['data']['plugins'] ?? [];
 
     // Default validation plugin, then check for enabled alternate plugin.
     $validation_plugin = $this->tfaSettings->get('default_validation_plugin');

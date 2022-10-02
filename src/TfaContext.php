@@ -161,7 +161,7 @@ class TfaContext implements TfaContextInterface {
     }
 
     $user_tfa_data = $this->tfaGetTfaData($this->getUser()->id(), $this->userData);
-    $validation_skipped = isset($user_tfa_data['validation_skipped']) ? $user_tfa_data['validation_skipped'] : 0;
+    $validation_skipped = $user_tfa_data['validation_skipped'] ?? 0;
     return max(0, $allowed_skips - $validation_skipped);
   }
 
@@ -170,9 +170,7 @@ class TfaContext implements TfaContextInterface {
    */
   public function hasSkipped() {
     $user_tfa_data = $this->tfaGetTfaData($this->getUser()->id(), $this->userData);
-    $validation_skipped = isset($user_tfa_data['validation_skipped'])
-      ? $user_tfa_data['validation_skipped']
-      : 0;
+    $validation_skipped = $user_tfa_data['validation_skipped'] ?? 0;
     $user_tfa_data['validation_skipped'] = $validation_skipped + 1;
     $this->tfaSaveTfaData($this->getUser()->id(), $this->userData, $user_tfa_data);
   }

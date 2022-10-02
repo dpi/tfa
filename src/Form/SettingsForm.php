@@ -255,7 +255,7 @@ class SettingsForm extends ConfigFormBase {
     $form['validation_skip'] = [
       '#type' => 'number',
       '#title' => $this->t('Skip Validation'),
-      '#default_value' => isset($skip_value) ? $skip_value : 3,
+      '#default_value' => $skip_value ?? 3,
       '#description' => $this->t('No. of times a user without having setup tfa validation can login.'),
       '#size' => 2,
       '#states' => $enabled_state,
