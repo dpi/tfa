@@ -121,7 +121,7 @@ class BasicOverview extends FormBase {
       password.') . '</p>',
     ];
     // $form_state['storage']['account'] = $user;.
-    $configuration = $this->config('tfa.settings')->getRawData();
+    $config = $this->config('tfa.settings');
     $user_tfa = $this->tfaGetTfaData($user->id(), $this->userData);
     $enabled = isset($user_tfa['status']) && $user_tfa['status'];
 
@@ -151,7 +151,7 @@ class BasicOverview extends FormBase {
       ];
     }
 
-    if ($configuration['enabled']) {
+    if ($config->get('enabled')) {
       $enabled = isset($user_tfa['status'], $user_tfa['data']) && !empty($user_tfa['data']['plugins']) && $user_tfa['status'];
       $enabled_plugins = $user_tfa['data']['plugins'] ?? [];
 
@@ -164,7 +164,7 @@ class BasicOverview extends FormBase {
         ];
 
         foreach ($validation_plugins as $plugin_id => $plugin) {
-          if (!empty($configuration['allowed_validation_plugins'][$plugin_id])) {
+          if (!empty($config->get('allowed_validation_plugins')[$plugin_id])) {
             $output['validation'][$plugin_id] = $this->tfaPluginSetupFormOverview($plugin, $user, !empty($enabled_plugins[$plugin_id]));
           }
         }
@@ -180,7 +180,7 @@ class BasicOverview extends FormBase {
           ];
 
           foreach ($login_plugins as $plugin_id => $plugin) {
-            if (!empty($configuration['login_plugins'][$plugin_id])) {
+            if (!empty($config->get('login_plugins')[$plugin_id])) {
               $output['login'][$plugin_id] = $this->tfaPluginSetupFormOverview($plugin, $user, TRUE);
             }
           }
@@ -195,7 +195,7 @@ class BasicOverview extends FormBase {
           ];
 
           foreach ($send_plugins as $plugin_id => $plugin) {
-            if (!empty($configuration['send_plugins'][$plugin_id])) {
+            if (!empty($config->get('send_plugins')[$plugin_id])) {
               $output['send'][$plugin_id] = $this->tfaPluginSetupFormOverview($plugin, $user, TRUE);
             }
           }
@@ -206,7 +206,7 @@ class BasicOverview extends FormBase {
         '#type'   => 'markup',
         '#markup' => $this->t('Number of times validation skipped: @skipped of @limit', [
           '@skipped' => $user_tfa['validation_skipped'] ?? 0,
-          '@limit' => $configuration['validation_skip'],
+          '@limit' => $config->get('validation_skip'),
         ]),
       ];
     }
