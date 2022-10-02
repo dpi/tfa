@@ -90,7 +90,7 @@ class TfaTotpValidation extends TfaBasePlugin implements TfaValidationInterface,
     $this->auth->ga = new GoogleAuthenticator();
     // Allow codes within tolerance range of 2 * 30 second units.
     $plugin_settings = $config_factory->get('tfa.settings')->get('validation_plugin_settings');
-    $settings = isset($plugin_settings['tfa_totp']) ? $plugin_settings['tfa_totp'] : [];
+    $settings = $plugin_settings['tfa_totp'] ?? [];
     $settings = array_replace([
       'time_skew' => 2,
       'site_name_prefix' => TRUE,

@@ -89,7 +89,7 @@ class TfaHotpValidation extends TfaBasePlugin implements TfaValidationInterface,
     $this->auth->otp = new Otp();
     $this->auth->ga = new GoogleAuthenticator();
     $plugin_settings = $config_factory->get('tfa.settings')->get('validation_plugin_settings');
-    $settings = isset($plugin_settings['tfa_hotp']) ? $plugin_settings['tfa_hotp'] : [];
+    $settings = $plugin_settings['tfa_hotp'] ?? [];
     $settings = array_replace([
       'counter_window' => 10,
       'site_name_prefix' => TRUE,
