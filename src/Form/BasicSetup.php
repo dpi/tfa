@@ -3,7 +3,6 @@
 namespace Drupal\tfa\Form;
 
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
-use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Mail\MailManagerInterface;
@@ -12,6 +11,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\tfa\TfaDataTrait;
 use Drupal\tfa\TfaLoginPluginManager;
 use Drupal\tfa\TfaSendPluginManager;
+use Drupal\tfa\TfaSetupPluginManager;
 use Drupal\tfa\TfaSetup;
 use Drupal\tfa\TfaValidationPluginManager;
 use Drupal\user\Entity\User;
@@ -28,11 +28,11 @@ class BasicSetup extends FormBase {
   use StringTranslationTrait;
 
   /**
-   * The TfaSetupPluginManager.
+   * The setup plugin manager.
    *
-   * @var \Drupal\Component\Plugin\PluginManagerInterface
+   * @var \Drupal\tfa\TfaSetupPluginManager
    */
-  protected $manager;
+  protected $tfaSetup;
 
   /**
    * The validation plugin manager.
@@ -86,8 +86,8 @@ class BasicSetup extends FormBase {
   /**
    * BasicSetup constructor.
    *
-   * @param \Drupal\Component\Plugin\PluginManagerInterface $manager
-   *   The plugin manager to fetch plugin information.
+   * @param \Drupal\tfa\TfaSetupPluginManager $tfa_setup_manager
+   *   The setup plugin manager.
    * @param \Drupal\user\UserDataInterface $user_data
    *   The user data object to store user information.
    * @param \Drupal\tfa\TfaValidationPluginManager $tfa_validation_manager
@@ -103,8 +103,8 @@ class BasicSetup extends FormBase {
    * @param \Drupal\user\UserStorageInterface $user_storage
    *   The user storage.
    */
-  public function __construct(PluginManagerInterface $manager, UserDataInterface $user_data, TfaValidationPluginManager $tfa_validation_manager, TfaLoginPluginManager $tfa_login_manager, TfaSendPluginManager $tfa_send_manager, PasswordInterface $password_checker, MailManagerInterface $mail_manager, UserStorageInterface $user_storage) {
-    $this->manager = $manager;
+  public function __construct(TfaSetupPluginManager $tfa_setup_manager, UserDataInterface $user_data, TfaValidationPluginManager $tfa_validation_manager, TfaLoginPluginManager $tfa_login_manager, TfaSendPluginManager $tfa_send_manager, PasswordInterface $password_checker, MailManagerInterface $mail_manager, UserStorageInterface $user_storage) {
+    $this->tfaSetup = $tfa_setup_manager;
     $this->userData = $user_data;
     $this->tfaValidation = $tfa_validation_manager;
     $this->tfaLogin = $tfa_login_manager;
@@ -228,7 +228,7 @@ class BasicSetup extends FormBase {
       // Record methods progressed.
       $storage['steps'][] = $method;
       $plugin = $this->findPlugin($method);
-      $setup_plugin = $this->manager->createInstance($plugin['setupPluginId'], ['uid' => $account->id()]);
+      $setup_plugin = $this->tfaSetup->createInstance($plugin['setupPluginId'], ['uid' => $account->id()]);
       $tfa_setup = new TfaSetup($setup_plugin);
       $form = $tfa_setup->getForm($form, $form_state, $reset);
       $storage[$method] = $tfa_setup;

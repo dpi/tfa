@@ -2,12 +2,12 @@
 
 namespace Drupal\tfa\Form;
 
-use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Mail\MailManagerInterface;
 use Drupal\Core\Password\PasswordInterface;
 use Drupal\tfa\TfaDataTrait;
+use Drupal\tfa\TfaValidationPluginManager;
 use Drupal\user\Entity\User;
 use Drupal\user\UserDataInterface;
 use Drupal\user\UserStorageInterface;
@@ -18,10 +18,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class BasicDisable extends FormBase {
   use TfaDataTrait;
+
   /**
-   * The plugin manager to fetch plugin information.
+   * The validation plugin manager.
    *
-   * @var \Drupal\Component\Plugin\PluginManagerInterface
+   * @var \Drupal\tfa\TfaValidationPluginManager
    */
   protected $manager;
 
@@ -56,8 +57,8 @@ class BasicDisable extends FormBase {
   /**
    * BasicDisable constructor.
    *
-   * @param \Drupal\Component\Plugin\PluginManagerInterface $manager
-   *   The plugin manager to fetch plugin information.
+   * @param \Drupal\tfa\TfaValidationPluginManager $manager
+   *   The validation plugin manager.
    * @param \Drupal\user\UserDataInterface $user_data
    *   The user data object to store user information.
    * @param \Drupal\Core\Password\PasswordInterface $password_checker
@@ -67,7 +68,7 @@ class BasicDisable extends FormBase {
    * @param \Drupal\user\UserStorageInterface $user_storage
    *   The user storage.
    */
-  public function __construct(PluginManagerInterface $manager, UserDataInterface $user_data, PasswordInterface $password_checker, MailManagerInterface $mail_manager, UserStorageInterface $user_storage) {
+  public function __construct(TfaValidationPluginManager $manager, UserDataInterface $user_data, PasswordInterface $password_checker, MailManagerInterface $mail_manager, UserStorageInterface $user_storage) {
     $this->manager = $manager;
     $this->userData = $user_data;
     $this->passwordChecker = $password_checker;
