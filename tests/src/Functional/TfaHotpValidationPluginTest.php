@@ -2,13 +2,12 @@
 
 namespace Drupal\Tests\tfa\Functional;
 
-use Drupal\Tests\tfa\Functional\TfaTestBase;
 use Drupal\tfa\TfaDataTrait;
 use Drupal\tfa\TfaLoginTrait;
 use ParagonIE\ConstantTime\Encoding;
 
 /**
- * Class TfaHotpValidationPluginTest.
+ * TfaHotpValidation plugin test.
  *
  * @group Tfa
  */

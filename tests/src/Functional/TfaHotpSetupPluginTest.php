@@ -2,11 +2,10 @@
 
 namespace Drupal\Tests\tfa\Functional;
 
-use Drupal\Tests\tfa\Functional\TfaTestBase;
 use ParagonIE\ConstantTime\Encoding;
 
 /**
- * Class TfaHotpSetupPluginTest.
+ * TfaHotpSetup plugin test.
  *
  * @group Tfa
  */
