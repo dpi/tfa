@@ -82,3 +82,6 @@ tfa.validation.plugin.config.tfa_recovery_code:
     recovery_codes_amount:
       type: integer
       label: 'Number of recovery codes generated'
+
+views.field.tfa_enabled_field:
+  type: views.field.boolean
