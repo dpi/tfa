@@ -125,7 +125,7 @@ class TfaRecoveryCodePluginTest extends TfaTestBase {
 
     // Make sure codes were saved to the account.
     $codes = $this->validationPlugin->getCodes();
-    $assert->assert(!empty($codes), 'No codes saved to the account data.');
+    $this->assertTrue(!empty($codes), 'No codes saved to the account data.');
 
     // Now the user should be able to see their existing codes. Let's test that.
     $assert->linkExists('Show codes');
@@ -155,7 +155,8 @@ class TfaRecoveryCodePluginTest extends TfaTestBase {
       'name' => $this->userAccount->getAccountName(),
       'pass' => $this->userAccount->passRaw,
     ];
-    $this->drupalPostForm('user/login', $edit, 'Log in');
+    $this->drupalGet('user/login');
+    $this->submitForm($edit, 'Log in');
     $assert->statusCodeEquals(200);
     $assert->pageTextContains('Enter one of your recovery codes');
 
@@ -170,7 +171,7 @@ class TfaRecoveryCodePluginTest extends TfaTestBase {
     $this->submitForm($edit, 'Verify');
     $assert->statusCodeEquals(200);
     $assert->pageTextContains($this->userAccount->getDisplayName());
-    $assert->assert($this->userAccount->isAuthenticated(), 'User is logged in.');
+    $this->assertTrue($this->userAccount->isAuthenticated(), 'User is logged in.');
 
     // Try replay attack with a valid code that has already been used.
     $this->drupalLogout();
@@ -178,7 +179,8 @@ class TfaRecoveryCodePluginTest extends TfaTestBase {
       'name' => $this->userAccount->getAccountName(),
       'pass' => $this->userAccount->passRaw,
     ];
-    $this->drupalPostForm('user/login', $edit, 'Log in');
+    $this->drupalGet('user/login');
+    $this->submitForm($edit, 'Log in');
     $assert->statusCodeEquals(200);
     $assert->pageTextContains('Enter one of your recovery codes');
 

@@ -115,7 +115,7 @@ abstract class TfaTestBase extends BrowserTestBase {
     $select_field_id = 'edit-tfa-validate';
     $option_field = $assert->optionExists($select_field_id, $validation_plugin_id);
     $result = $option_field->hasAttribute('selected');
-    $assert->assert($result, "Option {$validation_plugin_id} for field {$select_field_id} is selected.");
+    $this->assertTrue($result, "Option {$validation_plugin_id} for field {$select_field_id} is selected.");
   }
 
 }

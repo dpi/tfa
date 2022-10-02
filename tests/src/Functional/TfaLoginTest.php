@@ -49,9 +49,10 @@ class TfaLoginTest extends TfaTestBase {
     $edit = [
       'tfa_required_roles[' . $web_user_roles[0] . ']' => TRUE,
     ];
-    $this->drupalPostForm('admin/config/people/tfa', $edit, 'Save configuration');
+    $this->drupalGet('admin/config/people/tfa');
+    $this->submitForm($edit, 'Save configuration');
     $assert_session->statusCodeEquals(200);
-    $this->assertText('The configuration options have been saved.');
+    $this->assertSession()->pageTextContains('The configuration options have been saved.');
 
     // Check that tfa is presented.
     $this->drupalLogout();
@@ -59,7 +60,8 @@ class TfaLoginTest extends TfaTestBase {
       'name' => $this->webUser->getAccountName(),
       'pass' => $this->webUser->passRaw,
     ];
-    $this->drupalPostForm('user/login', $edit, 'Log in');
+    $this->drupalGet('user/login');
+    $this->submitForm($edit, 'Log in');
     $assert_session->statusCodeEquals(200);
     $assert_session->addressMatches('/\/tfa\/' . $this->webUser->id() . '/');
 
@@ -73,9 +75,10 @@ class TfaLoginTest extends TfaTestBase {
       $edit['tfa_required_roles[' . $role_id . ']'] = FALSE;
     }
     $edit['tfa_required_roles[authenticated]'] = FALSE;
-    $this->drupalPostForm('admin/config/people/tfa', $edit, 'Save configuration');
+    $this->drupalGet('admin/config/people/tfa');
+    $this->submitForm($edit, 'Save configuration');
     $assert_session->statusCodeEquals(200);
-    $this->assertText('The configuration options have been saved.');
+    $this->assertSession()->pageTextContains('The configuration options have been saved.');
     // Enable tfa for a single user.
     $this->drupalLogin($this->webUser);
     $this->drupalGet('user/' . $this->webUser->id() . '/security/tfa');
@@ -104,7 +107,8 @@ class TfaLoginTest extends TfaTestBase {
       'name' => $this->webUser->getAccountName(),
       'pass' => $this->webUser->passRaw,
     ];
-    $this->drupalPostForm('user/login', $edit, 'Log in');
+    $this->drupalGet('user/login');
+    $this->submitForm($edit, 'Log in');
     $assert_session->statusCodeEquals(200);
     $assert_session->addressMatches('/\/tfa\/' . $this->webUser->id() . '/');
   }

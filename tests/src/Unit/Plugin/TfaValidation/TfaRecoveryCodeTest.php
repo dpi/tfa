@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\tfa\Unit\Plugin\TfaValidation;
 
+use Prophecy\PhpUnit\ProphecyTrait;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
@@ -19,6 +20,7 @@ use Drupal\user\UserDataInterface;
  * @group tfa
  */
 class TfaRecoveryCodeTest extends UnitTestCase {
+  use ProphecyTrait;
 
   /**
    * Mocked user data service.

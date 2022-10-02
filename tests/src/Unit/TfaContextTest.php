@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\tfa\Unit;
 
+use Prophecy\PhpUnit\ProphecyTrait;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Tests\UnitTestCase;
@@ -19,6 +20,7 @@ use Symfony\Component\HttpFoundation\Request;
  * @group tfa
  */
 class TfaContextTest extends UnitTestCase {
+  use ProphecyTrait;
 
   /**
    * Validation plugin manager.
