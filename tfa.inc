@@ -422,6 +422,8 @@ class TfaSetup {
 
 /**
  * Base plugin class.
+ *
+ * phpcs:disable PHPCompatibility
  */
 abstract class TfaBasePlugin {
 
