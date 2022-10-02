@@ -98,7 +98,7 @@ Now you should be ready to configure the TFA module.
     * Save
 * Grant "Set up TFA for account" to "Authenticated user"
     * Consider granting "Require TFA process" for some roles
-* Visit your account's Security tab: `user/[uid]/security/tfa`
+* Visit your account's TFA tab: `user/[uid]/security/tfa`
     * Configure the selected Validation Plugins as desired for your account.
 
 ##### TFA, Testing, and Development

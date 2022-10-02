@@ -156,42 +156,64 @@ class BasicOverview extends FormBase {
       $enabled_plugins = isset($user_tfa['data']['plugins']) ? $user_tfa['data']['plugins'] : [];
 
       $validation_plugins = $this->tfaValidation->getDefinitions();
-      foreach ($validation_plugins as $plugin_id => $plugin) {
-        if (!empty($configuration['allowed_validation_plugins'][$plugin_id])) {
-          $output[$plugin_id] = $this->tfaPluginSetupFormOverview($plugin, $user, !empty($enabled_plugins[$plugin_id]));
+      if ($validation_plugins) {
+        $output['validation'] = [
+          '#type' => 'details',
+          '#title' => $this->t('Validation plugins'),
+          '#open' => TRUE,
+        ];
+
+        foreach ($validation_plugins as $plugin_id => $plugin) {
+          if (!empty($configuration['allowed_validation_plugins'][$plugin_id])) {
+            $output['validation'][$plugin_id] = $this->tfaPluginSetupFormOverview($plugin, $user, !empty($enabled_plugins[$plugin_id]));
+          }
         }
       }
 
       if ($enabled) {
         $login_plugins = $this->tfaLogin->getDefinitions();
-        foreach ($login_plugins as $plugin_id => $plugin) {
-          if (!empty($configuration['login_plugins'][$plugin_id])) {
-            $output[$plugin_id] = $this->tfaPluginSetupFormOverview($plugin, $user, TRUE);
+        if ($login_plugins) {
+          $output['login'] = [
+            '#type' => 'details',
+            '#title' => $this->t('Login plugins'),
+            '#open' => TRUE,
+          ];
+
+          foreach ($login_plugins as $plugin_id => $plugin) {
+            if (!empty($configuration['login_plugins'][$plugin_id])) {
+              $output['login'][$plugin_id] = $this->tfaPluginSetupFormOverview($plugin, $user, TRUE);
+            }
           }
         }
 
         $send_plugins = $this->tfaSend->getDefinitions();
-        foreach ($send_plugins as $plugin_id => $plugin) {
-          if (!empty($configuration['send_plugins'][$plugin_id])) {
-            $output[$plugin_id] = $this->tfaPluginSetupFormOverview($plugin, $user, TRUE);
+        if ($send_plugins) {
+          $output['send'] = [
+            '#type' => 'details',
+            '#title' => $this->t('Send plugins'),
+            '#open' => TRUE,
+          ];
+
+          foreach ($send_plugins as $plugin_id => $plugin) {
+            if (!empty($configuration['send_plugins'][$plugin_id])) {
+              $output['send'][$plugin_id] = $this->tfaPluginSetupFormOverview($plugin, $user, TRUE);
+            }
           }
         }
       }
-    }
-    else {
-      $output['disabled'] = [
-        '#type' => 'markup',
-        '#markup' => '<b>Currently there are no enabled plugins.</b>',
-      ];
-    }
 
-    if ($configuration['enabled']) {
       $output['validation_skip_status'] = [
         '#type'   => 'markup',
         '#markup' => $this->t('Number of times validation skipped: @skipped of @limit', [
           '@skipped' => isset($user_tfa['validation_skipped']) ? $user_tfa['validation_skipped'] : 0,
           '@limit' => $configuration['validation_skip'],
         ]),
+      ];
+    }
+    else {
+      $output['disabled'] = [
+        '#type' => 'markup',
+        '#markup' => '<b>Currently there are no enabled plugins.</b>',
       ];
     }
 

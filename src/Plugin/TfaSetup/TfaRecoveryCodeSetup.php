@@ -38,7 +38,7 @@ class TfaRecoveryCodeSetup extends TfaRecoveryCode implements TfaSetupInterface 
     return [
       'heading' => [
         '#type' => 'html_tag',
-        '#tag' => 'h2',
+        '#tag' => 'h3',
         '#value' => $this->t('Recovery Codes'),
       ],
       'description' => [

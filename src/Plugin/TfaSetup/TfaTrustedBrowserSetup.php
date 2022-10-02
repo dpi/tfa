@@ -218,19 +218,17 @@ class TfaTrustedBrowserSetup extends TfaTrustedBrowser implements TfaSetupInterf
         '#value' => $this->t('Browsers that will not require a verification code during login.'),
       ],
     ];
-    if (!empty($trusted_browsers)) {
+    $output['list'] = [
+      '#theme' => 'item_list',
+      '#items' => $trusted_browsers,
+      '#empty' => $this->t('No trusted browsers found.'),
+    ];
 
-      $output['list'] = [
-        '#theme' => 'item_list',
-        '#items' => $trusted_browsers,
-        '#title' => $this->t('Browsers that will not require a verification code during login.'),
-      ];
-    }
     $output['link'] = [
       '#theme' => 'links',
       '#links' => [
         'admin' => [
-          'title' => $this->t('Configure Trusted Browsers'),
+          'title' => $this->t('Configure trusted browsers'),
           'url' => Url::fromRoute('tfa.validation.setup', [
             'user' => $params['account']->id(),
             'method' => $params['plugin_id'],

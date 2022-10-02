@@ -2,7 +2,7 @@ tfa.overview:
   route_name: tfa.overview
   base_route: entity.user.canonical
   weight: 9
-  title: 'Security'
+  title: 'TFA'
 
 tfa.settings:
   route_name: tfa.settings

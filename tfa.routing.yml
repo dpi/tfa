@@ -34,7 +34,7 @@ tfa.overview:
   path: '/user/{user}/security/tfa'
   defaults:
     _form: 'Drupal\tfa\Form\BasicOverview'
-    _title: 'Security'
+    _title: 'TFA'
   requirements:
     _custom_access: '\Drupal\tfa\Controller\TfaLoginController::accessSelfOrAdmin'
     _permission: 'setup own tfa'
