@@ -24,11 +24,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class TfaUserLoginBlock extends UserLoginBlock {
 
   /**
-   * TFA configuration object.
+   * The config factory.
    *
-   * @var \Drupal\Core\Config\ImmutableConfig
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
    */
-  protected $tfaSettings;
+  protected $configFactory;
 
   /**
    * Constructs a new UserLoginBlock instance.
@@ -49,7 +49,7 @@ class TfaUserLoginBlock extends UserLoginBlock {
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match, ConfigFactoryInterface $config_factory) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $route_match);
-    $this->tfaSettings = $config_factory->get('tfa.settings');
+    $this->configFactory = $config_factory;
   }
 
   /**
@@ -70,7 +70,7 @@ class TfaUserLoginBlock extends UserLoginBlock {
    */
   protected function blockAccess(AccountInterface $account) {
     $access = parent::blockAccess($account);
-    $tfaAccess = $this->tfaSettings->get('enabled');
+    $tfaAccess = $this->configFactory->get('tfa.settings')->get('enabled');
 
     $route_name = $this->routeMatch->getRouteName();
     $disabled_route = in_array($route_name, ['tfa.entry']);
@@ -101,7 +101,7 @@ class TfaUserLoginBlock extends UserLoginBlock {
     ])->toString();
     // Build action links.
     $items = [];
-    if (\Drupal::config('user.settings')->get('register') != UserInterface::REGISTER_ADMINISTRATORS_ONLY) {
+    if ($this->configFactory->get('user.settings')->get('register') != UserInterface::REGISTER_ADMINISTRATORS_ONLY) {
       $items['create_account'] = Link::fromTextAndUrl($this->t('Create new account'), new Url('user.register', [], [
         'attributes' => [
           'title' => $this->t('Create a new user account.'),
