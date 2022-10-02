@@ -16,9 +16,6 @@ TFA module can be installed like other Drupal modules by placing this directory
 in the Drupal file system (for example, under modules/) and enabling on
 the Drupal modules page.
 
-TFA module does not come with any plugins of its own so refer to the project
-page for contributed plugins or read the section on Plugin development.
-
 ### Configuration
 
 TFA can be configured on your Drupal site at Administration - Configuration -
@@ -88,18 +85,29 @@ to be defined to be configured properly.
 Now you should be ready to configure the TFA module.
 
 * Install the TFA module
-* Install a validation plugin (example: [GA Login](https://www.drupal.org/project/ga_login))
+* (Optional) Install a module providing an extra TFA plugin
 * Visit the TFA module's configuration page.
     * Enable TFA
     * Select your desired Validation Plugin(s).
     * Encryption Profile: Select the Encryption Profile you created in the
-     previous step.
+      previous step.
     * Adjust other settings as desired.
     * Save
 * Grant "Set up TFA for account" to "Authenticated user"
     * Consider granting "Require TFA process" for some roles
 * Visit your account's TFA tab: `user/[uid]/security/tfa`
     * Configure the selected Validation Plugins as desired for your account.
+
+##### TFA apps
+Users will need an application for their phone, tablet or computer that is
+capable of generating authentication codes.  As of the date of this ReadMe,
+some of the more popular options include:
+  * Google Authenticator (Android, iOS)
+  * Microsoft Authenticator (Android, iOS)
+  * Authy (Android, iOS, Windows, macOS, Linux)
+  * FreeOTP (Android, iOS)
+  * WinAuth (Windows)
+  * GAuth Authenticator (Chrome browser extension and Chrome OS)
 
 ##### TFA, Testing, and Development
 

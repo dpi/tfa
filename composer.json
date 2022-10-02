@@ -6,6 +6,8 @@
     "minimum-stability": "dev",
     "require": {
         "php": ">=7.0",
+        "chillerlan/php-qrcode": "^1.0.9 || ^2.0 || ^3.2 || ^4.0",
+        "christian-riesen/otp": "^2.1",
         "drupal/encrypt": "~3.0"
     },
     "extra": {

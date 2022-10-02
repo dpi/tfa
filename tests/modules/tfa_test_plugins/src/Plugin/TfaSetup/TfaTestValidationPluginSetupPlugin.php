@@ -125,7 +125,7 @@ class TfaTestValidationPluginSetupPlugin extends TfaBasePlugin implements TfaSet
         '#theme' => 'links',
         '#links' => [
           'admin' => [
-            'title' => !$params['enabled'] ? $this->t('Set up application') : $this->t('Reset application'),
+            'title' => !$params['enabled'] ? $this->t('Set up test application') : $this->t('Reset test application'),
             'url' => Url::fromRoute('tfa.validation.setup', [
               'user' => $params['account']->id(),
               'method' => $params['plugin_id'],

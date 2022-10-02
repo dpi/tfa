@@ -84,7 +84,7 @@ class TfaLoginTest extends TfaTestBase {
     $this->drupalGet('user/' . $this->webUser->id() . '/security/tfa');
     $assert_session->statusCodeEquals(200);
     $assert_session->pageTextNotContains('Currently there are no enabled plugins.');
-    $this->clickLink('Set up application');
+    $this->clickLink('Set up test application');
     $assert_session->statusCodeEquals(200);
     $assert_session->pageTextContains('Enter your current password to continue.');
     $edit = [
@@ -99,7 +99,7 @@ class TfaLoginTest extends TfaTestBase {
     $assert_session->statusCodeEquals(200);
     $assert_session->pageTextContains('TFA setup complete.');
     $assert_session->pageTextContains('Status: TFA enabled');
-    $assert_session->linkExists('Reset application');
+    $assert_session->linkExists('Reset test application');
     $assert_session->pageTextContains('Number of times validation skipped: 0 of 3');
     // Check that tfa is presented.
     $this->drupalLogout();

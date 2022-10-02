@@ -64,7 +64,6 @@ before_script:
 
   # Download the additional modules.
   - cd $DRUPAL_ROOT/modules
-  - git clone --depth 1 https://github.com/d8-contrib-modules/ga_login.git
   - git clone --branch 8.x-3.x https://git.drupal.org/project/encrypt.git
   - git clone --branch 8.x-1.x https://git.drupal.org/project/key.git
 
