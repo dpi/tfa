@@ -204,10 +204,10 @@ class BasicOverview extends FormBase {
 
       $output['validation_skip_status'] = [
         '#type'   => 'markup',
-        '#markup' => $this->t('Number of times validation skipped: @skipped of @limit', [
+        '#markup' => '<p>' . $this->t('Number of times validation skipped: @skipped of @limit', [
           '@skipped' => $user_tfa['validation_skipped'] ?? 0,
           '@limit' => $config->get('validation_skip'),
-        ]),
+        ]) . '</p>',
       ];
     }
     else {
