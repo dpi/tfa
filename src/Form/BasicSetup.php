@@ -231,7 +231,7 @@ class BasicSetup extends FormBase {
       // Record methods progressed.
       $storage['steps'][] = $method;
       $plugin = $this->findPlugin($method);
-      $setup_plugin = $this->tfaSetup->createInstance($plugin['setupPluginId'], ['uid' => $account->id()]);
+      $setup_plugin = $this->tfaSetup->createInstance($plugin['setupPluginId'], ['uid' => $user->id()]);
       $tfa_setup = new TfaSetup($setup_plugin);
       $form = $tfa_setup->getForm($form, $form_state, $reset);
       $storage[$method] = $tfa_setup;

@@ -24,12 +24,22 @@ class TfaLoginTest extends TfaTestBase {
   protected $adminUser;
 
   /**
+   * Super administrator to edit other users TFA.
+   *
+   * @var \Drupal\user\Entity\User
+   */
+  protected $superAdmin;
+
+  /**
    * {@inheritdoc}
    */
   public function setUp(): void {
     parent::setUp();
     $this->webUser = $this->drupalCreateUser(['setup own tfa']);
     $this->adminUser = $this->drupalCreateUser(['admin tfa settings']);
+    $this->superAdmin = $this->drupalCreateUser(
+      ['administer users', 'admin tfa settings', 'setup own tfa']
+    );
     $this->canEnableValidationPlugin('tfa_test_plugins_validation');
   }
 
@@ -111,6 +121,18 @@ class TfaLoginTest extends TfaTestBase {
     $this->submitForm($edit, 'Log in');
     $assert_session->statusCodeEquals(200);
     $assert_session->addressMatches('/\/tfa\/' . $this->webUser->id() . '/');
+
+    // Check tfa setup as another user.
+    $another_user = $this->createUser();
+    $this->drupalLogin($this->superAdmin);
+    $this->drupalGet('user/' . $another_user->id() . '/security/tfa');
+    $assert_session->statusCodeEquals(200);
+    $this->clickLink('Set up test application');
+    $edit = [
+      'current_pass' => $this->superAdmin->passRaw,
+    ];
+    $this->submitForm($edit, 'Confirm');
+    $assert_session->pageTextContains('TFA Setup for ' . $another_user->getDisplayName());
   }
 
 }
