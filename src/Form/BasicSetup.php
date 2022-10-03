@@ -294,8 +294,11 @@ class BasicSetup extends FormBase {
       $tfa_setup = $storage[$method];
       // Validate plugin form.
       if (!$tfa_setup->validateForm($form, $form_state)) {
-        foreach ($tfa_setup->getErrorMessages() as $element => $message) {
-          $form_state->setErrorByName($element, $message);
+        $messages = $tfa_setup->getErrorMessages();
+        if (!empty($messages)) {
+          foreach ($messages as $element => $message) {
+            $form_state->setErrorByName($element, $message);
+          }
         }
       }
     }
