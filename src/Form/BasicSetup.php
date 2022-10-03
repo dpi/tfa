@@ -168,6 +168,9 @@ class BasicSetup extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, User $user = NULL, $method = 'tfa_totp', $reset = 0) {
+    if (!$this->tfaSetup->hasDefinition($method . '_setup')) {
+      throw new NotFoundHttpException($this->t('Plugin @plugin not found.', ['@plugin' => $method]));
+    }
     /** @var \Drupal\user\Entity\User $account */
     $account = $this->userStorage->load($this->currentUser()->id());
 
