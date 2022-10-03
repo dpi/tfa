@@ -92,7 +92,7 @@ class TfaLoginController {
     }
 
     $is_self = $account->id() === $target_user->id();
-    $is_admin = $account->hasPermission('administer users');
+    $is_admin = $account->hasPermission('administer tfa for other users');
     $is_self_or_admin = AccessResult::allowedIf($is_self || $is_admin);
 
     return $access->andIf($is_self_or_admin);

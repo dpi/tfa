@@ -6,6 +6,7 @@
  */
 
 use Drupal\Core\Session\AccountInterface;
+use Drupal\user\Entity\Role;
 
 /**
  * Implements hook_requirements().
@@ -265,5 +266,19 @@ function tfa_update_8007(&$sandbox) {
 function tfa_update_8008(&$sandbox) {
   if (\Drupal::service('module_handler')->moduleExists('ga_login')) {
     \Drupal::service('module_installer')->uninstall(['ga_login'], FALSE);
+  }
+}
+
+/**
+ * Grant users with new "administer tfa for other users" permission.
+ */
+function tfa_update_8009() {
+  if ($roles = Role::loadMultiple()) {
+    foreach ($roles as $role) {
+      if ($role->hasPermission('administer users')) {
+        $role->grantPermission('administer tfa for other users');
+        $role->save();
+      }
+    }
   }
 }

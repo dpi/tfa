@@ -107,7 +107,7 @@ class BasicDisable extends FormBase {
     $storage['account'] = $user;
 
     // @todo Check require permissions and give warning about being locked out.
-    if ($account->id() != $user->id() && $account->hasPermission('administer users')) {
+    if ($account->id() != $user->id() && $account->hasPermission('administer tfa for other users')) {
       $preamble_desc = $this->t('Are you sure you want to disable TFA for user %name?', ['%name' => $user->getDisplayName()]);
       $notice_desc = $this->t('TFA settings and data will be lost. %name can re-enable TFA again from their profile.', ['%name' => $user->getDisplayName()]);
     }
@@ -166,7 +166,7 @@ class BasicDisable extends FormBase {
     $storage = $form_state->getStorage();
     $account = $storage['account'];
     // Allow administrators to disable TFA for another account.
-    if ($account->id() != $user->id() && $user->hasPermission('administer users')) {
+    if ($account->id() != $user->id() && $user->hasPermission('administer tfa for other users')) {
       $account = $user;
     }
     // Check password.

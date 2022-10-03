@@ -127,7 +127,7 @@ class BasicOverview extends FormBase {
 
     if (!empty($user_tfa)) {
       if ($enabled && !empty($user_tfa['data']['plugins'])) {
-        if ($this->currentUser()->hasPermission('disable own tfa')) {
+        if ($this->currentUser()->hasPermission('disable own tfa') || $this->currentUser()->hasPermission('administer tfa for other users')) {
           $status_text = $this->t('Status: <strong>TFA enabled</strong>, set
           @time. <a href=":url">Disable TFA</a>', [
             '@time' => $this->dateFormatter->format($user_tfa['saved']),
@@ -307,7 +307,7 @@ class BasicOverview extends FormBase {
    */
   protected function canPerformReset(UserInterface $account) {
     $current_user = $this->currentUser();
-    return $current_user->hasPermission('administer users')
+    return $current_user->hasPermission('administer tfa for other users')
       // Disallow users from resetting their own.
       // @todo Make this configurable.
       && $current_user->id() != $account->id();

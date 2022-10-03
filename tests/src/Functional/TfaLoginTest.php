@@ -38,7 +38,7 @@ class TfaLoginTest extends TfaTestBase {
     $this->webUser = $this->drupalCreateUser(['setup own tfa']);
     $this->adminUser = $this->drupalCreateUser(['admin tfa settings']);
     $this->superAdmin = $this->drupalCreateUser(
-      ['administer users', 'admin tfa settings', 'setup own tfa']
+      ['administer tfa for other users', 'admin tfa settings', 'setup own tfa']
     );
     $this->canEnableValidationPlugin('tfa_test_plugins_validation');
   }

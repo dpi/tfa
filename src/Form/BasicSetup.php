@@ -185,7 +185,7 @@ class BasicSetup extends FormBase {
     // Always require a password on the first time through.
     if (empty($storage)) {
       // Allow administrators to change TFA settings for another account.
-      if ($account->id() == $user->id() && $account->hasPermission('administer users')) {
+      if ($account->id() == $user->id() && $account->hasPermission('administer tfa for other users')) {
         $current_pass_description = $this->t('Enter your current password to
         alter TFA settings for account %name.', ['%name' => $user->getAccountName()]);
       }
@@ -275,7 +275,7 @@ class BasicSetup extends FormBase {
       // Allow administrators to change TFA settings for another account using
       // their own password.
       if ($account->id() != $user->id()) {
-        if ($user->hasPermission('administer users')) {
+        if ($user->hasPermission('administer tfa for other users')) {
           $account = $user;
         }
         // If current user lacks admin permissions, kick them out.
