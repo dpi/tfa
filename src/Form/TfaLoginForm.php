@@ -2,21 +2,13 @@
 
 namespace Drupal\tfa\Form;
 
-use Drupal\Core\Flood\FloodInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Render\RendererInterface;
-use Drupal\Core\Routing\RedirectDestinationInterface;
 use Drupal\Core\Url;
 use Drupal\tfa\Plugin\TfaSendInterface;
 use Drupal\tfa\TfaContext;
 use Drupal\tfa\TfaDataTrait;
 use Drupal\tfa\TfaLoginTrait;
-use Drupal\tfa\TfaLoginPluginManager;
-use Drupal\tfa\TfaValidationPluginManager;
 use Drupal\user\Form\UserLoginForm;
-use Drupal\user\UserAuthInterface;
-use Drupal\user\UserDataInterface;
-use Drupal\user\UserStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -73,47 +65,17 @@ class TfaLoginForm extends UserLoginForm {
   protected $tfaContext;
 
   /**
-   * Constructs a new user login form.
-   *
-   * @param \Drupal\Core\Flood\FloodInterface $flood
-   *   The flood service.
-   * @param \Drupal\user\UserStorageInterface $user_storage
-   *   The user storage.
-   * @param \Drupal\user\UserAuthInterface $user_auth
-   *   The user authentication object.
-   * @param \Drupal\Core\Render\RendererInterface $renderer
-   *   The renderer.
-   * @param \Drupal\tfa\TfaValidationPluginManager $tfa_validation_manager
-   *   Tfa validation plugin manager.
-   * @param \Drupal\tfa\TfaLoginPluginManager $tfa_plugin_manager
-   *   Tfa setup plugin manager.
-   * @param \Drupal\user\UserDataInterface $user_data
-   *   User data service.
-   * @param \Drupal\Core\Routing\RedirectDestinationInterface $destination
-   *   Redirect destination.
-   */
-  public function __construct(FloodInterface $flood, UserStorageInterface $user_storage, UserAuthInterface $user_auth, RendererInterface $renderer, TfaValidationPluginManager $tfa_validation_manager, TfaLoginPluginManager $tfa_plugin_manager, UserDataInterface $user_data, RedirectDestinationInterface $destination) {
-    parent::__construct($flood, $user_storage, $user_auth, $renderer);
-    $this->tfaValidationManager = $tfa_validation_manager;
-    $this->tfaLoginManager = $tfa_plugin_manager;
-    $this->userData = $user_data;
-    $this->destination = $destination;
-  }
-
-  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('flood'),
-      $container->get('entity_type.manager')->getStorage('user'),
-      $container->get('user.auth'),
-      $container->get('renderer'),
-      $container->get('plugin.manager.tfa.validation'),
-      $container->get('plugin.manager.tfa.login'),
-      $container->get('user.data'),
-      $container->get('redirect.destination')
-    );
+    $instance = parent::create($container);
+
+    $instance->tfaValidationManager = $container->get('plugin.manager.tfa.validation');
+    $instance->tfaLoginManager = $container->get('plugin.manager.tfa.login');
+    $instance->userData = $container->get('user.data');
+    $instance->destination = $container->get('redirect.destination');
+
+    return $instance;
   }
 
   /**
