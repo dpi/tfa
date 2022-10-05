@@ -6,6 +6,7 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\tfa\TfaLoginTrait;
+use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 
 /**
@@ -28,7 +29,11 @@ class TfaLoginController {
    *   The access result.
    */
   public function access(RouteMatchInterface $route, AccountInterface $account) {
-    $user = $route->getParameter('user');
+    // Attempt to retrieve a user from the uid.
+    // We Use uids here instead of user objects to prevent enumeration attacks.
+    $uid = $route->getParameter('uid');
+    /** @var \Drupal\user\UserInterface $user */
+    $user = User::load($uid);
 
     // Start with a positive access check which is cacheable for the current
     // route, which includes both route name and parameters.
@@ -43,7 +48,7 @@ class TfaLoginController {
     $access->addCacheableDependency($user);
     // If the login hash doesn't match, forbid access.
     if ($this->getLoginHash($user) !== $route->getParameter('hash')) {
-      return $access->andIf(AccessResult::forbidden('Invalid hash.'));
+      return $access->andIf(AccessResult::forbidden('Invalid hash value.'));
     }
 
     // If we've gotten here, we need to check that the current user is allowed

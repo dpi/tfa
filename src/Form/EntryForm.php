@@ -6,11 +6,11 @@ use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Flood\FloodInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Drupal\tfa\TfaLoginPluginManager;
 use Drupal\tfa\TfaValidationPluginManager;
 use Drupal\user\UserDataInterface;
+use Drupal\user\Entity\User;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -132,10 +132,10 @@ class EntryForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, AccountInterface $user = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, $uid = NULL, string $hash = '') {
     $alternate_plugin = $this->getRequest()->get('plugin');
     $validation_plugin_definitions = $this->tfaValidationManager->getDefinitions();
-    $user_settings = $this->userData->get('tfa', $user->id(), 'tfa_user_settings');
+    $user_settings = $this->userData->get('tfa', $uid, 'tfa_user_settings');
     $user_enabled_validation_plugins = $user_settings['data']['plugins'] ?? [];
 
     // Default validation plugin, then check for enabled alternate plugin.
@@ -147,10 +147,10 @@ class EntryForm extends FormBase {
     }
 
     // Get current validation plugin form.
-    $this->tfaValidationPlugin = $this->tfaValidationManager->createInstance($validation_plugin, ['uid' => $user->id()]);
+    $this->tfaValidationPlugin = $this->tfaValidationManager->createInstance($validation_plugin, ['uid' => $uid]);
     $form = $this->tfaValidationPlugin->getForm($form, $form_state);
 
-    $this->tfaLoginPlugins = $this->tfaLoginManager->getPlugins(['uid' => $user->id()]);
+    $this->tfaLoginPlugins = $this->tfaLoginManager->getPlugins(['uid' => $uid]);
     if ($this->tfaLoginPlugins) {
       foreach ($this->tfaLoginPlugins as $login_plugin) {
         if (method_exists($login_plugin, 'getForm')) {
@@ -161,7 +161,7 @@ class EntryForm extends FormBase {
 
     $form['account'] = [
       '#type' => 'value',
-      '#value' => $user,
+      '#value' => User::load($uid),
     ];
 
     // Build a list of links for using other enabled validation methods.
@@ -179,8 +179,8 @@ class EntryForm extends FormBase {
       $other_validation_plugin_links[$user_enabled_validation_plugin] = [
         'title' => $validation_plugin_definitions[$user_enabled_validation_plugin]['label'],
         'url' => Url::fromRoute('tfa.entry', [
-          'user' => $user->id(),
-          'hash' => $this->getRequest()->get('hash'),
+          'uid' => $uid,
+          'hash' => $hash,
           'plugin' => $user_enabled_validation_plugin,
         ]),
       ];

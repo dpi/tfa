@@ -1,11 +1,12 @@
 tfa.entry:
-  path: '/tfa/{user}/{hash}'
+  path: '/tfa/{uid}/{hash}'
   defaults:
     _form: '\Drupal\tfa\Form\EntryForm'
     _title: 'Two-Factor Authentication'
   requirements:
     _user_is_logged_in: 'FALSE'
     _custom_access: '\Drupal\tfa\Controller\TfaLoginController::access'
+    uid: \d+
   options:
     _maintenance_access: TRUE
     no_cache: TRUE

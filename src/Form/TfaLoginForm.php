@@ -158,7 +158,7 @@ class TfaLoginForm extends UserLoginForm {
       // @todo This is used in send plugins which has not been implemented yet.
       // $this->begin($tfaValidationPlugin);
       $parameters = $this->destination->getAsArray();
-      $parameters['user'] = $user->id();
+      $parameters['uid'] = $user->id();
       $parameters['hash'] = $this->getLoginHash($user);
       $this->getRequest()->query->remove('destination');
       $form_state->setRedirect('tfa.entry', $parameters);
