@@ -264,6 +264,9 @@ function tfa_update_8007(&$sandbox) {
  * Uninstall the ga_login module.
  */
 function tfa_update_8008(&$sandbox) {
+  \Drupal::cache('discovery')
+    ->invalidateMultiple(['tfa_setup', 'tfa_validation']);
+
   if (\Drupal::service('module_handler')->moduleExists('ga_login')) {
     \Drupal::service('module_installer')->uninstall(['ga_login'], FALSE);
   }
@@ -285,11 +288,16 @@ function tfa_update_8009() {
 
 /**
  * Changes type of 'enabled' config schema from int to bool.
- *
- * @see https://www.drupal.org/project/tfa/issues/3263176
  */
 function tfa_update_8010() {
   $config = \Drupal::configFactory()->getEditable('tfa.settings');
   $config->set('enabled', boolval($config->get('enabled')))
     ->save();
+}
+
+/**
+ * Rebuild caches to force loading of renamed form classes.
+ */
+function tfa_update_8011() {
+  // Empty update to cause a cache rebuild.
 }

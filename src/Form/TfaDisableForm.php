@@ -16,7 +16,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * TFA disable form router.
  */
-class BasicDisable extends FormBase {
+class TfaDisableForm extends FormBase {
   use TfaDataTrait;
 
   /**
@@ -55,7 +55,7 @@ class BasicDisable extends FormBase {
   protected $userStorage;
 
   /**
-   * BasicDisable constructor.
+   * TFA disable form constructor.
    *
    * @param \Drupal\tfa\TfaValidationPluginManager $manager
    *   The validation plugin manager.

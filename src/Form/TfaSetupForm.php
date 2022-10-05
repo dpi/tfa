@@ -23,7 +23,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 /**
  * TFA setup form router.
  */
-class BasicSetup extends FormBase {
+class TfaSetupForm extends FormBase {
   use TfaDataTrait;
   use StringTranslationTrait;
 
@@ -84,7 +84,7 @@ class BasicSetup extends FormBase {
   protected $userStorage;
 
   /**
-   * BasicSetup constructor.
+   * TFA Setup form constructor.
    *
    * @param \Drupal\tfa\TfaSetupPluginManager $tfa_setup_manager
    *   The setup plugin manager.

@@ -16,9 +16,9 @@ use Drupal\user\UserInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * TFA Basic account setup overview page.
+ * TFA account setup overview page.
  */
-class BasicOverview extends FormBase {
+class TfaOverviewForm extends FormBase {
   use TfaDataTrait;
 
   /**
@@ -64,7 +64,7 @@ class BasicOverview extends FormBase {
   protected $dateFormatter;
 
   /**
-   * BasicOverview constructor.
+   * TFA Overview form constructor.
    *
    * @param \Drupal\user\UserDataInterface $user_data
    *   The user data service.
@@ -234,7 +234,7 @@ class BasicOverview extends FormBase {
   }
 
   /**
-   * Get TFA basic setup action links for use on overview page.
+   * Get TFA plugin setup action links for use on overview page.
    *
    * @param array $plugin
    *   Plugin definition.
