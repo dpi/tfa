@@ -1,5 +1,5 @@
 langcode: en
-enabled: 0
+enabled: false
 required_roles: { }
 send_plugins: { }
 login_plugins: { }

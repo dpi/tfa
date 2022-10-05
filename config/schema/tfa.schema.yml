@@ -3,7 +3,7 @@ tfa.settings:
   label: 'TFA settings'
   mapping:
     enabled:
-      type: integer
+      type: boolean
       label: 'TFA enabled'
     required_roles:
       type: sequence

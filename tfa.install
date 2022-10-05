@@ -282,3 +282,14 @@ function tfa_update_8009() {
     }
   }
 }
+
+/**
+ * Changes type of 'enabled' config schema from int to bool.
+ *
+ * @see https://www.drupal.org/project/tfa/issues/3263176
+ */
+function tfa_update_8010() {
+  $config = \Drupal::configFactory()->getEditable('tfa.settings');
+  $config->set('enabled', boolval($config->get('enabled')))
+    ->save();
+}
