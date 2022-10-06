@@ -51,7 +51,7 @@ class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaV
   public function __construct(array $configuration, $plugin_id, $plugin_definition, UserDataInterface $user_data, EncryptionProfileManagerInterface $encryption_profile_manager, EncryptServiceInterface $encrypt_service) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $user_data, $encryption_profile_manager, $encrypt_service);
     $config = \Drupal::config('tfa.settings');
-    $this->cookieName = $config->get('cookie_name') ?: 'tfa-trusted-browser';
+    $this->cookieName = $config->get('trust_cookie_name') ?: 'tfa-trusted-browser';
     // Expiration defaults to 30 days.
     $this->expiration = $config->get('trust_cookie_expiration') ?: 86400 * 30;
     $this->userData = $user_data;
