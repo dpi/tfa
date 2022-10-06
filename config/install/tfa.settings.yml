@@ -10,7 +10,7 @@ help_text: 'Contact support to reset your access'
 validation_skip: 3
 encryption: ''
 trust_cookie_expiration: 2592000
-cookie_name: 'TFA'
+trust_cookie_name: 'tfa-trusted-browser'
 tfa_flood_uid_only: 1
 tfa_flood_window: 300
 tfa_flood_threshold: 6

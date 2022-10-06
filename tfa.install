@@ -296,8 +296,14 @@ function tfa_update_8010() {
 }
 
 /**
- * Rebuild caches to force loading of renamed form classes.
+ * Rename the cookie_name setting, and set new default value.
  */
-function tfa_update_8011() {
-  // Empty update to cause a cache rebuild.
+function tfa_update_8012() {
+  $config = \Drupal::configFactory()->getEditable('tfa.settings');
+  $cookie_name = $config->get('cookie_name');
+  $value = (empty($cookie_name) || ($cookie_name === 'TFA')) ? 'tfa-trusted-browser' : $cookie_name;
+  $config
+    ->set('trust_cookie_name', $value)
+    ->clear('cookie_name')
+    ->save();
 }

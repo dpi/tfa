@@ -44,9 +44,9 @@ tfa.settings:
     trust_cookie_expiration:
       type: integer
       label: 'How long before TFA cookies expire. Default is 30 days.'
-    cookie_name:
+    trust_cookie_name:
       type: string
-      label: 'Cookie name of TFA trusted browser cookie. Default is "TB".'
+      label: 'Cookie name of TFA trusted browser cookie. Default is "tfa-trusted-browser".'
     tfa_flood_uid_only:
       type: integer
       label: 'TFA Flood UID Ban Only'

@@ -39,7 +39,7 @@ class TfaTrustedBrowserSetup extends TfaTrustedBrowser implements TfaSetupInterf
       log in you'll need to enter a verification code with your username and
       password during which you can again mark the browser as trusted.", ['@time' => $time]) . '</p>',
     ];
-    // Present option to trust this browser if its not currently trusted.
+    // Present option to trust this browser if it's not currently trusted.
     if (isset($_COOKIE[$this->cookieName]) && $this->trustedBrowser($_COOKIE[$this->cookieName]) !== FALSE) {
       $current_trusted = $_COOKIE[$this->cookieName];
     }
