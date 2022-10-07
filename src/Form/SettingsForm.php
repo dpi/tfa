@@ -8,7 +8,6 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\encrypt\EncryptionProfileManagerInterface;
-use Drupal\tfa\TfaDataTrait;
 use Drupal\tfa\TfaLoginPluginManager;
 use Drupal\tfa\TfaSendPluginManager;
 use Drupal\tfa\TfaSetupPluginManager;
@@ -20,7 +19,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * The admin configuration page.
  */
 class SettingsForm extends ConfigFormBase {
-  use TfaDataTrait;
 
   /**
    * The login plugin manager to fetch plugin information.

@@ -2,9 +2,6 @@
 
 namespace Drupal\Tests\tfa\Functional;
 
-use Drupal\tfa\TfaDataTrait;
-use Drupal\tfa\TfaLoginTrait;
-
 /**
  * Class TfaRecoveryCodeSetupPluginTest.
  *
@@ -13,8 +10,6 @@ use Drupal\tfa\TfaLoginTrait;
  * @ingroup Tfa
  */
 class TfaRecoveryCodePluginTest extends TfaTestBase {
-  use TfaDataTrait;
-  use TfaLoginTrait;
 
   /**
    * Plugin id for the recovery code validation plugin.

@@ -6,7 +6,6 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\tfa\Plugin\TfaSetupInterface;
 use Drupal\tfa\Plugin\TfaValidation\TfaRecoveryCode;
-use Drupal\tfa\TfaDataTrait;
 
 /**
  * TFA Recovery Code Setup Plugin.
@@ -22,7 +21,6 @@ use Drupal\tfa\TfaDataTrait;
  * )
  */
 class TfaRecoveryCodeSetup extends TfaRecoveryCode implements TfaSetupInterface {
-  use TfaDataTrait;
 
   /**
    * {@inheritdoc}

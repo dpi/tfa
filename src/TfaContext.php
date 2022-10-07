@@ -17,8 +17,6 @@ use Symfony\Component\HttpFoundation\Request;
 class TfaContext implements TfaContextInterface {
   // Access to user's TFA settings.
   use TfaDataTrait;
-  // Provides the getLoginHash() method.
-  use TfaLoginTrait;
 
   /**
    * Validation plugin manager.

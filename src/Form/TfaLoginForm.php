@@ -6,7 +6,6 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\tfa\Plugin\TfaSendInterface;
 use Drupal\tfa\TfaContext;
-use Drupal\tfa\TfaDataTrait;
 use Drupal\tfa\TfaLoginTrait;
 use Drupal\user\Form\UserLoginForm;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -17,7 +16,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @noinspection PhpInternalEntityUsedInspection
  */
 class TfaLoginForm extends UserLoginForm {
-  use TfaDataTrait;
   use TfaLoginTrait;
 
   /**

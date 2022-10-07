@@ -2,8 +2,6 @@
 
 namespace Drupal\Tests\tfa\Functional;
 
-use Drupal\tfa\TfaDataTrait;
-use Drupal\tfa\TfaLoginTrait;
 use ParagonIE\ConstantTime\Encoding;
 
 /**
@@ -12,8 +10,6 @@ use ParagonIE\ConstantTime\Encoding;
  * @group Tfa
  */
 class TfaHotpValidationPluginTest extends TfaTestBase {
-  use TfaLoginTrait;
-  use TfaDataTrait;
 
   /**
    * Non-admin user account. Standard tfa user.
