@@ -268,7 +268,24 @@ class EntryForm extends FormBase {
     // @todo This could be improved with EventDispatcher.
     $this->finalize();
     $this->flood->clear('tfa.failed_validation', $this->floodIdentifier);
-    $form_state->setRedirect('<front>');
+    // Password reset token from the request parameter.
+    $token = $this->getRequest()->get('pass-reset-token');
+    // Check if user is using one time login.
+    if ($token) {
+      $this->messenger()->addStatus($this->t('You have just used your one-time login link. It is no longer necessary to use this link to log in. Please change your password.'));
+      // Clear any flood events for this user.
+      $this->flood->clear('user.password_request_user', $user->id());
+      // User uses a one-time login link,
+      // so the user should be redirected to user edit form,
+      // after validating the TFA.
+      $form_state->setRedirect('entity.user.edit_form', ['user' => $user->id()], [
+        'query' => ['pass-reset-token' => $token],
+        'absolute' => TRUE,
+      ]);
+    }
+    else {
+      $form_state->setRedirect('<front>');
+    }
   }
 
   /**

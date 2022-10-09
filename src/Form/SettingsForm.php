@@ -143,6 +143,15 @@ class SettingsForm extends ConfigFormBase {
       '#required' => FALSE,
     ];
 
+    $form['admin_uli_skip'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Admin TFA exemption'),
+      '#default_value' => $config->get('admin_uli_skip') ?? 1,
+      '#description' => $this->t('Allow TFA admin to skip TFA when resetting password.'),
+      '#states' => $enabled_state,
+      '#required' => FALSE,
+    ];
+
     $form['tfa_allowed_validation_plugins'] = [
       '#type' => 'checkboxes',
       '#title' => $this->t('Allowed Validation plugins'),
@@ -450,6 +459,7 @@ class SettingsForm extends ConfigFormBase {
       ->set('mail.tfa_disabled_configuration.subject', $form_state->getValue('tfa_disabled_configuration_subject'))
       ->set('mail.tfa_disabled_configuration.body', $form_state->getValue('tfa_disabled_configuration_body'))
       ->set('help_text', $form_state->getValue('help_text'))
+      ->set('admin_uli_skip', $form_state->getValue('admin_uli_skip'))
       ->save();
 
     parent::submitForm($form, $form_state);
