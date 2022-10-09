@@ -25,6 +25,10 @@ class TfaRouteSubscriber extends RouteSubscriberBase {
     if ($route = $collection->get('user.login')) {
       $route->setDefault('_form', '\Drupal\tfa\Form\TfaLoginForm');
     }
+    // Change path to user pass reset to our overridden TFA user controller.
+    if ($route = $collection->get('user.reset.login')) {
+      $route->setDefault('_controller', '\Drupal\tfa\Controller\TfaUserController::resetPassLogin');
+    }
   }
 
 }

@@ -14,6 +14,7 @@ trust_cookie_name: 'tfa-trusted-browser'
 tfa_flood_uid_only: 1
 tfa_flood_window: 300
 tfa_flood_threshold: 6
+admin_uli_skip: 1
 mail:
   tfa_enabled_configuration:
     subject: "Your [site:name] account now has two-factor authentication"
