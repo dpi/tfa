@@ -143,11 +143,11 @@ class SettingsForm extends ConfigFormBase {
       '#required' => FALSE,
     ];
 
-    $form['admin_uli_skip'] = [
+    $form['reset_pass_skip_enabled'] = [
       '#type' => 'checkbox',
-      '#title' => $this->t('Admin TFA exemption'),
-      '#default_value' => $config->get('admin_uli_skip') ?? 1,
-      '#description' => $this->t('Allow TFA admin to skip TFA when resetting password.'),
+      '#title' => $this->t('Allow TFA bypass during password reset'),
+      '#default_value' => $config->get('reset_pass_skip_enabled') ?? TRUE,
+      '#description' => $this->t('Allow TFA to be bypassed during password reset by users with the @role role.', ['@role' => 'Bypass TFA during password reset']),
       '#states' => $enabled_state,
       '#required' => FALSE,
     ];
@@ -459,7 +459,7 @@ class SettingsForm extends ConfigFormBase {
       ->set('mail.tfa_disabled_configuration.subject', $form_state->getValue('tfa_disabled_configuration_subject'))
       ->set('mail.tfa_disabled_configuration.body', $form_state->getValue('tfa_disabled_configuration_body'))
       ->set('help_text', $form_state->getValue('help_text'))
-      ->set('admin_uli_skip', $form_state->getValue('admin_uli_skip'))
+      ->set('reset_pass_skip_enabled', $form_state->getValue('reset_pass_skip_enabled'))
       ->save();
 
     parent::submitForm($form, $form_state);

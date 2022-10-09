@@ -43,8 +43,8 @@ tfa.settings:
     validation_skip:
       type: integer
       label: 'No. of times a user without tfa validation set-up can login.'
-    admin_uli_skip:
-      type: integer
+    reset_pass_skip_enabled:
+      type: boolean
       label: 'Allow administrator role to skip TFA when resetting password.'
     encryption:
       type: string
