@@ -49,12 +49,7 @@ class TfaPasswordResetTest extends TfaTestBase {
 
     $this->webUser = $this->drupalCreateUser(['setup own tfa']);
     $this->adminUser = $this->drupalCreateUser(['admin tfa settings']);
-    $this->superAdmin = $this->drupalCreateUser(
-        ['administer tfa for other users',
-          'admin tfa settings',
-          'setup own tfa',
-        ]
-        );
+    $this->superAdmin = $this->drupalCreateUser(['reset pass skip tfa']);
     $this->canEnableValidationPlugin('tfa_test_plugins_validation');
 
     // Activate user by logging in.
@@ -121,7 +116,7 @@ class TfaPasswordResetTest extends TfaTestBase {
     // and disable admin bypass TFA while resetting password.
     $this->drupalLogin($this->adminUser);
     $edit = [
-      'admin_uli_skip' => 0,
+      'reset_pass_skip_enabled' => FALSE,
     ];
     $this->drupalGet('admin/config/people/tfa');
     $this->submitForm($edit, 'Save configuration');

@@ -17,3 +17,8 @@ administer tfa for other users:
   title: 'Administer TFA for other users'
   description: 'Allow users to edit TFA for other accounts.'
   restrict access: TRUE
+
+reset pass skip tfa:
+  title: 'Bypass TFA during password reset'
+  description: 'Allows users to bypass TFA when using the one-time login link used in the password reset process, also used by drush uli'
+  restrict access: TRUE

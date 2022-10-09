@@ -4,17 +4,9 @@ namespace Drupal\tfa\Controller;
 
 use Drupal\Component\Utility\Crypt;
 use Drupal\Core\Url;
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Datetime\DateFormatterInterface;
-use Drupal\Core\Flood\FloodInterface;
 use Drupal\tfa\TfaContext;
-use Drupal\tfa\TfaLoginPluginManager;
 use Drupal\tfa\TfaLoginTrait;
-use Drupal\tfa\TfaValidationPluginManager;
-use Drupal\user\UserDataInterface;
-use Drupal\user\UserStorageInterface;
 use Drupal\user\Controller\UserController;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -25,6 +17,7 @@ use Drupal\user\UserInterface;
  */
 class TfaUserController extends UserController {
   use TfaLoginTrait;
+
   /**
    * The login plugin manager to fetch plugin information.
    *
@@ -40,6 +33,13 @@ class TfaUserController extends UserController {
   protected $tfaValidationPlugin;
 
   /**
+   * The configuration factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
+
+  /**
    * Tfa login context object.
    *
    * This will be initialized in the submitForm() method.
@@ -51,42 +51,28 @@ class TfaUserController extends UserController {
   /**
    * {@inheritdoc}
    */
-  public function __construct(ConfigFactoryInterface $configFactory, DateFormatterInterface $date_formatter, UserStorageInterface $user_storage, UserDataInterface $user_data, LoggerInterface $logger, FloodInterface $flood, TfaValidationPluginManager $tfa_validation_manager, TfaLoginPluginManager $tfa_plugin_manager) {
-    parent::__construct($date_formatter, $user_storage, $user_data, $logger, $flood);
-    $this->tfaValidationManager = $tfa_validation_manager;
-    $this->tfaLoginManager = $tfa_plugin_manager;
-    $this->configFactory = $configFactory;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public static function create(ContainerInterface $container) {
-    return new static($container->get('config.factory'),
-        $container->get('date.formatter'),
-        $container->get('entity_type.manager')->getStorage('user'),
-        $container->get('user.data'),
-        $container->get('logger.factory')->get('user'),
-        $container->get('flood'),
-        $container->get('plugin.manager.tfa.validation'),
-        $container->get('plugin.manager.tfa.login'));
+    $instance = parent::create($container);
+
+    $this->tfaLoginManager = $container->get('plugin.manager.tfa.login');
+    $instance->tfaValidationManager = $container->get('plugin.manager.tfa.validation');
+    $this->configFactory = $container->get('config.factory');
+
+    return $instance;
   }
 
   /**
    * {@inheritdoc}
    */
   public function resetPassLogin($uid, $timestamp, $hash, Request $request) {
-    /**
-     *
-     * @var \Drupal\user\UserInterface $user Current user.
-     */
+    /** @var \Drupal\user\UserInterface $user */
     $user = $this->userStorage->load($uid);
 
     // Tfa context service.
     $this->tfaContext = new TfaContext($this->tfaValidationManager, $this->tfaLoginManager, $this->configFactory, $user, $this->userData, $request);
     // Let Drupal core deal with the one time login,
     // if Tfa is not enabled or current user is TFA admin and can skip TFA.
-    if (!$this->tfaContext->isModuleSetup() || !$this->tfaContext->isTfaRequired() || ($this->tfaContext->canAdminSkip() && $this->tfaContext->isTfaAdmin())) {
+    if (!$this->tfaContext->isModuleSetup() || !$this->tfaContext->isTfaRequired() || $this->tfaContext->canResetPassSkip()) {
       // Let the Drupal core to validate the one time login.
       return parent::resetPassLogin($uid, $timestamp, $hash, $request);
     }
