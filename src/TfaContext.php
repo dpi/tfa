@@ -121,40 +121,8 @@ class TfaContext implements TfaContextInterface {
   /**
    * {@inheritdoc}
    */
-  public function canAdminSkip() {
-    return intval($this->tfaSettings->get('admin_uli_skip'));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isTfaAdmin() {
-    // Current user.
-    /** @var \Drupal\user\UserInterface */
-    $user = $this->getUser();
-    // Permissions required by a TFA admin user.
-    $admin_permissions = [
-      'administer tfa for other users',
-      'admin tfa settings',
-      'setup own tfa',
-    ];
-
-    if ($user) {
-      // Check if current user has all permissions
-      // that a TFA admin user should have.
-      foreach ($admin_permissions as $permission) {
-        if (!$user->hasPermission($permission)) {
-          // Current user must have all permissions
-          // required by a TFA admin user.
-          return FALSE;
-        }
-      }
-      // The user has all permissions required.
-      return TRUE;
-    }
-
-    // Current user is not available.
-    return FALSE;
+  public function canResetPassSkip() {
+    return $this->tfaSettings->get('reset_pass_skip_enabled') && $this->getUser()->hasPermission('reset pass skip tfa');
   }
 
   /**
