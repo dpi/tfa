@@ -307,3 +307,29 @@ function tfa_update_8012() {
     ->clear('cookie_name')
     ->save();
 }
+
+/**
+ * Grant eligible users with "reset pass skip tfa" permission.
+ *
+ * Set default value as true for 'reset_pass_skip_enabled'.
+ */
+function tfa_update_8013() {
+  if ($roles = Role::loadMultiple()) {
+    foreach ($roles as $role) {
+      if ($role->hasPermission('administer tfa for other users') && $role->hasPermission('admin tfa settings')) {
+        // The user role has 'admin tfa settings'
+        // and 'administer tfa for other users' permission already.
+        // Grant the new permssion to this user role.
+        $role->grantPermission('reset pass skip tfa');
+        $role->save();
+      }
+    }
+  }
+
+  $config = \Drupal::configFactory()->getEditable('tfa.settings');
+  // Allow administrator role to skip TFA
+  // by defualt, when resetting password.
+  $config
+    ->set('reset_pass_skip_enabled', TRUE)
+    ->save();
+}
