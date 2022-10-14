@@ -155,10 +155,15 @@ class TfaLoginForm extends UserLoginForm {
       // Begin TFA and set process context.
       // @todo This is used in send plugins which has not been implemented yet.
       // $this->begin($tfaValidationPlugin);
-      $parameters = $this->destination->getAsArray();
+      if (!empty($this->getRequest()->query->get('destination'))) {
+        $parameters = $this->destination->getAsArray();
+        $this->getRequest()->query->remove('destination');
+      }
+      else {
+        $parameters = [];
+      }
       $parameters['uid'] = $user->id();
       $parameters['hash'] = $this->getLoginHash($user);
-      $this->getRequest()->query->remove('destination');
       $form_state->setRedirect('tfa.entry', $parameters);
     }
   }
