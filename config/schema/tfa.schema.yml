@@ -21,6 +21,11 @@ tfa.settings:
       label: 'Enabled Login plugins'
       sequence:
         type: tfa.login.config.[%key]
+    login_plugin_settings:
+      label: 'TFA login plugin configuration'
+      type: sequence
+      sequence:
+        type: tfa.login.plugin.config.[%key]
     allowed_validation_plugins:
       type: sequence
       label: 'Allowed validation plugins'
@@ -41,12 +46,6 @@ tfa.settings:
     encryption:
       type: string
       label: 'The id of the encryption profile.'
-    trust_cookie_expiration:
-      type: integer
-      label: 'How long before TFA cookies expire. Default is 30 days.'
-    trust_cookie_name:
-      type: string
-      label: 'Cookie name of TFA trusted browser cookie. Default is "tfa-trusted-browser".'
     tfa_flood_uid_only:
       type: integer
       label: 'TFA Flood UID Ban Only'
@@ -91,6 +90,17 @@ tfa.validation.plugin.config.tfa_hotp:
     issuer:
       type: string
       label: 'The provider or service this account is associated with.'
+
+tfa.login.plugin.config.tfa_trusted_browser:
+  type: mapping
+  label: 'TFA trusted browser plugin settings'
+  mapping:
+    cookie_expiration:
+      type: integer
+      label: 'How long before TFA cookies expire. Default is 30 days.'
+    cookie_name:
+      type: string
+      label: 'Cookie name of TFA trusted browser cookie. Default is "tfa-trusted-browser".'
 
 tfa.validation.plugin.config.tfa_recovery_code:
   type: mapping

@@ -307,3 +307,19 @@ function tfa_update_8012() {
     ->clear('cookie_name')
     ->save();
 }
+
+/**
+ * Move trusted browser settings to login_plugin_settings.tfa_trusted_browser.
+ */
+function tfa_update_8013() {
+  $config = \Drupal::configFactory()->getEditable('tfa.settings');
+  $value = [
+    'cookie_expiration' => $config->get('trust_cookie_expiration') ? $config->get('trust_cookie_expiration') / 86400 : 30,
+    'cookie_name' => $config->get('trust_cookie_name') ?: 'tfa-trusted-browser',
+  ];
+  $config
+    ->set('login_plugin_settings.tfa_trusted_browser', $value)
+    ->clear('trust_cookie_expiration')
+    ->clear('trust_cookie_name')
+    ->save();
+}

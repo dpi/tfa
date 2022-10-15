@@ -195,7 +195,7 @@ class SettingsForm extends ConfigFormBase {
     // $validation_plugins_labels has the plugin ids as the key.
     $form['validation_plugin_settings'] = [
       '#type' => 'fieldset',
-      '#title' => $this->t('Extra Settings'),
+      '#title' => $this->t('Validation Settings'),
       '#descrption' => $this->t('Extra plugin settings.'),
       '#tree' => TRUE,
       '#states' => $enabled_state,
@@ -278,6 +278,46 @@ class SettingsForm extends ConfigFormBase {
       '#default_value' => ($config->get('login_plugins')) ? $config->get('login_plugins') : [],
       '#description' => $this->t('Plugins that can allow a user to skip the TFA process. If any plugin returns true the user will not be required to follow TFA. <strong>Use with caution.</strong>'),
     ];
+
+    // Login plugin related settings.
+    // $login_form_array has the plugin ids as the key.
+    $form['login_plugin_settings'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Login Settings'),
+      '#descrption' => $this->t('Extra plugin settings.'),
+      '#tree' => TRUE,
+      '#states' => $enabled_state,
+    ];
+    foreach ($login_form_array as $key => $val) {
+      $instance = $this->tfaLogin->createInstance($key, [
+        'uid' => $this->currentUser()->id(),
+      ]);
+
+      if (method_exists($instance, 'buildConfigurationForm')) {
+        $login_enabled_state = [
+          'visible' => [
+            [
+              ':input[name="tfa_enabled"]' => ['checked' => TRUE],
+              ':input[name="tfa_login[' . $key . ']"]' => ['checked' => TRUE],
+            ],
+          ],
+        ];
+        $form['login_plugin_settings'][$key . '_container'] = [
+          '#type' => 'container',
+          '#states' => $login_enabled_state,
+        ];
+        $form['login_plugin_settings'][$key . '_container']['title'] = [
+          '#type' => 'html_tag',
+          '#tag' => 'h3',
+          '#value' => $val,
+        ];
+        $form['login_plugin_settings'][$key . '_container']['form'] = $instance->buildConfigurationForm($config, $login_enabled_state);
+        $form['login_plugin_settings'][$key . '_container']['form']['#parents'] = [
+          'login_plugin_settings',
+          $key,
+        ];
+      }
+    }
 
     // Enable send plugins.
     if (count($send_plugins)) {
@@ -408,10 +448,6 @@ class SettingsForm extends ConfigFormBase {
     $allowed_validation_plugins = $form_state->getValue('tfa_allowed_validation_plugins');
     // Default validation plugin must always be allowed.
     $allowed_validation_plugins[$validation_plugin] = $validation_plugin;
-    $validation_plugin_settings = $form_state->getValue('validation_plugin_settings');
-    if (empty($validation_plugin_settings)) {
-      $validation_plugin_settings = [];
-    }
 
     // Delete tfa data if plugin is disabled.
     if ($this->config('tfa.settings')->get('enabled') && !$form_state->getValue('tfa_enabled')) {
@@ -425,9 +461,10 @@ class SettingsForm extends ConfigFormBase {
       ->set('required_roles', $form_state->getValue('tfa_required_roles'))
       ->set('send_plugins', array_filter($send_plugins))
       ->set('login_plugins', array_filter($login_plugins))
+      ->set('login_plugin_settings', $form_state->getValue('login_plugin_settings'))
       ->set('allowed_validation_plugins', array_filter($allowed_validation_plugins))
       ->set('default_validation_plugin', $validation_plugin)
-      ->set('validation_plugin_settings', $validation_plugin_settings)
+      ->set('validation_plugin_settings', $form_state->getValue('validation_plugin_settings'))
       ->set('validation_skip', $form_state->getValue('validation_skip'))
       ->set('encryption', $form_state->getValue('encryption_profile'))
       ->set('tfa_flood_uid_only', $form_state->getValue('tfa_flood_uid_only'))
