@@ -95,6 +95,9 @@ tfa.login.plugin.config.tfa_trusted_browser:
   type: mapping
   label: 'TFA trusted browser plugin settings'
   mapping:
+    cookie_allow_subdomains:
+      type: boolean
+      label: 'Is cookie allowed in subdomains. Default is true.'
     cookie_expiration:
       type: integer
       label: 'How long before TFA cookies expire. Default is 30 days.'
