@@ -37,6 +37,10 @@ function tfa_entry_access($account, $url_hash) {
   // Generate a hash for this account.
   $hash = tfa_login_hash($account);
   $context = tfa_get_context($account);
+  if (REQUEST_TIME > $context['expires']) {
+    drupal_set_message(t('TFA session has expired.'));
+    return FALSE;
+  }
   return $hash === $url_hash && !empty($context) && $context['uid'] === $account->uid;
 }
 
@@ -105,6 +109,7 @@ function tfa_get_context($account) {
  *       'login' => array('tfa_my_login_plugin'),
  *       'fallback' => array('tfa_my_recovery_plugin'),
  *     ),
+ *     'expires' => 1664823268,
  */
 function tfa_start_context($account) {
   $plugins = array(
@@ -131,8 +136,9 @@ function tfa_start_context($account) {
       $plugins['fallback'][] = $key;
     }
   }
+  $expires = REQUEST_TIME + variable_get('tfa_timeout', 60 * 5);
   // Allow other modules to modify TFA context.
-  $context = array('uid' => $account->uid, 'plugins' => $plugins);
+  $context = array('uid' => $account->uid, 'plugins' => $plugins, 'expires' => $expires);
   drupal_alter('tfa_context', $context);
   tfa_set_context($account, $context);
   return $context;

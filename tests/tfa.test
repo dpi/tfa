@@ -387,6 +387,38 @@ class TfaTestCase extends DrupalWebTestCase {
   }
 
   /**
+   * Test expiry of the TFA process.
+   */
+  public function testTfaExpiry()
+  {
+    // Enable test plugin.
+    variable_set('tfa_validate_plugin', 'tfa_test_send');
+    $code = $this->randomName();
+    variable_set('tfa_test_code', $code);
+    variable_set('tfa_timeout', -60);
+
+    $account = $this->web_user;
+
+    $edit = array(
+      'name' => $account->name,
+      'pass' => $account->pass_raw,
+    );
+    // Not using drupalLogin() since it tests for actual login.
+    $this->drupalPost('user/login', $edit, 'Log in');
+
+    $this->assertResponse(403, 'Access is denied to timed-out TFA form.');
+    $this->assertRaw('TFA session has expired.', 'Timeout message is displayed');
+
+    $url_parts = explode('/', $this->url);
+    $login_hash = array_pop($url_parts);
+    $this->drupalGet('system/tfa/' . $account->uid . '/' . $login_hash);
+
+    $this->assertResponse(403, 'Access is denied to timed-out TFA form.');
+    $this->assertRaw('TFA session has expired.', 'Timeout message is displayed');
+  }
+
+
+  /**
    * TFA module user interface strings.
    *
    * @param string $id
