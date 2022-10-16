@@ -8,10 +8,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\encrypt\EncryptionProfileManagerInterface;
-use Drupal\tfa\TfaLoginPluginManager;
-use Drupal\tfa\TfaSendPluginManager;
-use Drupal\tfa\TfaSetupPluginManager;
-use Drupal\tfa\TfaValidationPluginManager;
+use Drupal\tfa\TfaPluginManager;
 use Drupal\user\UserDataInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -21,32 +18,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class SettingsForm extends ConfigFormBase {
 
   /**
-   * The login plugin manager to fetch plugin information.
+   * The TFA plugin manager to fetch plugin information.
    *
-   * @var \Drupal\tfa\TfaLoginPluginManager
+   * @var \Drupal\tfa\TfaPluginManager
    */
-  protected $tfaLogin;
-
-  /**
-   * The send plugin manager to fetch plugin information.
-   *
-   * @var \Drupal\tfa\TfaSendPluginManager
-   */
-  protected $tfaSend;
-
-  /**
-   * The validation plugin manager to fetch plugin information.
-   *
-   * @var \Drupal\tfa\TfaValidationPluginManager
-   */
-  protected $tfaValidation;
-
-  /**
-   * The setup plugin manager to fetch plugin information.
-   *
-   * @var \Drupal\tfa\TfaSetupPluginManager
-   */
-  protected $tfaSetup;
+  protected $pluginManager;
 
   /**
    * Provides the user data service object.
@@ -67,25 +43,16 @@ class SettingsForm extends ConfigFormBase {
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory object.
-   * @param \Drupal\tfa\TfaLoginPluginManager $tfa_login
-   *   The login plugin manager.
-   * @param \Drupal\tfa\TfaSendPluginManager $tfa_send
-   *   The send plugin manager.
-   * @param \Drupal\tfa\TfaValidationPluginManager $tfa_validation
-   *   The validation plugin manager.
-   * @param \Drupal\tfa\TfaSetupPluginManager $tfa_setup
-   *   The setup plugin manager.
+   * @param \Drupal\tfa\TfaPluginManager $plugin_manager
+   *   The TFA plugin manager.
    * @param \Drupal\user\UserDataInterface $user_data
    *   The user data service.
    * @param \Drupal\encrypt\EncryptionProfileManagerInterface $encryption_profile_manager
    *   Encrypt profile manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, TfaLoginPluginManager $tfa_login, TfaSendPluginManager $tfa_send, TfaValidationPluginManager $tfa_validation, TfaSetupPluginManager $tfa_setup, UserDataInterface $user_data, EncryptionProfileManagerInterface $encryption_profile_manager) {
+  public function __construct(ConfigFactoryInterface $config_factory, TfaPluginManager $plugin_manager, UserDataInterface $user_data, EncryptionProfileManagerInterface $encryption_profile_manager) {
     parent::__construct($config_factory);
-    $this->tfaLogin = $tfa_login;
-    $this->tfaSend = $tfa_send;
-    $this->tfaSetup = $tfa_setup;
-    $this->tfaValidation = $tfa_validation;
+    $this->pluginManager = $plugin_manager;
     $this->encryptionProfileManager = $encryption_profile_manager;
     // User Data service to store user-based data in key value pairs.
     $this->userData = $user_data;
@@ -97,10 +64,7 @@ class SettingsForm extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
-      $container->get('plugin.manager.tfa.login'),
-      $container->get('plugin.manager.tfa.send'),
-      $container->get('plugin.manager.tfa.validation'),
-      $container->get('plugin.manager.tfa.setup'),
+      $container->get('plugin.manager.tfa'),
       $container->get('user.data'),
       $container->get('encrypt.encryption_profile.manager')
     );
@@ -116,30 +80,41 @@ class SettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
+  protected function getEditableConfigNames() {
+    return ['tfa.settings'];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('tfa.settings');
     $form = [];
 
     // Get Login Plugins.
-    $login_plugins = $this->tfaLogin->getDefinitions();
+    $login_plugins = $this->pluginManager->getLoginDefinitions();
 
     // Get Send Plugins.
-    $send_plugins = $this->tfaSend->getDefinitions();
+    $send_plugins = $this->pluginManager->getSendDefinitions();
 
     // Get Validation Plugins.
-    $validation_plugins = $this->tfaValidation->getDefinitions();
+    $validation_plugins = $this->pluginManager->getValidationDefinitions();
     // Get validation plugin labels.
     $validation_plugins_labels = [];
     foreach ($validation_plugins as $key => $plugin) {
       $validation_plugins_labels[$plugin['id']] = $plugin['label']->render();
     }
+
     // Fetching all available encryption profiles.
     $encryption_profiles = $this->encryptionProfileManager->getAllEncryptionProfiles();
 
-    $plugins_empty = $this->dataEmptyCheck($validation_plugins, $this->t('No plugins available for validation. See the TFA help documentation for setup.'));
-    $encryption_profiles_empty = $this->dataEmptyCheck($encryption_profiles, $this->t('No Encryption profiles available. <a href=":add_profile_url">Add an encryption profile</a>.', [':add_profile_url' => Url::fromRoute('entity.encryption_profile.add_form')->toString()]));
-
-    if ($plugins_empty || $encryption_profiles_empty) {
+    if (empty($validation_plugins)) {
+      $this->messenger()->addError($this->t('No plugins available for validation. See the TFA help documentation for setup.'));
+      $form_state->cleanValues();
+      return $form;
+    }
+    if (empty($encryption_profiles)) {
+      $this->messenger()->addError($this->t('No Encryption profiles available. <a href=":add_profile_url">Add an encryption profile</a>.', [':add_profile_url' => Url::fromRoute('entity.encryption_profile.add_form')->toString()]));
       $form_state->cleanValues();
       // Return form instead of parent::BuildForm to avoid the save button.
       return $form;
@@ -155,9 +130,7 @@ class SettingsForm extends ConfigFormBase {
     ];
 
     $enabled_state = [
-      'visible' => [
-        ':input[name="tfa_enabled"]' => ['checked' => TRUE],
-      ],
+      'visible' => [':input[name="tfa_enabled"]' => ['checked' => TRUE]],
     ];
 
     $form['tfa_required_roles'] = [
@@ -180,7 +153,7 @@ class SettingsForm extends ConfigFormBase {
       '#states' => $enabled_state,
       '#required' => TRUE,
     ];
-    $form['tfa_validate'] = [
+    $form['tfa_default_validation_plugin'] = [
       '#type' => 'select',
       '#title' => $this->t('Default Validation plugin'),
       '#options' => $validation_plugins_labels,
@@ -200,8 +173,9 @@ class SettingsForm extends ConfigFormBase {
       '#tree' => TRUE,
       '#states' => $enabled_state,
     ];
+
     foreach ($validation_plugins_labels as $key => $val) {
-      $instance = $this->tfaValidation->createInstance($key, [
+      $instance = $this->pluginManager->createInstance($key, [
         'uid' => $this->currentUser()->id(),
       ]);
 
@@ -213,7 +187,7 @@ class SettingsForm extends ConfigFormBase {
               ':input[name="tfa_allowed_validation_plugins[' . $key . ']"]' => ['checked' => TRUE],
             ],
             [
-              'select[name="tfa_validate"]' => ['value' => $key],
+              'select[name="tfa_default_validation_plugin"]' => ['value' => $key],
             ],
           ],
         ];
@@ -226,7 +200,7 @@ class SettingsForm extends ConfigFormBase {
           '#tag' => 'h3',
           '#value' => $val,
         ];
-        $form['validation_plugin_settings'][$key . '_container']['form'] = $instance->buildConfigurationForm($config, $validation_enabled_state);
+        $form['validation_plugin_settings'][$key . '_container']['form'] = $instance->buildConfigurationForm();
         $form['validation_plugin_settings'][$key . '_container']['form']['#parents'] = [
           'validation_plugin_settings',
           $key,
@@ -277,6 +251,7 @@ class SettingsForm extends ConfigFormBase {
       '#options' => $login_form_array,
       '#default_value' => ($config->get('login_plugins')) ? $config->get('login_plugins') : [],
       '#description' => $this->t('Plugins that can allow a user to skip the TFA process. If any plugin returns true the user will not be required to follow TFA. <strong>Use with caution.</strong>'),
+      '#states' => $enabled_state,
     ];
 
     // Login plugin related settings.
@@ -289,7 +264,7 @@ class SettingsForm extends ConfigFormBase {
       '#states' => $enabled_state,
     ];
     foreach ($login_form_array as $key => $val) {
-      $instance = $this->tfaLogin->createInstance($key, [
+      $instance = $this->pluginManager->createInstance($key, [
         'uid' => $this->currentUser()->id(),
       ]);
 
@@ -311,7 +286,7 @@ class SettingsForm extends ConfigFormBase {
           '#tag' => 'h3',
           '#value' => $val,
         ];
-        $form['login_plugin_settings'][$key . '_container']['form'] = $instance->buildConfigurationForm($config, $login_enabled_state);
+        $form['login_plugin_settings'][$key . '_container']['form'] = $instance->buildConfigurationForm();
         $form['login_plugin_settings'][$key . '_container']['form']['#parents'] = [
           'login_plugin_settings',
           $key,
@@ -444,10 +419,10 @@ class SettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $validation_plugin = $form_state->getValue('tfa_validate');
+    $default_validation_plugin = $form_state->getValue('tfa_default_validation_plugin');
     $allowed_validation_plugins = $form_state->getValue('tfa_allowed_validation_plugins');
     // Default validation plugin must always be allowed.
-    $allowed_validation_plugins[$validation_plugin] = $validation_plugin;
+    $allowed_validation_plugins[$default_validation_plugin] = $default_validation_plugin;
 
     // Delete tfa data if plugin is disabled.
     if ($this->config('tfa.settings')->get('enabled') && !$form_state->getValue('tfa_enabled')) {
@@ -463,7 +438,7 @@ class SettingsForm extends ConfigFormBase {
       ->set('login_plugins', array_filter($login_plugins))
       ->set('login_plugin_settings', $form_state->getValue('login_plugin_settings'))
       ->set('allowed_validation_plugins', array_filter($allowed_validation_plugins))
-      ->set('default_validation_plugin', $validation_plugin)
+      ->set('default_validation_plugin', $default_validation_plugin)
       ->set('validation_plugin_settings', $form_state->getValue('validation_plugin_settings'))
       ->set('validation_skip', $form_state->getValue('validation_skip'))
       ->set('encryption', $form_state->getValue('encryption_profile'))
@@ -478,33 +453,6 @@ class SettingsForm extends ConfigFormBase {
       ->save();
 
     parent::submitForm($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEditableConfigNames() {
-    return ['tfa.settings'];
-  }
-
-  /**
-   * Check whether the given data is empty and set appropriate message.
-   *
-   * @param array $data
-   *   Data to be checked.
-   * @param string $message
-   *   Error message to show if data is empty.
-   *
-   * @return bool
-   *   TRUE if data is empty otherwise FALSE.
-   */
-  protected function dataEmptyCheck(array $data, $message) {
-    if (empty($data)) {
-      $this->messenger()->addError($message);
-      return TRUE;
-    }
-
-    return FALSE;
   }
 
 }

@@ -7,7 +7,7 @@ namespace Drupal\Tests\tfa\Functional;
  *
  * @group tfa
  *
- * @ingroup Tfa
+ * @ingroup tfa
  */
 class TfaRecoveryCodePluginTest extends TfaTestBase {
 
@@ -26,30 +26,16 @@ class TfaRecoveryCodePluginTest extends TfaTestBase {
   public $userAccount;
 
   /**
-   * Setup plugin manager.
+   * Tfa plugin manager.
    *
-   * @var \Drupal\tfa\TfaSetupPluginManager
-   */
-  public $tfaSetupManager;
-
-  /**
-   * Validation plugin manager.
-   *
-   * @var \Drupal\tfa\TfaValidationPluginManager
+   * @var \Drupal\tfa\TfaPluginManager
    */
   public $tfaValidationManager;
 
   /**
-   * Instance of the setup plugin for the $validationPluginId.
-   *
-   * @var \Drupal\tfa\Plugin\TfaSetup\TfaRecoveryCodeSetup
-   */
-  public $setupPlugin;
-
-  /**
    * Instance of the validation plugin for the $validationPluginId.
    *
-   * @var \Drupal\tfa\Plugin\TfaValidation\TfaRecoveryCode
+   * @var \Drupal\tfa\Plugin\Tfa\TfaRecoveryCode
    */
   public $validationPlugin;
 
@@ -75,10 +61,7 @@ class TfaRecoveryCodePluginTest extends TfaTestBase {
     $permissions = ['setup own tfa', 'disable own tfa'];
     $this->userAccount = $this->createUser($permissions);
 
-    $this->tfaSetupManager = \Drupal::service('plugin.manager.tfa.setup');
-    $this->setupPlugin = $this->tfaSetupManager->createInstance($this->validationPluginId . '_setup', ['uid' => $this->userAccount->id()]);
-
-    $this->tfaValidationManager = \Drupal::service('plugin.manager.tfa.validation');
+    $this->tfaValidationManager = \Drupal::service('plugin.manager.tfa');
     $this->validationPlugin = $this->tfaValidationManager->createInstance($this->validationPluginId, ['uid' => $this->userAccount->id()]);
   }
 

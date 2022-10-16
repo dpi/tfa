@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tfa\Unit\Plugin\TfaValidation;
+namespace Drupal\Tests\tfa\Unit\Plugin\Tfa;
 
 use Prophecy\PhpUnit\ProphecyTrait;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -12,11 +12,11 @@ use Drupal\encrypt\EncryptionProfileInterface;
 use Drupal\encrypt\EncryptionProfileManagerInterface;
 use Drupal\encrypt\EncryptServiceInterface;
 use Drupal\Tests\UnitTestCase;
-use Drupal\tfa\Plugin\TfaValidation\TfaRecoveryCode;
+use Drupal\tfa\Plugin\Tfa\TfaRecoveryCode;
 use Drupal\user\UserDataInterface;
 
 /**
- * @coversDefaultClass \Drupal\tfa\Plugin\TfaValidation\TfaRecoveryCode
+ * @coversDefaultClass \Drupal\tfa\Plugin\Tfa\TfaRecoveryCode
  *
  * @group tfa
  */
@@ -101,7 +101,7 @@ class TfaRecoveryCodeTest extends UnitTestCase {
   /**
    * Helper method to construct the test fixture.
    *
-   * @return \Drupal\tfa\Plugin\TfaValidation\TfaRecoveryCode
+   * @return \Drupal\tfa\Plugin\Tfa\TfaRecoveryCode
    *   Recovery code.
    *
    * @throws \Exception

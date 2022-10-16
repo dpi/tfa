@@ -2,18 +2,14 @@
 
 namespace Drupal\tfa\Form;
 
-use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Mail\MailManagerInterface;
 use Drupal\Core\Password\PasswordInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\tfa\TfaUserDataTrait;
-use Drupal\tfa\TfaLoginPluginManager;
-use Drupal\tfa\TfaSendPluginManager;
-use Drupal\tfa\TfaSetupPluginManager;
+use Drupal\tfa\TfaPluginManager;
 use Drupal\tfa\TfaSetup;
-use Drupal\tfa\TfaValidationPluginManager;
 use Drupal\user\Entity\User;
 use Drupal\user\UserDataInterface;
 use Drupal\user\UserStorageInterface;
@@ -28,32 +24,11 @@ class TfaSetupForm extends FormBase {
   use StringTranslationTrait;
 
   /**
-   * The setup plugin manager.
+   * The TFA plugin manager.
    *
-   * @var \Drupal\tfa\TfaSetupPluginManager
+   * @var \Drupal\tfa\TfaPluginManager
    */
-  protected $tfaSetup;
-
-  /**
-   * The validation plugin manager.
-   *
-   * @var \Drupal\tfa\TfaValidationPluginManager
-   */
-  protected $tfaValidation;
-
-  /**
-   * The login plugin manager.
-   *
-   * @var \Drupal\tfa\TfaLoginPluginManager
-   */
-  protected $tfaLogin;
-
-  /**
-   * The send plugin manager.
-   *
-   * @var \Drupal\tfa\TfaSendPluginManager
-   */
-  protected $tfaSend;
+  protected $tfaPluginManager;
 
   /**
    * The password hashing service.
@@ -79,16 +54,10 @@ class TfaSetupForm extends FormBase {
   /**
    * TFA Setup form constructor.
    *
-   * @param \Drupal\tfa\TfaSetupPluginManager $tfa_setup_manager
-   *   The setup plugin manager.
+   * @param \Drupal\tfa\TfaPluginManager $tfa_plugin_manager
+   *   The TFA plugin manager.
    * @param \Drupal\user\UserDataInterface $user_data
    *   The user data object to store user information.
-   * @param \Drupal\tfa\TfaValidationPluginManager $tfa_validation_manager
-   *   The validation plugin manager.
-   * @param \Drupal\tfa\TfaLoginPluginManager $tfa_login_manager
-   *   The login plugin manager.
-   * @param \Drupal\tfa\TfaSendPluginManager $tfa_send_manager
-   *   The send plugin manager.
    * @param \Drupal\Core\Password\PasswordInterface $password_checker
    *   The password service.
    * @param \Drupal\Core\Mail\MailManagerInterface $mail_manager
@@ -96,12 +65,9 @@ class TfaSetupForm extends FormBase {
    * @param \Drupal\user\UserStorageInterface $user_storage
    *   The user storage.
    */
-  public function __construct(TfaSetupPluginManager $tfa_setup_manager, UserDataInterface $user_data, TfaValidationPluginManager $tfa_validation_manager, TfaLoginPluginManager $tfa_login_manager, TfaSendPluginManager $tfa_send_manager, PasswordInterface $password_checker, MailManagerInterface $mail_manager, UserStorageInterface $user_storage) {
-    $this->tfaSetup = $tfa_setup_manager;
+  public function __construct(TfaPluginManager $tfa_plugin_manager, UserDataInterface $user_data, PasswordInterface $password_checker, MailManagerInterface $mail_manager, UserStorageInterface $user_storage) {
+    $this->tfaPluginManager = $tfa_plugin_manager;
     $this->userData = $user_data;
-    $this->tfaValidation = $tfa_validation_manager;
-    $this->tfaLogin = $tfa_login_manager;
-    $this->tfaSend = $tfa_send_manager;
     $this->passwordChecker = $password_checker;
     $this->mailManager = $mail_manager;
     $this->userStorage = $user_storage;
@@ -112,11 +78,8 @@ class TfaSetupForm extends FormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('plugin.manager.tfa.setup'),
+      $container->get('plugin.manager.tfa'),
       $container->get('user.data'),
-      $container->get('plugin.manager.tfa.validation'),
-      $container->get('plugin.manager.tfa.login'),
-      $container->get('plugin.manager.tfa.send'),
       $container->get('password'),
       $container->get('plugin.manager.mail'),
       $container->get('entity_type.manager')->getStorage('user')
@@ -131,39 +94,9 @@ class TfaSetupForm extends FormBase {
   }
 
   /**
-   * Find the correct plugin that is being setup.
-   *
-   * @param string $plugin_id
-   *   Plugin ID.
-   *
-   * @return array|null
-   *   Plugin definitions.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   */
-  protected function findPlugin($plugin_id) {
-    $plugin = $this->tfaValidation->getDefinition($plugin_id, FALSE);
-    if (empty($plugin)) {
-      $plugin = $this->tfaLogin->getDefinition($plugin_id, FALSE);
-    }
-    if (empty($plugin)) {
-      $plugin = $this->tfaSend->getDefinition($plugin_id, FALSE);
-    }
-
-    if (empty($plugin)) {
-      throw new PluginNotFoundException($plugin_id, sprintf('The "%s" plugin does not exist.', $plugin_id));
-    }
-
-    return $plugin;
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, User $user = NULL, $method = 'tfa_totp', $reset = 0) {
-    if (!$this->tfaSetup->hasDefinition($method . '_setup')) {
-      throw new NotFoundHttpException($this->t('Plugin @plugin not found.', ['@plugin' => $method]));
-    }
     /** @var \Drupal\user\Entity\User $account */
     $account = $this->userStorage->load($this->currentUser()->id());
 
@@ -171,7 +104,7 @@ class TfaSetupForm extends FormBase {
       '#type' => 'value',
       '#value' => $user,
     ];
-    $tfa_data = $this->tfaGetTfaData($user->id(), $this->userData);
+    $tfa_data = $this->tfaGetTfaData($user->id());
     $enabled = isset($tfa_data['status'], $tfa_data['data']) && !empty($tfa_data['data']['plugins']) && $tfa_data['status'];
 
     $storage = $form_state->getStorage();
@@ -223,8 +156,8 @@ class TfaSetupForm extends FormBase {
 
       // Record methods progressed.
       $storage['steps'][] = $method;
-      $plugin = $this->findPlugin($method);
-      $setup_plugin = $this->tfaSetup->createInstance($plugin['setupPluginId'], ['uid' => $user->id()]);
+      $plugin = $this->tfaPluginManager->getDefinition($method, FALSE);
+      $setup_plugin = $this->tfaPluginManager->createInstance($plugin['id'], ['uid' => $user->id()]);
       $tfa_setup = new TfaSetup($setup_plugin);
       $form = $tfa_setup->getForm($form, $form_state, $reset);
       $storage[$method] = $tfa_setup;
@@ -363,7 +296,7 @@ class TfaSetupForm extends FormBase {
       // Log and notify if this was full setup.
       if (!empty($storage['step_method'])) {
         $data = ['plugins' => $storage['step_method']];
-        $this->tfaSaveTfaData($account->id(), $this->userData, $data);
+        $this->tfaSaveTfaData($account->id(), $data);
         $this->logger('tfa')->info('TFA enabled for user @name UID @uid', [
           '@name' => $account->getAccountName(),
           '@uid' => $account->id(),
@@ -378,7 +311,7 @@ class TfaSetupForm extends FormBase {
   /**
    * Steps eligible for TFA setup.
    */
-  private function tfaFullSetupSteps() {
+  protected function tfaFullSetupSteps() {
     $config = $this->config('tfa.settings');
     $steps = [
       $config->get('default_validation_plugin'),
@@ -406,7 +339,7 @@ class TfaSetupForm extends FormBase {
    * @param bool $skipped_step
    *   Whether the step was skipped.
    */
-  private function tfaNextSetupStep(FormStateInterface &$form_state, $this_step, TfaSetup $step_class, $skipped_step = FALSE) {
+  protected function tfaNextSetupStep(FormStateInterface &$form_state, $this_step, TfaSetup $step_class, $skipped_step = FALSE) {
     $storage = $form_state->getStorage();
     // Remove this step from steps left.
     $storage['steps_left'] = array_diff($storage['steps_left'], [$this_step]);

@@ -53,22 +53,6 @@ interface TfaSetupInterface {
   public function submitSetupForm(array $form, FormStateInterface $form_state);
 
   /**
-   * Returns a list of links containing helpful information for plugin use.
-   *
-   * @return string[]
-   *   An array containing help links for e.g., OTP generation.
-   */
-  public function getHelpLinks();
-
-  /**
-   * Returns a list of messages for plugin step.
-   *
-   * @return string[]
-   *   An array containing messages to be used during plugin setup.
-   */
-  public function getSetupMessages();
-
-  /**
    * Return process error messages.
    *
    * @return string[]

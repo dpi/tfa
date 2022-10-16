@@ -7,8 +7,7 @@ use Drupal\Core\Flood\FloodInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
-use Drupal\tfa\TfaLoginPluginManager;
-use Drupal\tfa\TfaValidationPluginManager;
+use Drupal\tfa\TfaPluginManager;
 use Drupal\user\UserDataInterface;
 use Drupal\user\Entity\User;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -19,18 +18,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class EntryForm extends FormBase {
 
   /**
-   * Validation plugin manager.
+   * The TFA plugin manager.
    *
-   * @var \Drupal\tfa\TfaValidationPluginManager
+   * @var \Drupal\tfa\TfaPluginManager
    */
-  protected $tfaValidationManager;
-
-  /**
-   * Login plugin manager.
-   *
-   * @var \Drupal\tfa\TfaLoginPluginManager
-   */
-  protected $tfaLoginManager;
+  protected $tfaPluginManager;
 
   /**
    * The validation plugin object.
@@ -84,10 +76,8 @@ class EntryForm extends FormBase {
   /**
    * EntryForm constructor.
    *
-   * @param \Drupal\tfa\TfaValidationPluginManager $tfa_validation_manager
-   *   Plugin manager for validation plugins.
-   * @param \Drupal\tfa\TfaLoginPluginManager $tfa_login_manager
-   *   Plugin manager for login plugins.
+   * @param \Drupal\tfa\TfaPluginManager $tfa_plugin_manager
+   *   The TFA plugin manager.
    * @param \Drupal\Core\Flood\FloodInterface $flood
    *   The flood control mechanism.
    * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
@@ -95,9 +85,8 @@ class EntryForm extends FormBase {
    * @param \Drupal\user\UserDataInterface $user_data
    *   User data service.
    */
-  public function __construct(TfaValidationPluginManager $tfa_validation_manager, TfaLoginPluginManager $tfa_login_manager, FloodInterface $flood, DateFormatterInterface $date_formatter, UserDataInterface $user_data) {
-    $this->tfaValidationManager = $tfa_validation_manager;
-    $this->tfaLoginManager = $tfa_login_manager;
+  public function __construct(TfaPluginManager $tfa_plugin_manager, FloodInterface $flood, DateFormatterInterface $date_formatter, UserDataInterface $user_data) {
+    $this->tfaPluginManager = $tfa_plugin_manager;
     $this->tfaSettings = $this->config('tfa.settings');
     $this->flood = $flood;
     $this->dateFormatter = $date_formatter;
@@ -114,8 +103,7 @@ class EntryForm extends FormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('plugin.manager.tfa.validation'),
-      $container->get('plugin.manager.tfa.login'),
+      $container->get('plugin.manager.tfa'),
       $container->get('flood'),
       $container->get('date.formatter'),
       $container->get('user.data')
@@ -134,7 +122,7 @@ class EntryForm extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state, $uid = NULL, string $hash = '') {
     $alternate_plugin = $this->getRequest()->get('plugin');
-    $validation_plugin_definitions = $this->tfaValidationManager->getDefinitions();
+    $validation_plugin_definitions = $this->tfaPluginManager->getValidationDefinitions();
     $user_settings = $this->userData->get('tfa', $uid, 'tfa_user_settings');
     $user_enabled_validation_plugins = $user_settings['data']['plugins'] ?? [];
 
@@ -147,10 +135,12 @@ class EntryForm extends FormBase {
     }
 
     // Get current validation plugin form.
-    $this->tfaValidationPlugin = $this->tfaValidationManager->createInstance($validation_plugin, ['uid' => $uid]);
+    $this->tfaValidationPlugin = $this->tfaPluginManager->createInstance($validation_plugin, ['uid' => $uid]);
     $form = $this->tfaValidationPlugin->getForm($form, $form_state);
 
-    $this->tfaLoginPlugins = $this->tfaLoginManager->getPlugins(['uid' => $uid]);
+    foreach ($this->tfaPluginManager->getLoginDefinitions() as $plugin_id => $definition) {
+      $this->tfaLoginPlugins[] = $this->tfaPluginManager->createInstance($plugin_id, ['uid' => $uid]);
+    }
     if ($this->tfaLoginPlugins) {
       foreach ($this->tfaLoginPlugins as $login_plugin) {
         if (method_exists($login_plugin, 'getForm')) {
@@ -284,7 +274,7 @@ class EntryForm extends FormBase {
   /**
    * Run TFA process finalization.
    */
-  public function finalize() {
+  protected function finalize() {
     // Invoke plugin finalize.
     if (method_exists($this->tfaValidationPlugin, 'finalize')) {
       $this->tfaValidationPlugin->finalize();

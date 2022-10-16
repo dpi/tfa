@@ -6,7 +6,7 @@ use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\services\ServiceDefinitionBase;
-use Drupal\tfa\TfaValidationPluginManager;
+use Drupal\tfa\TfaPluginManager;
 use Drupal\user\UserDataInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -30,12 +30,13 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class GenericValidation extends ServiceDefinitionBase implements ContainerFactoryPluginInterface {
   use DependencySerializationTrait;
+
   /**
    * Validation plugin manager.
    *
-   * @var \Drupal\tfa\TfaValidationPluginManager
+   * @var \Drupal\tfa\TfaPluginManager
    */
-  protected $tfaValidationManager;
+  protected $tfaPluginManager;
 
   /**
    * The validation plugin object.
@@ -45,9 +46,9 @@ class GenericValidation extends ServiceDefinitionBase implements ContainerFactor
   protected $validationPlugin;
 
   /**
-   * The validation plugin object.
+   * User data service.
    *
-   * @var \Drupal\tfa\Plugin\TfaValidationInterface
+   * @var \Drupal\user\UserDataInterface
    */
   protected $userData;
 
@@ -62,13 +63,13 @@ class GenericValidation extends ServiceDefinitionBase implements ContainerFactor
    *   The plugin implementation definition.
    * @param \Drupal\user\UserDataInterface $user_data
    *   User data service.
-   * @param \Drupal\tfa\TfaValidationPluginManager $tfa_validation_manager
-   *   Validation plugin manager.
+   * @param \Drupal\tfa\TfaPluginManager $tfa_plugin_manager
+   *   Tfa plugin manager.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, UserDataInterface $user_data, TfaValidationPluginManager $tfa_validation_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, UserDataInterface $user_data, TfaPluginManager $tfa_plugin_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->userData = $user_data;
-    $this->tfaValidationManager = $tfa_validation_manager;
+    $this->tfaPluginManager = $tfa_plugin_manager;
   }
 
   /**
@@ -80,7 +81,7 @@ class GenericValidation extends ServiceDefinitionBase implements ContainerFactor
       $plugin_id,
       $plugin_definition,
       $container->get('user.data'),
-      $container->get('plugin.manager.tfa.validation')
+      $container->get('plugin.manager.tfa')
     );
   }
 
@@ -103,7 +104,7 @@ class GenericValidation extends ServiceDefinitionBase implements ContainerFactor
     $plugin_id = $request->get('plugin_id');
 
     if ($uid && $code && $plugin_id) {
-      $this->validationPlugin = $this->tfaValidationManager->createInstance($plugin_id, ['uid' => $uid]);
+      $this->validationPlugin = $this->tfaPluginManager->createInstance($plugin_id, ['uid' => $uid]);
       // @todo validateRequest is not part of TfaValidationInterface.
       $valid = $this->validationPlugin->validateRequest($code);
       if ($this->validationPlugin->isAlreadyAccepted()) {

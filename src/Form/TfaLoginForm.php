@@ -7,7 +7,6 @@ use Drupal\Core\Url;
 use Drupal\tfa\Plugin\TfaSendInterface;
 use Drupal\tfa\TfaLoginContextTrait;
 use Drupal\tfa\TfaLoginTrait;
-use Drupal\tfa\TfaUserDataTrait;
 use Drupal\user\Form\UserLoginForm;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -19,7 +18,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class TfaLoginForm extends UserLoginForm {
   use TfaLoginContextTrait;
   use TfaLoginTrait;
-  use TfaUserDataTrait;
 
   /**
    * Redirect destination service.
@@ -41,8 +39,7 @@ class TfaLoginForm extends UserLoginForm {
   public static function create(ContainerInterface $container) {
     $instance = parent::create($container);
 
-    $instance->tfaValidationManager = $container->get('plugin.manager.tfa.validation');
-    $instance->tfaLoginManager = $container->get('plugin.manager.tfa.login');
+    $instance->tfaPluginManager = $container->get('plugin.manager.tfa');
     $instance->tfaSettings = $container->get('config.factory')->get('tfa.settings');
 
     $instance->userData = $container->get('user.data');
@@ -110,7 +107,7 @@ class TfaLoginForm extends UserLoginForm {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The state of the login form.
    */
-  public function loginWithTfa(FormStateInterface $form_state) {
+  protected function loginWithTfa(FormStateInterface $form_state) {
     $user = $this->getUser();
     if ($this->pluginAllowsLogin()) {
       $this->doUserLogin();
@@ -146,7 +143,7 @@ class TfaLoginForm extends UserLoginForm {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The state of the login form.
    */
-  public function loginWithoutTfa(FormStateInterface $form_state) {
+  protected function loginWithoutTfa(FormStateInterface $form_state) {
     // User may be able to skip TFA, depending on module settings and number of
     // prior attempts.
     $remaining = $this->remainingSkips();

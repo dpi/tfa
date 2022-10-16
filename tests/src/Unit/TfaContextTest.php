@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\tfa\Unit;
 
+use Drupal\tfa\Plugin\TfaLoginInterface;
 use Drupal\user\UserStorageInterface;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -9,8 +10,7 @@ use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Tests\UnitTestCase;
 use Drupal\tfa\Plugin\TfaValidationInterface;
 use Drupal\tfa\TfaLoginContextTrait;
-use Drupal\tfa\TfaLoginPluginManager;
-use Drupal\tfa\TfaValidationPluginManager;
+use Drupal\tfa\TfaPluginManager;
 use Drupal\user\UserDataInterface;
 use Drupal\user\UserInterface;
 
@@ -30,18 +30,11 @@ class TfaContextTest extends UnitTestCase {
   protected $userStorage;
 
   /**
-   * Validation plugin manager.
+   * Tfa plugin manager.
    *
-   * @var \Drupal\tfa\TfaValidationPluginManager
+   * @var \Drupal\tfa\TfaPluginManager
    */
-  protected $tfaValidationManager;
-
-  /**
-   * Login plugin manager.
-   *
-   * @var \Drupal\tfa\TfaLoginPluginManager
-   */
-  protected $tfaLoginManager;
+  protected $tfaPluginManager;
 
   /**
    * The config factory.
@@ -79,8 +72,13 @@ class TfaContextTest extends UnitTestCase {
 
     // Setup default mocked services. These can be overridden by
     // re-instantiating them as needed prior to calling ::getFixture().
-    $this->tfaValidationManager = $this->prophesize(TfaValidationPluginManager::class)->reveal();
-    $this->tfaLoginManager = $this->prophesize(TfaLoginPluginManager::class)->reveal();
+    $validation_plugin = $this->prophesize(TfaValidationInterface::class)->reveal();
+    $login_plugin = $this->prophesize(TfaLoginInterface::class)->reveal();
+    $this->tfaPluginManager = $this->prophesize(TfaPluginManager::class);
+    $this->tfaPluginManager->getLoginDefinitions()->willReturn(['bar' => 'bar']);
+    $this->tfaPluginManager->createInstance('foo', ['uid' => 3])->willReturn($validation_plugin);
+    $this->tfaPluginManager->createInstance('bar', ['uid' => 3])->willReturn($login_plugin);
+    $this->tfaPluginManager = $this->tfaPluginManager->reveal();
     $this->tfaSettings = $this->prophesize(ImmutableConfig::class)->reveal();
     $this->configFactory = $this->prophesize(ConfigFactoryInterface::class);
     $this->configFactory->get('tfa.settings')->willReturn($this->tfaSettings);
@@ -105,16 +103,14 @@ class TfaContextTest extends UnitTestCase {
    */
   protected function getFixture() {
     // Use simple anonymous class to add the TfaLoginContextTrait.
-    return new class($this->tfaValidationManager, $this->tfaLoginManager, $this->configFactory, $this->user, $this->userData, $this->userStorage) {
+    return new class($this->tfaPluginManager, $this->configFactory, $this->user, $this->userData, $this->userStorage) {
       use TfaLoginContextTrait;
 
       /**
        * Constructor.
        *
-       * @param \Drupal\tfa\TfaValidationPluginManager $tfa_validation_manager
-       *   The plugin manager for TFA validation plugins.
-       * @param \Drupal\tfa\TfaLoginPluginManager $tfa_login_manager
-       *   The plugin manager for TFA login plugins.
+       * @param \Drupal\tfa\TfaPluginManager $tfa_plugin_manager
+       *   The plugin manager for TFA plugins.
        * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
        *   The configuration service.
        * @param \Drupal\user\UserInterface $user
@@ -124,9 +120,8 @@ class TfaContextTest extends UnitTestCase {
        * @param \Drupal\user\UserStorageInterface $user_storage
        *   The user storage.
        */
-      public function __construct(TfaValidationPluginManager $tfa_validation_manager, TfaLoginPluginManager $tfa_login_manager, ConfigFactoryInterface $config_factory, UserInterface $user, UserDataInterface $user_data, UserStorageInterface $user_storage) {
-        $this->tfaValidationManager = $tfa_validation_manager;
-        $this->tfaLoginManager = $tfa_login_manager;
+      public function __construct(TfaPluginManager $tfa_plugin_manager, ConfigFactoryInterface $config_factory, UserInterface $user, UserDataInterface $user_data, UserStorageInterface $user_storage) {
+        $this->tfaPluginManager = $tfa_plugin_manager;
         $this->tfaSettings = $config_factory->get('tfa.settings');
         $this->userData = $user_data;
         $this->userStorage = $user_storage;
@@ -241,18 +236,20 @@ class TfaContextTest extends UnitTestCase {
     $this->configFactory = $config_factory->reveal();
     $validator = $this->prophesize(TfaValidationInterface::class);
     $validator->ready()->willReturn(TRUE);
-    $manager = $this->prophesize(TfaValidationPluginManager::class);
+    $manager = $this->prophesize(TfaPluginManager::class);
     $manager->createInstance('foo', ['uid' => 3])->willReturn($validator->reveal());
-    $this->tfaValidationManager = $manager->reveal();
+    $manager->getLoginDefinitions()->willReturn([]);
+    $this->tfaPluginManager = $manager->reveal();
     $fixture = $this->getFixture();
     $this->assertTrue($fixture->isReady());
 
     // Plugin set, but not ready.
     $validator = $this->prophesize(TfaValidationInterface::class);
     $validator->ready()->willReturn(FALSE);
-    $manager = $this->prophesize(TfaValidationPluginManager::class);
+    $manager = $this->prophesize(TfaPluginManager::class);
     $manager->createInstance('foo', ['uid' => 3])->willReturn($validator->reveal());
-    $this->tfaValidationManager = $manager->reveal();
+    $manager->getLoginDefinitions()->willReturn([]);
+    $this->tfaPluginManager = $manager->reveal();
     $fixture = $this->getFixture();
     $this->assertFalse($fixture->isReady());
   }

@@ -5,7 +5,7 @@ namespace Drupal\Tests\tfa\Functional;
 /**
  * Tests for the tfa login process.
  *
- * @group Tfa
+ * @group tfa
  */
 class TfaLoginTest extends TfaTestBase {
 

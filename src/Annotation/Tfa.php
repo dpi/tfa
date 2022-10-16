@@ -5,11 +5,11 @@ namespace Drupal\tfa\Annotation;
 use Drupal\Component\Annotation\Plugin;
 
 /**
- * Defines a TFA Validation annotation object.
+ * Defines a TFA annotation object.
  *
  * @Annotation
  */
-class TfaValidation extends Plugin {
+class Tfa extends Plugin {
 
   /**
    * The plugin ID.
@@ -19,7 +19,7 @@ class TfaValidation extends Plugin {
   public $id;
 
   /**
-   * The human-readable name of the Tfa validation.
+   * The human-readable name of the plugin.
    *
    * @var \Drupal\Core\Annotation\Translation
    *
@@ -28,7 +28,7 @@ class TfaValidation extends Plugin {
   public $title;
 
   /**
-   * The description shown to users.
+   * The description of the plugin.
    *
    * @var \Drupal\Core\Annotation\Translation
    *
@@ -37,10 +37,17 @@ class TfaValidation extends Plugin {
   public $description;
 
   /**
-   * Plugin ID for user-specific setup plugin for this validation plugin.
+   * The helper metadata for setup plugin.
    *
-   * @var string
+   * @var string[]
    */
-  public $setupPluginId;
+  public $helpLinks;
+
+  /**
+   * The messages to be displayed during setup steps.
+   *
+   * @var string[]
+   */
+  public $setupMessages;
 
 }

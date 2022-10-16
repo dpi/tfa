@@ -117,7 +117,7 @@ class TfaLoginController {
     if (!$is_self) {
       $method = $route->getParameter('method');
       if (!empty($method)) {
-        $plugin = \Drupal::service('plugin.manager.tfa.validation')->createInstance($method, ['uid' => $target_user->id()]);
+        $plugin = \Drupal::service('plugin.manager.tfa')->createInstance($method, ['uid' => $target_user->id()]);
         if (method_exists($plugin, 'allowUserSetupAccess')) {
           $ret = $plugin->allowUserSetupAccess($route, $account);
           if ($ret === FALSE) {

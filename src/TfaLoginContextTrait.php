@@ -15,18 +15,11 @@ trait TfaLoginContextTrait {
   use TfaUserDataTrait;
 
   /**
-   * Validation plugin manager.
+   * Tfa plugin manager.
    *
-   * @var \Drupal\tfa\TfaValidationPluginManager
+   * @var \Drupal\tfa\TfaPluginManager
    */
-  protected $tfaValidationManager;
-
-  /**
-   * Login plugin manager.
-   *
-   * @var \Drupal\tfa\TfaLoginPluginManager
-   */
-  protected $tfaLoginManager;
+  protected $tfaPluginManager;
 
   /**
    * The tfaValidation plugin.
@@ -57,13 +50,6 @@ trait TfaLoginContextTrait {
   protected $user;
 
   /**
-   * Array of login plugins for a given user.
-   *
-   * @var \Drupal\tfa\Plugin\TfaLoginInterface[]
-   */
-  protected $userLoginPlugins;
-
-  /**
    * Array of login plugins.
    *
    * @var \Drupal\tfa\Plugin\TfaLoginInterface[]
@@ -76,15 +62,21 @@ trait TfaLoginContextTrait {
   public function setUser($uid) {
     $this->user = $this->userStorage->load($uid);
 
-    $this->tfaLoginPlugins = $this->tfaLoginManager->getPlugins(['uid' => $uid]);
+    $this->tfaLoginPlugins = [];
+    $login_definitions = $this->tfaPluginManager->getLoginDefinitions();
+    if (!empty($login_definitions)) {
+      foreach ($login_definitions as $plugin_id => $definition) {
+        $this->tfaLoginPlugins[] = $this->tfaPluginManager->createInstance($plugin_id, ['uid' => $uid]);
+      }
+    }
     // If possible, set up an instance of tfaValidationPlugin and the user's
     // list of plugins.
-    $validationPluginName = $this->tfaSettings->get('default_validation_plugin');
-    if (!empty($validationPluginName)) {
-      $this->tfaValidationPlugin = $this->tfaValidationManager
-        ->createInstance($validationPluginName, ['uid' => $uid]);
-      $this->userLoginPlugins = $this->tfaLoginManager
-        ->getPlugins(['uid' => $uid]);
+    $validation_plugin = $this->tfaSettings->get('default_validation_plugin');
+    if (!empty($validation_plugin)) {
+      $this->tfaValidationPlugin = $this->tfaPluginManager->createInstance($validation_plugin, ['uid' => $uid]);
+    }
+    else {
+      $this->tfaValidationPlugin = NULL;
     }
   }
 
@@ -116,7 +108,7 @@ trait TfaLoginContextTrait {
    */
   public function isTfaRequired() {
     // If TFA has been set up for the user, then it is required.
-    $user_tfa_data = $this->tfaGetTfaData($this->getUser()->id(), $this->userData);
+    $user_tfa_data = $this->tfaGetTfaData($this->getUser()->id());
     if (!empty($user_tfa_data['status']) && !empty($user_tfa_data['data']['plugins'])) {
       return TRUE;
     }
@@ -152,7 +144,7 @@ trait TfaLoginContextTrait {
       return FALSE;
     }
 
-    $user_tfa_data = $this->tfaGetTfaData($this->getUser()->id(), $this->userData);
+    $user_tfa_data = $this->tfaGetTfaData($this->getUser()->id());
     $validation_skipped = $user_tfa_data['validation_skipped'] ?? 0;
     return max(0, $allowed_skips - $validation_skipped);
   }
@@ -161,10 +153,10 @@ trait TfaLoginContextTrait {
    * Increment the count of $this->getUser() logins without setting up TFA.
    */
   public function hasSkipped() {
-    $user_tfa_data = $this->tfaGetTfaData($this->getUser()->id(), $this->userData);
+    $user_tfa_data = $this->tfaGetTfaData($this->getUser()->id());
     $validation_skipped = $user_tfa_data['validation_skipped'] ?? 0;
     $user_tfa_data['validation_skipped'] = $validation_skipped + 1;
-    $this->tfaSaveTfaData($this->getUser()->id(), $this->userData, $user_tfa_data);
+    $this->tfaSaveTfaData($this->getUser()->id(), $user_tfa_data);
   }
 
   /**
