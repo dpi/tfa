@@ -29,16 +29,33 @@ class TfaLoginController {
    *   The access result.
    */
   public function access(RouteMatchInterface $route, AccountInterface $account) {
-    // Attempt to retrieve a user from the uid.
-    // We Use uids here instead of user objects to prevent enumeration attacks.
-    $uid = $route->getParameter('uid');
-    /** @var \Drupal\user\UserInterface $user */
-    $user = User::load($uid);
-
     // Start with a positive access check which is cacheable for the current
     // route, which includes both route name and parameters.
     $access = AccessResult::allowed();
     $access->addCacheContexts(['route']);
+
+    // Use uids here instead of user objects to prevent enumeration attacks.
+    $uid = (int) $route->getParameter('uid');
+
+    // If stored uid is invalid, the tfa process didn't start in this session.
+    $temp_store = \Drupal::service('tempstore.private')->get('tfa');
+    $uid_check = $temp_store->get('tfa-entry-uid');
+    if (!is_numeric($uid_check) || ($uid !== (int) $uid_check)) {
+      return $access->andIf(AccessResult::forbidden('Invalid session.'));
+    }
+    else {
+      $metadata = $temp_store->getMetadata('tfa-entry-uid');
+      $updated = is_null($metadata) ? 0 : $metadata->getUpdated();
+      // Deny access, after 5 minutes since the start of the tfa process.
+      if ($updated < (time() - 300)) {
+        $temp_store->delete('tfa-entry-uid');
+        return $access->andIf(AccessResult::forbidden('Timeout expired.'));
+      }
+    }
+
+    // Attempt to retrieve a user from the uid.
+    /** @var \Drupal\user\UserInterface $user */
+    $user = User::load($uid);
     if (!$user instanceof UserInterface) {
       return $access->andIf(AccessResult::forbidden('Invalid user.'));
     }

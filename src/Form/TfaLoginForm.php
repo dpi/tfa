@@ -29,6 +29,13 @@ class TfaLoginForm extends UserLoginForm {
   protected $destination;
 
   /**
+   * The private temporary store.
+   *
+   * @var \Drupal\Core\TempStore\PrivateTempStore
+   */
+  protected $privateTempStore;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
@@ -41,6 +48,7 @@ class TfaLoginForm extends UserLoginForm {
     $instance->userData = $container->get('user.data');
 
     $instance->destination = $container->get('redirect.destination');
+    $instance->privateTempStore = $container->get('tempstore.private')->get('tfa');
 
     return $instance;
   }
@@ -123,6 +131,9 @@ class TfaLoginForm extends UserLoginForm {
       $parameters['uid'] = $user->id();
       $parameters['hash'] = $this->getLoginHash($user);
       $form_state->setRedirect('tfa.entry', $parameters);
+
+      // Store UID in order to later verify access to entry form.
+      $this->privateTempStore->set('tfa-entry-uid', $user->id());
     }
   }
 
