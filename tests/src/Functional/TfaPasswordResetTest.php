@@ -49,12 +49,9 @@ class TfaPasswordResetTest extends TfaTestBase {
 
     $this->webUser = $this->drupalCreateUser(['setup own tfa']);
     $this->adminUser = $this->drupalCreateUser(['admin tfa settings']);
-    $this->superAdmin = $this->drupalCreateUser(['reset pass skip tfa']);
+    $this->superAdmin = User::load(1);
     $this->canEnableValidationPlugin('tfa_test_plugins_validation');
 
-    // Activate user by logging in.
-    $this->drupalLogin($this->superAdmin);
-    $this->drupalLogout();
   }
 
   /**
@@ -66,10 +63,9 @@ class TfaPasswordResetTest extends TfaTestBase {
     // Enable TFA for the webUser role only.
     $this->drupalLogin($this->adminUser);
     $web_user_roles = $this->webUser->getRoles(TRUE);
-    $super_user_roles = $this->superAdmin->getRoles(TRUE);
     $edit = [
       'tfa_required_roles[' . $web_user_roles[0] . ']' => TRUE,
-      'tfa_required_roles[' . $super_user_roles[0] . ']' => TRUE,
+      'tfa_required_roles[authenticated]' => TRUE,
     ];
     $this->drupalGet('admin/config/people/tfa');
     $this->submitForm($edit, 'Save configuration');
@@ -96,9 +92,8 @@ class TfaPasswordResetTest extends TfaTestBase {
     // And check if the TFA and pass-reset-token are presented.
     $this->isTfaPasswordResetUrl($this->webUser);
 
-    // Check that TFA admin user can bypass TFA
-    // when resetting the password,
-    // If Admin TFA exemption is enabled by default.
+    // Check that the super admin user can bypass TFA
+    // when resetting the password.
     $this->drupalLogout();
     // Login via the one time login URL.
     $this->resetPassword($this->superAdmin);
@@ -108,26 +103,6 @@ class TfaPasswordResetTest extends TfaTestBase {
     $this->submitForm($edit, 'Save');
     $assert_session->pageTextContains('The changes have been saved.');
 
-    // Check that TFA admin user can not bypass TFA
-    // when resetting the password.
-    // If Admin TFA exemption is disabled.
-    $this->drupalLogout();
-    // Enable TFA for the suer admin role,
-    // and disable admin bypass TFA while resetting password.
-    $this->drupalLogin($this->adminUser);
-    $edit = [
-      'reset_pass_skip_enabled' => FALSE,
-    ];
-    $this->drupalGet('admin/config/people/tfa');
-    $this->submitForm($edit, 'Save configuration');
-    $assert_session->statusCodeEquals(200);
-    $assert_session->pageTextContains('The configuration options have been saved.');
-    $this->drupalLogout();
-    // Login via the one time login URL.
-    $this->resetPassword($this->superAdmin);
-    $assert_session->statusCodeEquals(200);
-    // And check if the TFA and pass-reset-token are presented.
-    $this->isTfaPasswordResetUrl($this->superAdmin);
   }
 
   /**

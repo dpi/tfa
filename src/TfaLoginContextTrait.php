@@ -97,7 +97,7 @@ trait TfaLoginContextTrait {
    *   Whether or not the TFA module is configured for use.
    */
   public function canResetPassSkip() {
-    return $this->tfaSettings->get('reset_pass_skip_enabled') && $this->getUser()->hasPermission('reset pass skip tfa');
+    return (int) $this->getUser()->id() === 1;
   }
 
   /**

@@ -71,7 +71,8 @@ class TfaUserController extends UserController {
     // Tfa context service.
     $this->tfaContext = new TfaContext($this->tfaValidationManager, $this->tfaLoginManager, $this->configFactory, $user, $this->userData, $request);
     // Let Drupal core deal with the one time login,
-    // if Tfa is not enabled or current user is TFA admin and can skip TFA.
+    // if Tfa is not enabled
+    // or current user can skip TFA while resetting password.
     if (!$this->tfaContext->isModuleSetup() || !$this->tfaContext->isTfaRequired() || $this->tfaContext->canResetPassSkip()) {
       // Let the Drupal core to validate the one time login.
       return parent::resetPassLogin($uid, $timestamp, $hash, $request);

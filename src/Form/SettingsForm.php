@@ -143,15 +143,6 @@ class SettingsForm extends ConfigFormBase {
       '#required' => FALSE,
     ];
 
-    $form['reset_pass_skip_enabled'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Allow TFA bypass during password reset'),
-      '#default_value' => $config->get('reset_pass_skip_enabled') ?? TRUE,
-      '#description' => $this->t('Allow TFA to be bypassed during password reset by users with the @role role.', ['@role' => 'Bypass TFA during password reset']),
-      '#states' => $enabled_state,
-      '#required' => FALSE,
-    ];
-
     $form['tfa_allowed_validation_plugins'] = [
       '#type' => 'checkboxes',
       '#title' => $this->t('Allowed Validation plugins'),
@@ -459,7 +450,6 @@ class SettingsForm extends ConfigFormBase {
       ->set('mail.tfa_disabled_configuration.subject', $form_state->getValue('tfa_disabled_configuration_subject'))
       ->set('mail.tfa_disabled_configuration.body', $form_state->getValue('tfa_disabled_configuration_body'))
       ->set('help_text', $form_state->getValue('help_text'))
-      ->set('reset_pass_skip_enabled', $form_state->getValue('reset_pass_skip_enabled'))
       ->save();
 
     parent::submitForm($form, $form_state);
