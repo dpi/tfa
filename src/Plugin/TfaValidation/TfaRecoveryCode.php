@@ -6,6 +6,9 @@ use Drupal\Core\Config\Config;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\encrypt\EncryptionProfileManagerInterface;
 use Drupal\encrypt\EncryptServiceInterface;
@@ -39,6 +42,13 @@ class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface, C
   protected $codeLimit = 10;
 
   /**
+   * Current user.
+   *
+   * @var \Drupal\Core\Session\AccountProxyInterface
+   */
+  protected $currentUser;
+
+  /**
    * Constructs a new Tfa plugin object.
    *
    * @param array $configuration
@@ -55,14 +65,17 @@ class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface, C
    *   Encryption service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The configuration factory.
+   * @param \Drupal\Core\Session\AccountProxyInterface $current_user
+   *   The current user.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, UserDataInterface $user_data, EncryptionProfileManagerInterface $encryption_profile_manager, EncryptServiceInterface $encrypt_service, ConfigFactoryInterface $config_factory) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, UserDataInterface $user_data, EncryptionProfileManagerInterface $encryption_profile_manager, EncryptServiceInterface $encrypt_service, ConfigFactoryInterface $config_factory, AccountProxyInterface $current_user) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $user_data, $encryption_profile_manager, $encrypt_service);
 
     $codes_amount = $config_factory->get('tfa.settings')->get('validation_plugin_settings.tfa_recovery_code.recovery_codes_amount');
     if (!empty($codes_amount)) {
       $this->codeLimit = $codes_amount;
     }
+    $this->currentUser = $current_user;
   }
 
   /**
@@ -76,7 +89,8 @@ class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface, C
       $container->get('user.data'),
       $container->get('encrypt.encryption_profile.manager'),
       $container->get('encryption'),
-      $container->get('config.factory')
+      $container->get('config.factory'),
+      $container->get('current_user')
     );
   }
 
@@ -86,6 +100,22 @@ class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface, C
   public function ready() {
     $codes = $this->getCodes();
     return !empty($codes);
+  }
+
+  /**
+   * Check if account has access to the user plugin configuration.
+   *
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route
+   *   The route to be checked.
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The account requesting access.
+   *
+   * @return bool
+   *   Returns true if the access is allowed.
+   */
+  public function allowUserSetupAccess(RouteMatchInterface $route, AccountInterface $account) {
+    // Only allow user setup access to the 'show codes' if user is self.
+    return (($route->getRouteName() !== 'tfa.validation.setup') || ($this->uid === $account->id()));
   }
 
   /**

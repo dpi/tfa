@@ -33,7 +33,7 @@ class TfaRecoveryCodeSetup extends TfaRecoveryCode implements TfaSetupInterface 
    * {@inheritdoc}
    */
   public function getOverview(array $params) {
-    return [
+    $ret = [
       'heading' => [
         '#type' => 'html_tag',
         '#tag' => 'h3',
@@ -71,6 +71,13 @@ class TfaRecoveryCodeSetup extends TfaRecoveryCode implements TfaSetupInterface 
         ],
       ],
     ];
+
+    // Don't show codes to other users.
+    if ($this->currentUser->id() !== $this->uid) {
+      unset($ret['show_codes']);
+    }
+
+    return $ret;
   }
 
   /**

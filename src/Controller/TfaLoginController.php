@@ -97,6 +97,19 @@ class TfaLoginController {
     }
 
     $is_self = $account->id() === $target_user->id();
+    if (!$is_self) {
+      $method = $route->getParameter('method');
+      if (!empty($method)) {
+        $plugin = \Drupal::service('plugin.manager.tfa.validation')->createInstance($method, ['uid' => $target_user->id()]);
+        if (method_exists($plugin, 'allowUserSetupAccess')) {
+          $ret = $plugin->allowUserSetupAccess($route, $account);
+          if ($ret === FALSE) {
+            return $access->andIf(AccessResult::forbidden("Access denied for $method plugin."));
+          }
+        }
+      }
+    }
+
     $is_admin = $account->hasPermission('administer tfa for other users');
     $is_self_or_admin = AccessResult::allowedIf($is_self || $is_admin);
 
