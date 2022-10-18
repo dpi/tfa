@@ -7,6 +7,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Form\FormState;
+use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\encrypt\EncryptionProfileInterface;
 use Drupal\encrypt\EncryptionProfileManagerInterface;
 use Drupal\encrypt\EncryptServiceInterface;
@@ -65,6 +66,13 @@ class TfaRecoveryCodeTest extends UnitTestCase {
   protected $encryptionProfile;
 
   /**
+   * A mocked current user.
+   *
+   * @var \Drupal\Core\Session\AccountProxyInterface|\Prophecy\Prophecy\ObjectProphecy
+   */
+  protected $currentUser;
+
+  /**
    * Default configuration for the plugin.
    *
    * @var array
@@ -87,6 +95,7 @@ class TfaRecoveryCodeTest extends UnitTestCase {
     $this->tfaSettings = $this->prophesize(ImmutableConfig::class);
     $this->configFactory = $this->prophesize(ConfigFactoryInterface::class);
     $this->encryptionProfile = $this->prophesize(EncryptionProfileInterface::class);
+    $this->currentUser = $this->prophesize(AccountProxyInterface::class);
   }
 
   /**
@@ -112,7 +121,8 @@ class TfaRecoveryCodeTest extends UnitTestCase {
       $this->userData->reveal(),
       $this->encryptionProfileManager->reveal(),
       $this->encryptionService->reveal(),
-      $container->get('config.factory')
+      $container->get('config.factory'),
+      $this->currentUser->reveal()
     );
   }
 
