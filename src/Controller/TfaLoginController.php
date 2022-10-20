@@ -28,12 +28,30 @@ class TfaLoginController {
    *   The access result.
    */
   public function access(RouteMatchInterface $route, AccountInterface $account) {
+    /** @var \Drupal\user\UserInterface $user */
     $user = $route->getParameter('user');
 
     // Start with a positive access check which is cacheable for the current
     // route, which includes both route name and parameters.
     $access = AccessResult::allowed();
     $access->addCacheContexts(['route']);
+
+    // If stored uid is invalid, the tfa process didn't start in this session.
+    $temp_store = \Drupal::service('tempstore.private')->get('tfa');
+    $uid_check = $temp_store->get('tfa-entry-uid');
+    if (!is_numeric($uid_check) || ((int) $user->id() !== (int) $uid_check)) {
+      return $access->andIf(AccessResult::forbidden('Invalid session.'));
+    }
+    else {
+      $metadata = $temp_store->getMetadata('tfa-entry-uid');
+      $updated = is_null($metadata) ? 0 : $metadata->getUpdated();
+      // Deny access, after 5 minutes since the start of the tfa process.
+      if ($updated < (time() - 300)) {
+        $temp_store->delete('tfa-entry-uid');
+        return $access->andIf(AccessResult::forbidden('Timeout expired.'));
+      }
+    }
+
     if (!$user instanceof UserInterface) {
       return $access->andIf(AccessResult::forbidden('Invalid user.'));
     }

@@ -64,6 +64,13 @@ class TfaLoginForm extends UserLoginForm {
   protected $destination;
 
   /**
+   * The private temporary store.
+   *
+   * @var \Drupal\Core\TempStore\PrivateTempStore
+   */
+  protected $privateTempStore;
+
+  /**
    * Tfa login context object.
    *
    * This will be initialized in the submitForm() method.
@@ -104,7 +111,7 @@ class TfaLoginForm extends UserLoginForm {
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static(
+    $instance =  new static(
       $container->get('flood'),
       $container->get('entity_type.manager')->getStorage('user'),
       $container->get('user.auth'),
@@ -114,6 +121,9 @@ class TfaLoginForm extends UserLoginForm {
       $container->get('user.data'),
       $container->get('redirect.destination')
     );
+    $instance->privateTempStore = $container->get('tempstore.private')->get('tfa');
+
+    return $instance;
   }
 
   /**
@@ -200,6 +210,9 @@ class TfaLoginForm extends UserLoginForm {
       $parameters['hash'] = $this->getLoginHash($user);
       $this->getRequest()->query->remove('destination');
       $form_state->setRedirect('tfa.entry', $parameters);
+
+      // Store UID in order to later verify access to entry form.
+      $this->privateTempStore->set('tfa-entry-uid', $user->id());
     }
   }
 
