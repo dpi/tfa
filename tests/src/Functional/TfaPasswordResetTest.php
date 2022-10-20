@@ -92,8 +92,29 @@ class TfaPasswordResetTest extends TfaTestBase {
     // And check if the TFA and pass-reset-token are presented.
     $this->isTfaPasswordResetUrl($this->webUser);
 
+    // Check that the super admin user can not bypass TFA
+    // when resetting the password.
+    $this->drupalLogout();
+    // Login via the one time login URL.
+    $this->resetPassword($this->superAdmin);
+    $assert_session->statusCodeEquals(200);
+    // And check if the TFA and pass-reset-token are presented.
+    $this->isTfaPasswordResetUrl($this->superAdmin);
+
     // Check that the super admin user can bypass TFA
     // when resetting the password.
+    // If Admin TFA exemption is true.
+    $this->drupalLogout();
+    // Enable TFA for the suer admin role,
+    // and disable admin bypass TFA while resetting password.
+    $this->drupalLogin($this->adminUser);
+    $edit = [
+      'reset_pass_skip_enabled' => TRUE,
+    ];
+    $this->drupalGet('admin/config/people/tfa');
+    $this->submitForm($edit, 'Save configuration');
+    $assert_session->statusCodeEquals(200);
+    $assert_session->pageTextContains('The configuration options have been saved.');
     $this->drupalLogout();
     // Login via the one time login URL.
     $this->resetPassword($this->superAdmin);

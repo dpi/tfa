@@ -97,7 +97,7 @@ trait TfaLoginContextTrait {
    *   TRUE if the user can skip tfa.
    */
   public function canResetPassSkip() {
-    return (int) $this->getUser()->id() === 1;
+    return $this->tfaSettings->get('reset_pass_skip_enabled') && ((int) $this->getUser()->id() === 1);
   }
 
   /**

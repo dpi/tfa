@@ -43,6 +43,9 @@ tfa.settings:
     validation_skip:
       type: integer
       label: 'No. of times a user without tfa validation set-up can login.'
+    reset_pass_skip_enabled:
+      type: boolean
+      label: 'Allow super administrator to skip TFA when resetting password.'
     encryption:
       type: string
       label: 'The id of the encryption profile.'
