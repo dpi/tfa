@@ -85,7 +85,7 @@ class EntryForm extends FormBase {
    * @param \Drupal\user\UserDataInterface $user_data
    *   User data service.
    */
-  public function __construct(TfaPluginManager $tfa_plugin_manager, FloodControlInterface $user_flood_control, DateFormatterInterface $date_formatter, UserDataInterface $user_data) {
+  public function __construct(TfaPluginManager $tfa_plugin_manager, UserFloodControlInterface $user_flood_control, DateFormatterInterface $date_formatter, UserDataInterface $user_data) {
     $this->tfaPluginManager = $tfa_plugin_manager;
     $this->tfaSettings = $this->config('tfa.settings');
     $this->flood = $user_flood_control;
