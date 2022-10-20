@@ -3,12 +3,12 @@
 namespace Drupal\tfa\Form;
 
 use Drupal\Core\Datetime\DateFormatterInterface;
-use Drupal\Core\Flood\FloodInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\tfa\TfaPluginManager;
 use Drupal\user\UserDataInterface;
+use Drupal\user\UserFloodControlInterface;
 use Drupal\user\Entity\User;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -46,9 +46,9 @@ class EntryForm extends FormBase {
   protected $tfaSettings;
 
   /**
-   * The flood control mechanism.
+   * The user flood control service.
    *
-   * @var \Drupal\Core\Flood\FloodInterface
+   * @var \Drupal\user\UserFloodControlInterface
    */
   protected $flood;
 
@@ -78,17 +78,17 @@ class EntryForm extends FormBase {
    *
    * @param \Drupal\tfa\TfaPluginManager $tfa_plugin_manager
    *   The TFA plugin manager.
-   * @param \Drupal\Core\Flood\FloodInterface $flood
-   *   The flood control mechanism.
+   * @param \Drupal\user\UserFloodControlInterface $user_flood_control
+   *   The user flood control service.
    * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
    *   The date service.
    * @param \Drupal\user\UserDataInterface $user_data
    *   User data service.
    */
-  public function __construct(TfaPluginManager $tfa_plugin_manager, FloodInterface $flood, DateFormatterInterface $date_formatter, UserDataInterface $user_data) {
+  public function __construct(TfaPluginManager $tfa_plugin_manager, FloodControlInterface $user_flood_control, DateFormatterInterface $date_formatter, UserDataInterface $user_data) {
     $this->tfaPluginManager = $tfa_plugin_manager;
     $this->tfaSettings = $this->config('tfa.settings');
-    $this->flood = $flood;
+    $this->flood = $user_flood_control;
     $this->dateFormatter = $date_formatter;
     $this->userData = $user_data;
   }
@@ -104,7 +104,7 @@ class EntryForm extends FormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('plugin.manager.tfa'),
-      $container->get('flood'),
+      $container->get('user.flood_control'),
       $container->get('date.formatter'),
       $container->get('user.data')
     );
