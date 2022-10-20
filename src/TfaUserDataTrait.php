@@ -7,7 +7,14 @@ use Drupal\user\UserDataInterface;
 /**
  * Provides methods to save tfa user settings.
  */
-trait TfaDataTrait {
+trait TfaUserDataTrait {
+
+  /**
+   * The user data service.
+   *
+   * @var \Drupal\user\UserDataInterface
+   */
+  protected $userData;
 
   /**
    * Store user specific information.

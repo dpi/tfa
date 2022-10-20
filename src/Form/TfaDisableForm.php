@@ -6,7 +6,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Mail\MailManagerInterface;
 use Drupal\Core\Password\PasswordInterface;
-use Drupal\tfa\TfaDataTrait;
+use Drupal\tfa\TfaUserDataTrait;
 use Drupal\tfa\TfaValidationPluginManager;
 use Drupal\user\Entity\User;
 use Drupal\user\UserDataInterface;
@@ -17,7 +17,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * TFA disable form router.
  */
 class TfaDisableForm extends FormBase {
-  use TfaDataTrait;
+  use TfaUserDataTrait;
 
   /**
    * The validation plugin manager.
@@ -25,13 +25,6 @@ class TfaDisableForm extends FormBase {
    * @var \Drupal\tfa\TfaValidationPluginManager
    */
   protected $manager;
-
-  /**
-   * Provides the user data service object.
-   *
-   * @var \Drupal\user\UserDataInterface
-   */
-  protected $userData;
 
   /**
    * The password hashing service.

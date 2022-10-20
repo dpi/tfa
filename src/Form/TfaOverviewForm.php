@@ -6,7 +6,7 @@ use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
-use Drupal\tfa\TfaDataTrait;
+use Drupal\tfa\TfaUserDataTrait;
 use Drupal\tfa\TfaLoginPluginManager;
 use Drupal\tfa\TfaSendPluginManager;
 use Drupal\tfa\TfaSetupPluginManager;
@@ -19,7 +19,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * TFA account setup overview page.
  */
 class TfaOverviewForm extends FormBase {
-  use TfaDataTrait;
+  use TfaUserDataTrait;
 
   /**
    * The setup plugin manager to fetch setup information.
@@ -48,13 +48,6 @@ class TfaOverviewForm extends FormBase {
    * @var \Drupal\tfa\TfaSendPluginManager
    */
   protected $tfaSend;
-
-  /**
-   * Provides the user data service object.
-   *
-   * @var \Drupal\user\UserDataInterface
-   */
-  protected $userData;
 
   /**
    * The date formatter service.

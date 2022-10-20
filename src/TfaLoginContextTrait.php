@@ -2,21 +2,17 @@
 
 namespace Drupal\tfa;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\user\UserDataInterface;
-use Drupal\user\UserInterface;
-use Symfony\Component\HttpFoundation\Request;
-
 /**
  * Provide context for the current login attempt.
  *
  * This class collects data needed to decide whether TFA is required and, if so,
  * whether it is successful. This includes configuration of the module, the
  * current request, and the user that is attempting to log in.
+ *
+ * @internal
  */
-class TfaContext implements TfaContextInterface {
-  // Access to user's TFA settings.
-  use TfaDataTrait;
+trait TfaLoginContextTrait {
+  use TfaUserDataTrait;
 
   /**
    * Validation plugin manager.
@@ -33,13 +29,6 @@ class TfaContext implements TfaContextInterface {
   protected $tfaLoginManager;
 
   /**
-   * The current validation plugin id being used by this context instance.
-   *
-   * @var string
-   */
-  protected $validationPluginName;
-
-  /**
    * The tfaValidation plugin.
    *
    * @var \Drupal\tfa\Plugin\TfaValidationInterface|null
@@ -54,25 +43,18 @@ class TfaContext implements TfaContextInterface {
   protected $tfaSettings;
 
   /**
+   * The user storage.
+   *
+   * @var \Drupal\user\UserStorageInterface
+   */
+  protected $userStorage;
+
+  /**
    * Entity for the user that is attempting to login.
    *
    * @var \Drupal\user\UserInterface
    */
   protected $user;
-
-  /**
-   * User data service.
-   *
-   * @var \Drupal\user\UserDataInterface
-   */
-  protected $userData;
-
-  /**
-   * Current request object.
-   *
-   * @var \Symfony\Component\HttpFoundation\Request
-   */
-  protected $request;
 
   /**
    * Array of login plugins for a given user.
@@ -89,44 +71,48 @@ class TfaContext implements TfaContextInterface {
   protected $tfaLoginPlugins;
 
   /**
-   * {@inheritdoc}
+   * Set the user object.
    */
-  public function __construct(TfaValidationPluginManager $tfa_validation_manager, TfaLoginPluginManager $tfa_plugin_manager, ConfigFactoryInterface $config_factory, UserInterface $user, UserDataInterface $user_data, Request $request) {
-    $this->tfaValidationManager = $tfa_validation_manager;
-    $this->tfaLoginManager = $tfa_plugin_manager;
-    $this->tfaSettings = $config_factory->get('tfa.settings');
-    $this->user = $user;
-    $this->userData = $user_data;
-    $this->request = $request;
+  public function setUser($uid) {
+    $this->user = $this->userStorage->load($uid);
 
-    $this->tfaLoginPlugins = $this->tfaLoginManager->getPlugins(['uid' => $user->id()]);
+    $this->tfaLoginPlugins = $this->tfaLoginManager->getPlugins(['uid' => $uid]);
     // If possible, set up an instance of tfaValidationPlugin and the user's
     // list of plugins.
-    $this->validationPluginName = $this->tfaSettings->get('default_validation_plugin');
-    if (!empty($this->validationPluginName)) {
+    $validationPluginName = $this->tfaSettings->get('default_validation_plugin');
+    if (!empty($validationPluginName)) {
       $this->tfaValidationPlugin = $this->tfaValidationManager
-        ->createInstance($this->validationPluginName, ['uid' => $user->id()]);
+        ->createInstance($validationPluginName, ['uid' => $uid]);
       $this->userLoginPlugins = $this->tfaLoginManager
-        ->getPlugins(['uid' => $user->id()]);
+        ->getPlugins(['uid' => $uid]);
     }
   }
 
   /**
-   * {@inheritdoc}
+   * Get the user object.
+   *
+   * @return \Drupal\user\UserInterface
+   *   The entity object of the user attempting to log in.
    */
   public function getUser() {
     return $this->user;
   }
 
   /**
-   * {@inheritdoc}
+   * Is TFA enabled and configured?
+   *
+   * @return bool
+   *   Whether or not the TFA module is configured for use.
    */
   public function isModuleSetup() {
-    return intval($this->tfaSettings->get('enabled')) && !empty($this->validationPluginName);
+    return intval($this->tfaSettings->get('enabled')) && !empty($this->tfaSettings->get('default_validation_plugin'));
   }
 
   /**
-   * {@inheritdoc}
+   * Check whether $this->getUser() is required to use TFA.
+   *
+   * @return bool
+   *   TRUE if $this->getUser() is required to use TFA.
    */
   public function isTfaRequired() {
     // If TFA has been set up for the user, then it is required.
@@ -142,14 +128,22 @@ class TfaContext implements TfaContextInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Check whether the Validation Plugin is set and ready for use.
+   *
+   * @return bool
+   *   TRUE if Validation Plugin exists and is ready for use.
    */
   public function isReady() {
     return isset($this->tfaValidationPlugin) && $this->tfaValidationPlugin->ready();
   }
 
   /**
-   * {@inheritdoc}
+   * Remaining number of allowed logins without setting up TFA.
+   *
+   * @return int|false
+   *   FALSE if users are never allowed to log in without setting up TFA.
+   *   The remaining number of times $this->getUser() may log in without setting
+   *   up TFA.
    */
   public function remainingSkips() {
     $allowed_skips = intval($this->tfaSettings->get('validation_skip'));
@@ -164,7 +158,7 @@ class TfaContext implements TfaContextInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Increment the count of $this->getUser() logins without setting up TFA.
    */
   public function hasSkipped() {
     $user_tfa_data = $this->tfaGetTfaData($this->getUser()->id(), $this->userData);
@@ -174,7 +168,12 @@ class TfaContext implements TfaContextInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Whether at least one plugin allows authentication.
+   *
+   * If any plugin returns TRUE then authentication is not interrupted by TFA.
+   *
+   * @return bool
+   *   TRUE if login allowed otherwise FALSE.
    */
   public function pluginAllowsLogin() {
     if (!empty($this->tfaLoginPlugins)) {
@@ -188,11 +187,10 @@ class TfaContext implements TfaContextInterface {
   }
 
   /**
-   * {@inheritdoc}
-   *
-   * @todo Set a hash mark to indicate TFA authorization has passed.
+   * Wrapper for user_login_finalize().
    */
   public function doUserLogin() {
+    // @todo Set a hash mark to indicate TFA authorization has passed.
     user_login_finalize($this->getUser());
   }
 

@@ -8,7 +8,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Site\Settings;
 use Drupal\encrypt\EncryptionProfileManagerInterface;
 use Drupal\encrypt\EncryptServiceInterface;
-use Drupal\tfa\TfaDataTrait;
+use Drupal\tfa\TfaUserDataTrait;
 use Drupal\user\UserDataInterface;
 use Drupal\Component\Utility\Crypt;
 
@@ -17,7 +17,7 @@ use Drupal\Component\Utility\Crypt;
  */
 abstract class TfaBasePlugin extends PluginBase {
   use DependencySerializationTrait;
-  use TfaDataTrait;
+  use TfaUserDataTrait;
 
   /**
    * The user submitted code to be validated.
@@ -53,13 +53,6 @@ abstract class TfaBasePlugin extends PluginBase {
    * @var string
    */
   protected $alreadyAccepted;
-
-  /**
-   * Provides the user data service object.
-   *
-   * @var \Drupal\user\UserDataInterface
-   */
-  protected $userData;
 
   /**
    * The user id.

@@ -8,7 +8,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Mail\MailManagerInterface;
 use Drupal\Core\Password\PasswordInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\tfa\TfaDataTrait;
+use Drupal\tfa\TfaUserDataTrait;
 use Drupal\tfa\TfaLoginPluginManager;
 use Drupal\tfa\TfaSendPluginManager;
 use Drupal\tfa\TfaSetupPluginManager;
@@ -24,7 +24,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * TFA setup form router.
  */
 class TfaSetupForm extends FormBase {
-  use TfaDataTrait;
+  use TfaUserDataTrait;
   use StringTranslationTrait;
 
   /**
@@ -54,13 +54,6 @@ class TfaSetupForm extends FormBase {
    * @var \Drupal\tfa\TfaSendPluginManager
    */
   protected $tfaSend;
-
-  /**
-   * Provides the user data service object.
-   *
-   * @var \Drupal\user\UserDataInterface
-   */
-  protected $userData;
 
   /**
    * The password hashing service.

@@ -2,25 +2,32 @@
 
 namespace Drupal\Tests\tfa\Unit;
 
+use Drupal\user\UserStorageInterface;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Tests\UnitTestCase;
 use Drupal\tfa\Plugin\TfaValidationInterface;
-use Drupal\tfa\TfaContext;
+use Drupal\tfa\TfaLoginContextTrait;
 use Drupal\tfa\TfaLoginPluginManager;
 use Drupal\tfa\TfaValidationPluginManager;
 use Drupal\user\UserDataInterface;
 use Drupal\user\UserInterface;
-use Symfony\Component\HttpFoundation\Request;
 
 /**
- * @coversDefaultClass \Drupal\tfa\TfaContext
+ * @coversDefaultClass \Drupal\tfa\TfaLoginContextTrait
  *
  * @group tfa
  */
 class TfaContextTest extends UnitTestCase {
   use ProphecyTrait;
+
+  /**
+   * The user storage.
+   *
+   * @var \Drupal\user\UserStorageInterface
+   */
+  protected $userStorage;
 
   /**
    * Validation plugin manager.
@@ -65,13 +72,6 @@ class TfaContextTest extends UnitTestCase {
   protected $userData;
 
   /**
-   * Current request object.
-   *
-   * @var \Symfony\Component\HttpFoundation\Request
-   */
-  protected $request;
-
-  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -85,28 +85,56 @@ class TfaContextTest extends UnitTestCase {
     $this->configFactory = $this->prophesize(ConfigFactoryInterface::class);
     $this->configFactory->get('tfa.settings')->willReturn($this->tfaSettings);
     $this->configFactory = $this->configFactory->reveal();
+
     $this->user = $this->prophesize(UserInterface::class);
     $this->user->id()->willReturn(3);
     $this->user = $this->user->reveal();
+
+    $this->userStorage = $this->prophesize(UserStorageInterface::class);
+    $this->userStorage->load(3)->willReturn($this->user);
+    $this->userStorage = $this->userStorage->reveal();
+
     $this->userData = $this->prophesize(UserDataInterface::class)->reveal();
-    $this->request = $this->prophesize(Request::class)->reveal();
   }
 
   /**
    * Helper method to instantiate the test fixture.
    *
-   * @return \Drupal\tfa\TfaContext
+   * @return object
    *   TFA context.
    */
   protected function getFixture() {
-    return new TfaContext(
-      $this->tfaValidationManager,
-      $this->tfaLoginManager,
-      $this->configFactory,
-      $this->user,
-      $this->userData,
-      $this->request
-    );
+    // Use simple anonymous class to add the TfaLoginContextTrait.
+    return new class($this->tfaValidationManager, $this->tfaLoginManager, $this->configFactory, $this->user, $this->userData, $this->userStorage) {
+      use TfaLoginContextTrait;
+
+      /**
+       * Constructor.
+       *
+       * @param \Drupal\tfa\TfaValidationPluginManager $tfa_validation_manager
+       *   The plugin manager for TFA validation plugins.
+       * @param \Drupal\tfa\TfaLoginPluginManager $tfa_login_manager
+       *   The plugin manager for TFA login plugins.
+       * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+       *   The configuration service.
+       * @param \Drupal\user\UserInterface $user
+       *   The user currently attempting to log in.
+       * @param \Drupal\user\UserDataInterface $user_data
+       *   The user data service.
+       * @param \Drupal\user\UserStorageInterface $user_storage
+       *   The user storage.
+       */
+      public function __construct(TfaValidationPluginManager $tfa_validation_manager, TfaLoginPluginManager $tfa_login_manager, ConfigFactoryInterface $config_factory, UserInterface $user, UserDataInterface $user_data, UserStorageInterface $user_storage) {
+        $this->tfaValidationManager = $tfa_validation_manager;
+        $this->tfaLoginManager = $tfa_login_manager;
+        $this->tfaSettings = $config_factory->get('tfa.settings');
+        $this->userData = $user_data;
+        $this->userStorage = $user_storage;
+
+        $this->setUser(3);
+      }
+
+    };
   }
 
   /**
@@ -170,6 +198,10 @@ class TfaContextTest extends UnitTestCase {
     $user->id()->willReturn(3);
     $user->getRoles()->willReturn(['bar' => 'bar']);
     $this->user = $user->reveal();
+    $user_storage = $this->prophesize(UserStorageInterface::class);
+    $user_storage->load(3)->willReturn($this->user);
+    $this->userStorage = $user_storage->reveal();
+
     $fixture = $this->getFixture();
     $this->assertFalse($fixture->isTfaRequired());
 
