@@ -4,7 +4,7 @@ namespace Drupal\tfa\Controller;
 
 use Drupal\Component\Utility\Crypt;
 use Drupal\Core\Url;
-use Drupal\tfa\TfaContext;
+use Drupal\tfa\TfaLoginContextTrait;
 use Drupal\tfa\TfaLoginTrait;
 use Drupal\user\Controller\UserController;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -16,37 +16,8 @@ use Drupal\user\UserInterface;
  * Provide controller routines for user routes.
  */
 class TfaUserController extends UserController {
+  use TfaLoginContextTrait;
   use TfaLoginTrait;
-
-  /**
-   * The login plugin manager to fetch plugin information.
-   *
-   * @var \Drupal\tfa\TfaLoginPluginManager
-   */
-  protected $tfaLoginManager;
-
-  /**
-   * The current validation plugin.
-   *
-   * @var \Drupal\tfa\Plugin\TfaValidationInterface
-   */
-  protected $tfaValidationPlugin;
-
-  /**
-   * The configuration factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
-   * Tfa login context object.
-   *
-   * This will be initialized in the submitForm() method.
-   *
-   * @var \Drupal\tfa\TfaContext
-   */
-  protected $tfaContext;
 
   /**
    * {@inheritdoc}
@@ -56,7 +27,9 @@ class TfaUserController extends UserController {
 
     $instance->tfaLoginManager = $container->get('plugin.manager.tfa.login');
     $instance->tfaValidationManager = $container->get('plugin.manager.tfa.validation');
-    $instance->configFactory = $container->get('config.factory');
+    $instance->tfaSettings = $container->get('config.factory')->get('tfa.settings');
+
+    $instance->userData = $container->get('user.data');
 
     return $instance;
   }
@@ -65,23 +38,22 @@ class TfaUserController extends UserController {
    * {@inheritdoc}
    */
   public function resetPassLogin($uid, $timestamp, $hash, Request $request) {
+    $this->setUser($uid);
     /** @var \Drupal\user\UserInterface $user */
-    $user = $this->userStorage->load($uid);
+    $user = $this->getUser();
 
-    // Tfa context service.
-    $this->tfaContext = new TfaContext($this->tfaValidationManager, $this->tfaLoginManager, $this->configFactory, $user, $this->userData, $request);
     // Let Drupal core deal with the one time login,
     // if Tfa is not enabled
     // or current user can skip TFA while resetting password.
-    if (!$this->tfaContext->isModuleSetup() || !$this->tfaContext->isTfaRequired() || $this->tfaContext->canResetPassSkip()) {
+    if (!$this->isModuleSetup() || !$this->isTfaRequired() || $this->canResetPassSkip()) {
       // Let the Drupal core to validate the one time login.
       return parent::resetPassLogin($uid, $timestamp, $hash, $request);
     }
     else {
       // Whether the TFA Validation Plugin is set and ready for use.
-      $tfa_ready = $this->tfaContext->isReady();
+      $tfa_ready = $this->isReady();
       // Check for authentication plugin.
-      if ($tfa_ready && $this->tfaContext->pluginAllowsLogin()) {
+      if ($tfa_ready && $this->pluginAllowsLogin()) {
         // A trused browser or at least one plugin allows authentication.
         $this->messenger()->addStatus($this->t('You have logged in on a trusted browser.'));
         // Let the Drupal core to validate the one time login.
@@ -141,7 +113,7 @@ class TfaUserController extends UserController {
           // User may be able to skip TFA,
           // depending on module settings and number of
           // prior attempts.
-          $remaining = $this->tfaContext->remainingSkips();
+          $remaining = $this->remainingSkips();
 
           if ($remaining) {
             // User still can skip the TFA
@@ -159,7 +131,7 @@ class TfaUserController extends UserController {
                 ]);
             $this->messenger()->addError($message);
             // Increment the count of logins without TFA.
-            $this->tfaContext->hasSkipped();
+            $this->hasSkipped();
             // TFA is skipped.
             // Redirect to user edit form.
             return $this->redirectToUserForm($user, $request, $timestamp);

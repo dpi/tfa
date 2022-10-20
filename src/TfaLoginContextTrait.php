@@ -91,17 +91,20 @@ trait TfaLoginContextTrait {
   }
 
   /**
-   * Is TFA enabled and configured?
+   * Can the user skip tfa on password reset?
    *
    * @return bool
-   *   Whether or not the TFA module is configured for use.
+   *   TRUE if the user can skip tfa.
    */
   public function canResetPassSkip() {
     return (int) $this->getUser()->id() === 1;
   }
 
   /**
-   * {@inheritdoc}
+   * Is TFA enabled and configured?
+   *
+   * @return bool
+   *   Whether or not the TFA module is configured for use.
    */
   public function isModuleSetup() {
     return intval($this->tfaSettings->get('enabled')) && !empty($this->tfaSettings->get('default_validation_plugin'));
