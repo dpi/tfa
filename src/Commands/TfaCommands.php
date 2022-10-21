@@ -52,7 +52,7 @@ class TfaCommands extends DrushCommands implements SanitizePluginInterface {
    *
    * {@inheritdoc}
    */
-  public function messages(array &$messages, InputInterface $input) {
+  public function messages(&$messages, InputInterface $input) {
     $messages[] = dt('Remove recovery codes and other user-specific TFA data.');
   }
 
