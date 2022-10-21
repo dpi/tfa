@@ -50,8 +50,7 @@ class TfaPasswordResetTest extends TfaTestBase {
     $this->webUser = $this->drupalCreateUser(['setup own tfa']);
     $this->adminUser = $this->drupalCreateUser(['admin tfa settings']);
     $this->superAdmin = User::load(1);
-    $this->canEnableValidationPlugin('tfa_test_plugins_validation');
-
+    $this->canEnableValidationPlugin('tfa_totp');
   }
 
   /**
@@ -60,64 +59,52 @@ class TfaPasswordResetTest extends TfaTestBase {
   public function testTfaOneTimeLogin() {
     $assert_session = $this->assertSession();
 
-    // Enable TFA for the webUser role only.
+    // Enable TFA for all authenticated user roles.
     $this->drupalLogin($this->adminUser);
-    $web_user_roles = $this->webUser->getRoles(TRUE);
     $edit = [
-      'tfa_required_roles[' . $web_user_roles[0] . ']' => TRUE,
       'tfa_required_roles[authenticated]' => TRUE,
     ];
     $this->drupalGet('admin/config/people/tfa');
     $this->submitForm($edit, 'Save configuration');
     $assert_session->statusCodeEquals(200);
     $assert_session->pageTextContains('The configuration options have been saved.');
-
-    // Check that tfa is presented via a normal login.
-    $this->drupalLogout();
-    $edit = [
-      'name' => $this->webUser->getAccountName(),
-      'pass' => $this->webUser->passRaw,
-    ];
-    $this->drupalGet('user/login');
-    $this->submitForm($edit, 'Log in');
-    $assert_session->statusCodeEquals(200);
-    $assert_session->addressMatches('/\/tfa\/' . $this->webUser->id() . '/');
     $this->drupalLogout();
 
-    // Check that tfa is presented via one time password reset login.
-    // Reset the password by username via the password reset page.
+    // Check that tfa is presented while resetting password as an admin user.
+    // login via the one time login URL.
+    $this->resetPassword($this->adminUser);
+    // Change the password.
+    $this->changePassword($assert_session);
+
+    // Check that tfa is presented while resetting password as a normal user.
     // login via the one time login URL.
     $this->resetPassword($this->webUser);
-    $assert_session->statusCodeEquals(200);
-    // And check if the TFA and pass-reset-token are presented.
-    $this->isTfaPasswordResetUrl($this->webUser);
+    // Change the password.
+    $this->changePassword($assert_session);
 
     // Check that the super admin user can not bypass TFA
     // when resetting the password.
-    $this->drupalLogout();
     // Login via the one time login URL.
     $this->resetPassword($this->superAdmin);
-    $assert_session->statusCodeEquals(200);
-    // And check if the TFA and pass-reset-token are presented.
-    $this->isTfaPasswordResetUrl($this->superAdmin);
+    // Change the password.
+    $this->changePassword($assert_session, FALSE);
 
     // Check that the super admin user can bypass TFA
-    // when resetting the password.
+    // when resetting the password,
     // If Admin TFA exemption is true.
-    $this->drupalLogout();
-    // Enable TFA for the suer admin role,
-    // and disable admin bypass TFA while resetting password.
-    $this->drupalLogin($this->adminUser);
+    // Enable admin TFA exemption,.
+    $this->drupalGet('admin/config/people/tfa');
     $edit = [
       'reset_pass_skip_enabled' => TRUE,
     ];
-    $this->drupalGet('admin/config/people/tfa');
     $this->submitForm($edit, 'Save configuration');
     $assert_session->statusCodeEquals(200);
     $assert_session->pageTextContains('The configuration options have been saved.');
     $this->drupalLogout();
     // Login via the one time login URL.
     $this->resetPassword($this->superAdmin);
+    $assert_session->statusCodeEquals(200);
+    $assert_session->pageTextNotContains('You are required to setup two-factor authentication. You have');
     // Change the password.
     $password = \Drupal::service('password_generator')->generate();
     $edit = ['pass[pass1]' => $password, 'pass[pass2]' => $password];
@@ -159,15 +146,24 @@ class TfaPasswordResetTest extends TfaTestBase {
   }
 
   /**
-   * Check if current path is a valid TFA password reset URL.
+   * Action to change user own password.
    *
-   * @param \Drupal\user\Entity\User $user
-   *   The user who need to reset the password.
+   * @param mixed $assert_session
+   *   Web assert object.
+   * @param bool $logout
+   *   If ture, logout the user at the end.
    */
-  public function isTfaPasswordResetUrl(User $user) {
-    $current_url = $this->getUrl();
-    $match = preg_match('/\/tfa\/' . $user->id() . '\/.+?pass-reset-token=.+/', $current_url) ? TRUE : FALSE;
-    $this->assertTrue($match, 'It is not a valid tfa path or pass-reset-token is missing in the path.');
+  public function changePassword($assert_session, $logout = TRUE) {
+    $assert_session->statusCodeEquals(200);
+    $assert_session->pageTextContains('You are required to setup two-factor authentication. You have');
+    // Change the password.
+    $password = \Drupal::service('password_generator')->generate();
+    $edit = ['pass[pass1]' => $password, 'pass[pass2]' => $password];
+    $this->submitForm($edit, 'Save');
+    $assert_session->pageTextContains('The changes have been saved.');
+    if ($logout) {
+      $this->drupalLogout();
+    }
   }
 
 }

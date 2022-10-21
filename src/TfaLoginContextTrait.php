@@ -2,6 +2,9 @@
 
 namespace Drupal\tfa;
 
+use Psr\Log\LoggerInterface;
+use Drupal\Core\Url;
+
 /**
  * Provide context for the current login attempt.
  *
@@ -55,6 +58,13 @@ trait TfaLoginContextTrait {
    * @var \Drupal\tfa\Plugin\TfaLoginInterface[]
    */
   protected $tfaLoginPlugins;
+
+  /**
+   * The private temporary store.
+   *
+   * @var \Drupal\Core\TempStore\PrivateTempStore
+   */
+  protected $privateTempStore;
 
   /**
    * Set the user object.
@@ -194,6 +204,53 @@ trait TfaLoginContextTrait {
   public function doUserLogin() {
     // @todo Set a hash mark to indicate TFA authorization has passed.
     user_login_finalize($this->getUser());
+  }
+
+  /**
+   * Store UID in the temporary store.
+   *
+   * @param string|int $uid
+   *   User id to store.
+   */
+  public function tempStoreUid($uid) {
+    $this->privateTempStore->set('tfa-entry-uid', $uid);
+  }
+
+  /**
+   * Check if the user can login without TFA.
+   *
+   * @return bool
+   *   Return true if the user can login without TFA,
+   *   otherwise return false.
+   */
+  public function canLoginWithoutTfa(LoggerInterface $logger) {
+    // User may be able to skip TFA, depending on module settings and number of
+    // prior attempts.
+    $remaining = $this->remainingSkips();
+    $user = $this->getUser();
+    if ($remaining) {
+      $tfa_setup_link = Url::fromRoute('tfa.overview', [
+        'user' => $user->id(),
+      ])->toString();
+      $message = $this->formatPlural(
+          $remaining - 1,
+          'You are required to <a href="@link">setup two-factor authentication</a>. You have @remaining attempt left. After this you will be unable to login.',
+          'You are required to <a href="@link">setup two-factor authentication</a>. You have @remaining attempts left. After this you will be unable to login.',
+          ['@remaining' => $remaining - 1, '@link' => $tfa_setup_link]
+          );
+      $this->messenger()->addError($message);
+      $this->hasSkipped();
+      // User can login without TFA.
+      return TRUE;
+    }
+    else {
+      $message = $this->config('tfa.settings')->get('help_text');
+      $this->messenger()->addError($message);
+      $logger->notice('@name has no more remaining attempts for bypassing the second authentication factor.', ['@name' => $user->getAccountName()]);
+    }
+
+    // User can't login without TFA.
+    return FALSE;
   }
 
 }

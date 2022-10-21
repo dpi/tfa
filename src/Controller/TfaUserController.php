@@ -3,7 +3,6 @@
 namespace Drupal\tfa\Controller;
 
 use Drupal\Component\Utility\Crypt;
-use Drupal\Core\Url;
 use Drupal\tfa\TfaLoginContextTrait;
 use Drupal\tfa\TfaLoginTrait;
 use Drupal\user\Controller\UserController;
@@ -24,12 +23,9 @@ class TfaUserController extends UserController {
    */
   public static function create(ContainerInterface $container) {
     $instance = parent::create($container);
-
-    $instance->tfaLoginManager = $container->get('plugin.manager.tfa.login');
-    $instance->tfaValidationManager = $container->get('plugin.manager.tfa.validation');
+    $instance->tfaPluginManager = $container->get('plugin.manager.tfa');
     $instance->tfaSettings = $container->get('config.factory')->get('tfa.settings');
-
-    $instance->userData = $container->get('user.data');
+    $instance->privateTempStore = $container->get('tempstore.private')->get('tfa');
 
     return $instance;
   }
@@ -99,6 +95,8 @@ class TfaUserController extends UserController {
             '%name' => $user->getDisplayName(),
             '%timestamp' => $timestamp,
           ]);
+          // Store UID in order to later verify access to entry form.
+          $this->tempStoreUid($user->id());
           // Redirect to TFA entry form.
           return $this->redirect('tfa.entry', [
             'uid' => $uid,
@@ -113,36 +111,12 @@ class TfaUserController extends UserController {
           // User may be able to skip TFA,
           // depending on module settings and number of
           // prior attempts.
-          $remaining = $this->remainingSkips();
-
-          if ($remaining) {
-            // User still can skip the TFA
-            // as the attempts hasn't exceeded the number in settings.
-            // TFA setup link.
-            $tfa_setup_link = Url::fromRoute('tfa.overview', ['user' => $uid])->toString();
-            // Reminder message.
-            $message = $this->formatPlural(
-                $remaining - 1,
-                'You are required to <a href="@link">setup two-factor authentication</a>. You have @remaining attempt left. After this you will be unable to login.',
-                'You are required to <a href="@link">setup two-factor authentication</a>. You have @remaining attempts left. After this you will be unable to login.',
-                [
-                  '@remaining' => $remaining - 1,
-                  '@link' => $tfa_setup_link,
-                ]);
-            $this->messenger()->addError($message);
-            // Increment the count of logins without TFA.
-            $this->hasSkipped();
-            // TFA is skipped.
+          if ($this->canLoginWithoutTfa($this->getLogger('tfa'))) {
+            // User can login without TFA.
             // Redirect to user edit form.
             return $this->redirectToUserForm($user, $request, $timestamp);
           }
           else {
-            // User can't skip the TFA.
-            $message = $this->config('tfa.settings')->get('help_text');
-            $this->messenger()->addError($message);
-            $this->getLogger('tfa')->notice('@name has no more remaining attempts for bypassing the second authentication factor.', [
-              '@name' => $user->getAccountName(),
-            ]);
             // TFA validation failed.
             // Redirect to the home page.
             return $this->redirect('<front>');

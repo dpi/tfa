@@ -3,7 +3,6 @@
 namespace Drupal\tfa\Form;
 
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Url;
 use Drupal\tfa\Plugin\TfaSendInterface;
 use Drupal\tfa\TfaLoginContextTrait;
 use Drupal\tfa\TfaLoginTrait;
@@ -27,23 +26,13 @@ class TfaLoginForm extends UserLoginForm {
   protected $destination;
 
   /**
-   * The private temporary store.
-   *
-   * @var \Drupal\Core\TempStore\PrivateTempStore
-   */
-  protected $privateTempStore;
-
-  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
     $instance = parent::create($container);
-
     $instance->tfaPluginManager = $container->get('plugin.manager.tfa');
     $instance->tfaSettings = $container->get('config.factory')->get('tfa.settings');
-
     $instance->userData = $container->get('user.data');
-
     $instance->destination = $container->get('redirect.destination');
     $instance->privateTempStore = $container->get('tempstore.private')->get('tfa');
 
@@ -93,7 +82,13 @@ class TfaLoginForm extends UserLoginForm {
         $this->loginWithTfa($form_state);
       }
       else {
-        $this->loginWithoutTfa($form_state);
+        if ($this->canLoginWithoutTfa($this->logger('tfa'))) {
+          $this->doUserLogin();
+          $form_state->setRedirect('<front>');
+        }
+        else {
+          $this->logger('tfa')->notice();
+        }
       }
     }
   }
@@ -130,43 +125,7 @@ class TfaLoginForm extends UserLoginForm {
       $form_state->setRedirect('tfa.entry', $parameters);
 
       // Store UID in order to later verify access to entry form.
-      $this->privateTempStore->set('tfa-entry-uid', $user->id());
-    }
-  }
-
-  /**
-   * Handle the case where TFA is not yet set up.
-   *
-   * If the user has any remaining logins, then finalize the login with a
-   * message to set up TFA. Otherwise, leave the user logged out.
-   *
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The state of the login form.
-   */
-  protected function loginWithoutTfa(FormStateInterface $form_state) {
-    // User may be able to skip TFA, depending on module settings and number of
-    // prior attempts.
-    $remaining = $this->remainingSkips();
-    if ($remaining) {
-      $user = $this->getUser();
-      $tfa_setup_link = Url::fromRoute('tfa.overview', [
-        'user' => $user->id(),
-      ])->toString();
-      $message = $this->formatPlural(
-        $remaining - 1,
-        'You are required to <a href="@link">setup two-factor authentication</a>. You have @remaining attempt left. After this you will be unable to login.',
-        'You are required to <a href="@link">setup two-factor authentication</a>. You have @remaining attempts left. After this you will be unable to login.',
-        ['@remaining' => $remaining - 1, '@link' => $tfa_setup_link]
-      );
-      $this->messenger()->addError($message);
-      $this->hasSkipped();
-      $this->doUserLogin();
-      $form_state->setRedirect('<front>');
-    }
-    else {
-      $message = $this->config('tfa.settings')->get('help_text');
-      $this->messenger()->addError($message);
-      $this->logger('tfa')->notice('@name has no more remaining attempts for bypassing the second authentication factor.', ['@name' => $this->getUser()->getAccountName()]);
+      $this->tempStoreUid($user->id());
     }
   }
 

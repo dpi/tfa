@@ -34,18 +34,30 @@ class TfaPluginManager extends DefaultPluginManager {
     $this->setCacheBackend($cache_backend, 'tfa_plugins');
   }
 
+  /**
+   *
+   */
   public function getValidationDefinitions() {
     return $this->getClassDefinitions('\Drupal\tfa\Plugin\TfaValidationInterface');
   }
 
+  /**
+   *
+   */
   public function getLoginDefinitions() {
     return $this->getClassDefinitions('\Drupal\tfa\Plugin\TfaLoginInterface');
   }
 
+  /**
+   *
+   */
   public function getSendDefinitions() {
     return $this->getClassDefinitions('\Drupal\tfa\Plugin\TfaSendInterface');
   }
 
+  /**
+   *
+   */
   public function getClassDefinitions(string $class) {
     $all_plugins = $this->getDefinitions();
     $plugins = [];
