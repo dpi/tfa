@@ -86,9 +86,6 @@ class TfaLoginForm extends UserLoginForm {
           $this->doUserLogin();
           $form_state->setRedirect('<front>');
         }
-        else {
-          $this->logger('tfa')->notice();
-        }
       }
     }
   }
