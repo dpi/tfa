@@ -103,7 +103,7 @@ class TfaContextTest extends UnitTestCase {
    */
   protected function getFixture() {
     // Use simple anonymous class to add the TfaLoginContextTrait.
-    return new class($this->tfaPluginManager, $this->configFactory, $this->user, $this->userData, $this->userStorage) {
+    return new class($this->tfaPluginManager, $this->configFactory, $this->userData, $this->userStorage) {
       use TfaLoginContextTrait;
 
       /**
@@ -113,20 +113,19 @@ class TfaContextTest extends UnitTestCase {
        *   The plugin manager for TFA plugins.
        * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
        *   The configuration service.
-       * @param \Drupal\user\UserInterface $user
-       *   The user currently attempting to log in.
        * @param \Drupal\user\UserDataInterface $user_data
        *   The user data service.
        * @param \Drupal\user\UserStorageInterface $user_storage
        *   The user storage.
        */
-      public function __construct(TfaPluginManager $tfa_plugin_manager, ConfigFactoryInterface $config_factory, UserInterface $user, UserDataInterface $user_data, UserStorageInterface $user_storage) {
+      public function __construct(TfaPluginManager $tfa_plugin_manager, ConfigFactoryInterface $config_factory, UserDataInterface $user_data, UserStorageInterface $user_storage) {
         $this->tfaPluginManager = $tfa_plugin_manager;
         $this->tfaSettings = $config_factory->get('tfa.settings');
         $this->userData = $user_data;
-        $this->userStorage = $user_storage;
 
-        $this->setUser(3);
+        /** @var \Drupal\user\UserInterface $user */
+        $user = $user_storage->load(3);
+        $this->setUser($user);
       }
 
     };
@@ -141,28 +140,13 @@ class TfaContextTest extends UnitTestCase {
   }
 
   /**
-   * @covers ::isModuleSetup
+   * @covers ::isTfaDisabled
    */
-  public function testIsModuleSetup() {
-    // Defaults to false with empty mocked services.
+  public function testIsTfaDisabled() {
+    // Defaults to true with empty mocked services.
     $fixture = $this->getFixture();
-    $this->assertFalse($fixture->isModuleSetup());
+    $this->assertTrue($fixture->isTfaDisabled());
 
-    // Enable.
-    $settings = $this->prophesize(ImmutableConfig::class);
-    $settings->get('enabled')->willReturn(TRUE);
-    $settings->get('default_validation_plugin')->willReturn('foo');
-    $config_factory = $this->prophesize(ConfigFactoryInterface::class);
-    $config_factory->get('tfa.settings')->willReturn($settings->reveal());
-    $this->configFactory = $config_factory->reveal();
-    $fixture = $this->getFixture();
-    $this->assertTrue($fixture->isModuleSetup());
-  }
-
-  /**
-   * @covers ::isTfaRequired
-   */
-  public function testIsTfaRequired() {
     // User has setup TFA.
     $user_data = $this->prophesize(UserDataInterface::class);
     $user_data->get('tfa', 3, 'tfa_user_settings')->willReturn([
@@ -172,8 +156,14 @@ class TfaContextTest extends UnitTestCase {
       'validation_skipped' => 1,
     ]);
     $this->userData = $user_data->reveal();
+    $settings = $this->prophesize(ImmutableConfig::class);
+    $settings->get('enabled')->willReturn(TRUE);
+    $settings->get('default_validation_plugin')->willReturn('foo');
+    $config_factory = $this->prophesize(ConfigFactoryInterface::class);
+    $config_factory->get('tfa.settings')->willReturn($settings->reveal());
+    $this->configFactory = $config_factory->reveal();
     $fixture = $this->getFixture();
-    $this->assertTrue($fixture->isTfaRequired());
+    $this->assertFalse($fixture->isTfaDisabled());
 
     // Not setup, no required roles matching the user.
     $user_data->get('tfa', 3, 'tfa_user_settings')->willReturn([
@@ -184,6 +174,7 @@ class TfaContextTest extends UnitTestCase {
     ]);
     $this->userData = $user_data->reveal();
     $settings = $this->prophesize(ImmutableConfig::class);
+    $settings->get('enabled')->willReturn(TRUE);
     $settings->get('default_validation_plugin')->willReturn('foo');
     $settings->get('required_roles')->willReturn(['foo' => 'foo']);
     $config_factory = $this->prophesize(ConfigFactoryInterface::class);
@@ -196,9 +187,8 @@ class TfaContextTest extends UnitTestCase {
     $user_storage = $this->prophesize(UserStorageInterface::class);
     $user_storage->load(3)->willReturn($this->user);
     $this->userStorage = $user_storage->reveal();
-
     $fixture = $this->getFixture();
-    $this->assertFalse($fixture->isTfaRequired());
+    $this->assertTrue($fixture->isTfaDisabled());
 
     // Setup, matching roles.
     $user_data->get('tfa', 3, 'tfa_user_settings')->willReturn([
@@ -213,7 +203,7 @@ class TfaContextTest extends UnitTestCase {
     $user->getRoles()->willReturn(['foo' => 'foo', 'bar' => 'bar']);
     $this->user = $user->reveal();
     $fixture = $this->getFixture();
-    $this->assertTrue($fixture->isTfaRequired());
+    $this->assertFalse($fixture->isTfaDisabled());
   }
 
   /**
