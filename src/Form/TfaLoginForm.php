@@ -4,10 +4,8 @@ namespace Drupal\tfa\Form;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
-use Drupal\tfa\Plugin\TfaSendInterface;
 use Drupal\tfa\TfaLoginContextTrait;
 use Drupal\tfa\TfaLoginTrait;
-use Drupal\tfa\TfaUserDataTrait;
 use Drupal\user\Form\UserLoginForm;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -19,7 +17,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class TfaLoginForm extends UserLoginForm {
   use TfaLoginContextTrait;
   use TfaLoginTrait;
-  use TfaUserDataTrait;
 
   /**
    * Redirect destination service.
@@ -78,7 +75,9 @@ class TfaLoginForm extends UserLoginForm {
     }
 
     // Similar to tfa_user_login() but not required to force user logout.
-    $this->setUser($uid);
+    /** @var \Drupal\user\UserInterface $user */
+    $user = $this->userStorage->load($uid);
+    $this->setUser($user);
 
     /* Uncomment when things go wrong and you get logged out.
     user_login_finalize($user);
@@ -87,7 +86,7 @@ class TfaLoginForm extends UserLoginForm {
      */
 
     // Stop processing if Tfa is not enabled.
-    if (!$this->isModuleSetup() || !$this->isTfaRequired()) {
+    if ($this->isTfaDisabled()) {
       parent::submitForm($form, $form_state);
     }
     else {
@@ -119,8 +118,6 @@ class TfaLoginForm extends UserLoginForm {
     }
     else {
       // Begin TFA and set process context.
-      // @todo This is used in send plugins which has not been implemented yet.
-      // $this->begin($tfaValidationPlugin);
       if (!empty($this->getRequest()->query->get('destination'))) {
         $parameters = $this->destination->getAsArray();
         $this->getRequest()->query->remove('destination');
@@ -189,19 +186,6 @@ class TfaLoginForm extends UserLoginForm {
     $route = $form_state->getValue('tfa_redirect');
     if (isset($route)) {
       $form_state->setRedirect($route);
-    }
-  }
-
-  /**
-   * Begin the TFA process.
-   *
-   * @param \Drupal\tfa\Plugin\TfaSendInterface $tfaSendPlugin
-   *   The send plugin instance.
-   */
-  protected function begin(TfaSendInterface $tfaSendPlugin) {
-    // Invoke begin method on send validation plugins.
-    if (method_exists($tfaSendPlugin, 'begin')) {
-      $tfaSendPlugin->begin();
     }
   }
 
