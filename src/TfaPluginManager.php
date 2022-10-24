@@ -34,18 +34,45 @@ class TfaPluginManager extends DefaultPluginManager {
     $this->setCacheBackend($cache_backend, 'tfa_plugins');
   }
 
+  /**
+   * Return plugin definitions for all validation plugins.
+   *
+   * @return array
+   *   Array of validation plugin definitions.
+   */
   public function getValidationDefinitions() {
     return $this->getClassDefinitions('\Drupal\tfa\Plugin\TfaValidationInterface');
   }
 
+  /**
+   * Return plugin definitions for all login plugins.
+   *
+   * @return array
+   *   Array of login plugin definitions.
+   */
   public function getLoginDefinitions() {
     return $this->getClassDefinitions('\Drupal\tfa\Plugin\TfaLoginInterface');
   }
 
+  /**
+   * Return plugin definitions for all send plugins.
+   *
+   * @return array
+   *   Array of send plugin definitions.
+   */
   public function getSendDefinitions() {
     return $this->getClassDefinitions('\Drupal\tfa\Plugin\TfaSendInterface');
   }
 
+  /**
+   * Return plugin definitions for all plugins implementing the given class.
+   *
+   * @param string $class
+   *   Name of the class or interface that the plugins must implement.
+   *
+   * @return array
+   *   Array of plugin definitions.
+   */
   public function getClassDefinitions(string $class) {
     $all_plugins = $this->getDefinitions();
     $plugins = [];
