@@ -293,7 +293,7 @@ class TfaRecoveryCode extends TfaBasePlugin implements TfaValidationInterface, T
     return $this->isValid;
   }
 
-  // ================================== SETUP ==================================
+  /* ================================== SETUP ================================== */
 
   /**
    * {@inheritdoc}

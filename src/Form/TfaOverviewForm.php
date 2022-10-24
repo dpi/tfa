@@ -55,7 +55,7 @@ class TfaOverviewForm extends FormBase {
     return new static(
       $container->get('user.data'),
       $container->get('date.formatter'),
-      $container->get('plugin.manager.tfa'),
+      $container->get('plugin.manager.tfa')
     );
   }
 
@@ -218,12 +218,6 @@ class TfaOverviewForm extends FormBase {
     catch (\Exception $e) {
       return [];
     }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
   }
 
   /**

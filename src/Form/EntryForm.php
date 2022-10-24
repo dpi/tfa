@@ -9,7 +9,7 @@ use Drupal\Core\Url;
 use Drupal\tfa\TfaPluginManager;
 use Drupal\user\UserDataInterface;
 use Drupal\user\UserFloodControlInterface;
-use Drupal\user\Entity\User;
+use Drupal\user\UserStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -74,6 +74,13 @@ class EntryForm extends FormBase {
   protected $userData;
 
   /**
+   * The user storage.
+   *
+   * @var \Drupal\user\UserStorageInterface
+   */
+  protected $userStorage;
+
+  /**
    * EntryForm constructor.
    *
    * @param \Drupal\tfa\TfaPluginManager $tfa_plugin_manager
@@ -84,13 +91,16 @@ class EntryForm extends FormBase {
    *   The date service.
    * @param \Drupal\user\UserDataInterface $user_data
    *   User data service.
+   * @param \Drupal\user\UserStorageInterface $user_storage
+   *   The user storage.
    */
-  public function __construct(TfaPluginManager $tfa_plugin_manager, UserFloodControlInterface $user_flood_control, DateFormatterInterface $date_formatter, UserDataInterface $user_data) {
+  public function __construct(TfaPluginManager $tfa_plugin_manager, UserFloodControlInterface $user_flood_control, DateFormatterInterface $date_formatter, UserDataInterface $user_data, UserStorageInterface $user_storage) {
     $this->tfaPluginManager = $tfa_plugin_manager;
     $this->tfaSettings = $this->config('tfa.settings');
     $this->flood = $user_flood_control;
     $this->dateFormatter = $date_formatter;
     $this->userData = $user_data;
+    $this->userStorage = $user_storage;
   }
 
   /**
@@ -106,7 +116,8 @@ class EntryForm extends FormBase {
       $container->get('plugin.manager.tfa'),
       $container->get('user.flood_control'),
       $container->get('date.formatter'),
-      $container->get('user.data')
+      $container->get('user.data'),
+      $container->get('entity_type.manager')->getStorage('user')
     );
   }
 
@@ -151,7 +162,7 @@ class EntryForm extends FormBase {
 
     $form['account'] = [
       '#type' => 'value',
-      '#value' => User::load($uid),
+      '#value' => $this->userStorage->load($uid),
     ];
 
     // Build a list of links for using other enabled validation methods.

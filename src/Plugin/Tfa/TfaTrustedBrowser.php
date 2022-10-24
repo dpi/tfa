@@ -12,6 +12,7 @@ use Drupal\tfa\Plugin\TfaSetupInterface;
 use Drupal\tfa\TfaBasePlugin;
 use Drupal\user\UserDataInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Trusted browser validation class.
@@ -57,6 +58,13 @@ class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaS
   protected $expiration;
 
   /**
+   * The current request.
+   *
+   * @var \Symfony\Component\HttpFoundation\Request
+   */
+  protected $request;
+
+  /**
    * Constructs a new Tfa plugin object.
    *
    * @param array $configuration
@@ -69,8 +77,10 @@ class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaS
    *   User data object to store user specific information.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The configuration factory.
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+   *   The request stack.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, UserDataInterface $user_data, ConfigFactoryInterface $config_factory) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, UserDataInterface $user_data, ConfigFactoryInterface $config_factory, RequestStack $request_stack) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $plugin_settings = $config_factory->get('tfa.settings')->get('login_plugin_settings');
     $settings = $plugin_settings['tfa_trusted_browser'] ?? [];
@@ -84,6 +94,7 @@ class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaS
     $this->expiration = $settings['cookie_expiration'];
     $this->cookieName = $settings['cookie_name'];
     $this->userData = $user_data;
+    $this->request = $request_stack->getCurrentRequest();
   }
 
   /**
@@ -95,7 +106,8 @@ class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaS
       $plugin_id,
       $plugin_definition,
       $container->get('user.data'),
-      $container->get('config.factory')
+      $container->get('config.factory'),
+      $container->get('request_stack')
     );
   }
 
@@ -103,9 +115,9 @@ class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaS
    * {@inheritdoc}
    */
   public function loginAllowed() {
-    if (isset($_COOKIE[$this->cookieName]) && $this->trustedBrowser($_COOKIE[$this->cookieName]) !== FALSE) {
+    $id = $this->request->cookies->get($this->cookieName);
+    if (isset($id) && ($this->trustedBrowser($id) !== FALSE)) {
       // Update browser last used time.
-      $id = $_COOKIE[$this->cookieName];
       $result = $this->getUserData('tfa', 'tfa_trusted_browser', $this->uid);
       $result[$id]['last_used'] = \Drupal::time()->getRequestTime();
       $data = [
@@ -294,19 +306,19 @@ class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaS
    *   Simplified browser name.
    */
   protected function getAgent($name = '') {
-    if (isset($_SERVER['HTTP_USER_AGENT'])) {
+    $agent = $this->request->server->get('HTTP_USER_AGENT');
+    if (isset($agent)) {
       // Match popular user agents.
-      $agent = $_SERVER['HTTP_USER_AGENT'];
       if (preg_match("/like\sGecko\)\sChrome\//", $agent)) {
         $name = 'Chrome';
       }
-      elseif (strpos($_SERVER['HTTP_USER_AGENT'], 'Firefox') !== FALSE) {
+      elseif (strpos($agent, 'Firefox') !== FALSE) {
         $name = 'Firefox';
       }
-      elseif (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE') !== FALSE) {
+      elseif (strpos($agent, 'MSIE') !== FALSE) {
         $name = 'Internet Explorer';
       }
-      elseif (strpos($_SERVER['HTTP_USER_AGENT'], 'Safari') !== FALSE) {
+      elseif (strpos($agent, 'Safari') !== FALSE) {
         $name = 'Safari';
       }
       else {
@@ -317,7 +329,7 @@ class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaS
     return $name;
   }
 
-  // ================================== SETUP ==================================
+  /* ================================== SETUP ================================== */
 
   /**
    * {@inheritdoc}
@@ -334,8 +346,9 @@ class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaS
       ['@time' => $this->expiration]) . '</p>',
     ];
     // Present option to trust this browser if it's not currently trusted.
-    if (isset($_COOKIE[$this->cookieName]) && $this->trustedBrowser($_COOKIE[$this->cookieName]) !== FALSE) {
-      $current_trusted = $_COOKIE[$this->cookieName];
+    $id = $this->request->cookies->get($this->cookieName);
+    if (isset($id) && ($this->trustedBrowser($id) !== FALSE)) {
+      $current_trusted = $id;
     }
     else {
       $current_trusted = FALSE;
@@ -351,7 +364,7 @@ class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaS
         '#maxlength' => 255,
         '#description' => $this->t('Optionally, name the browser on your browser (e.g.
         "home firefox" or "office desktop windows"). Your current browser user
-        agent is %browser', ['%browser' => $_SERVER['HTTP_USER_AGENT']]),
+        agent is %browser', ['%browser' => $this->request->server->get('HTTP_USER_AGENT')]),
         '#default_value' => $this->getAgent(),
         '#states' => [
           'visible' => [
@@ -439,7 +452,7 @@ class TfaTrustedBrowser extends TfaBasePlugin implements TfaLoginInterface, TfaS
       if (!empty($values['name'])) {
         $name = $values['name'];
       }
-      elseif (isset($_SERVER['HTTP_USER_AGENT'])) {
+      elseif (!empty($this->request->server->get('HTTP_USER_AGENT'))) {
         $name = $this->getAgent();
       }
       $this->setTrusted($this->generateBrowserId(), $name);

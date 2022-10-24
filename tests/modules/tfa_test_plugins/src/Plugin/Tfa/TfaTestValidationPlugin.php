@@ -12,8 +12,8 @@ use Drupal\encrypt\EncryptServiceInterface;
 use Drupal\tfa\Plugin\TfaSetupInterface;
 use Drupal\tfa\Plugin\TfaValidationInterface;
 use Drupal\tfa\TfaBasePlugin;
-use Drupal\user\Entity\User;
 use Drupal\user\UserDataInterface;
+use Drupal\user\UserStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -31,6 +31,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class TfaTestValidationPlugin extends TfaBasePlugin implements TfaValidationInterface, TfaSetupInterface, ContainerFactoryPluginInterface {
   use StringTranslationTrait;
+
+  /**
+   * The user storage.
+   *
+   * @var \Drupal\user\UserStorageInterface
+   */
+  protected $userStorage;
 
   /**
    * Encryption profile.
@@ -55,19 +62,22 @@ class TfaTestValidationPlugin extends TfaBasePlugin implements TfaValidationInte
    *   The plugin id.
    * @param mixed $plugin_definition
    *   The plugin definition.
-   * @param \Drupal\user\UserDataInterface $user_data
-   *   User data object to store user specific information.
-   * @param \Drupal\encrypt\EncryptionProfileManagerInterface $encryption_profile_manager
-   *   Encryption profile manager.
-   * @param \Drupal\encrypt\EncryptServiceInterface $encrypt_service
-   *   Encryption service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The configuration factory.
+   * @param \Drupal\user\UserDataInterface $user_data
+   *   User data object to store user specific information.
+   * @param \Drupal\user\UserStorageInterface $user_storage
+   *   The user storage.
+   * @param \Drupal\encrypt\EncryptServiceInterface $encrypt_service
+   *   Encryption service.
+   * @param \Drupal\encrypt\EncryptionProfileManagerInterface $encryption_profile_manager
+   *   Encryption profile manager.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, UserDataInterface $user_data, EncryptionProfileManagerInterface $encryption_profile_manager, EncryptServiceInterface $encrypt_service, ConfigFactoryInterface $config_factory) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, ConfigFactoryInterface $config_factory, UserDataInterface $user_data, UserStorageInterface $user_storage, EncryptServiceInterface $encrypt_service, EncryptionProfileManagerInterface $encryption_profile_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->userData = $user_data;
+    $this->userStorage = $user_storage;
     $this->encryptionProfile = $encryption_profile_manager->getEncryptionProfile($config_factory->get('tfa.settings')->get('encryption'));
     $this->encryptService = $encrypt_service;
   }
@@ -80,10 +90,11 @@ class TfaTestValidationPlugin extends TfaBasePlugin implements TfaValidationInte
       $configuration,
       $plugin_id,
       $plugin_definition,
+      $container->get('config.factory'),
       $container->get('user.data'),
-      $container->get('encrypt.encryption_profile.manager'),
+      $container->get('entity_type.manager')->getStorage('user'),
       $container->get('encryption'),
-      $container->get('config.factory')
+      $container->get('encrypt.encryption_profile.manager')
     );
   }
 
@@ -108,14 +119,14 @@ class TfaTestValidationPlugin extends TfaBasePlugin implements TfaValidationInte
     return TRUE;
   }
 
-  // ================================== SETUP ==================================
+  /* ================================== SETUP ================================== */
 
   /**
    * {@inheritdoc}
    */
   public function getSetupForm(array $form, FormStateInterface $form_state) {
     $form['user']['#markup'] = $this->t('<p>TFA Setup for @name</p>', [
-      '@name' => User::load($this->configuration['uid'])->getDisplayName(),
+      '@name' => $this->userStorage->load($this->configuration['uid'])->getDisplayName(),
     ]);
     $form['expected_field'] = [
       '#type' => 'textfield',

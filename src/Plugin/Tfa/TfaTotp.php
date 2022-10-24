@@ -14,8 +14,8 @@ use Drupal\encrypt\EncryptServiceInterface;
 use Drupal\tfa\Plugin\TfaSetupInterface;
 use Drupal\tfa\Plugin\TfaValidationInterface;
 use Drupal\tfa\TfaBasePlugin;
-use Drupal\user\Entity\User;
 use Drupal\user\UserDataInterface;
+use Drupal\user\UserStorageInterface;
 use Otp\GoogleAuthenticator;
 use Otp\Otp;
 use ParagonIE\ConstantTime\Encoding;
@@ -86,6 +86,13 @@ class TfaTotp extends TfaBasePlugin implements TfaValidationInterface, TfaSetupI
   protected $time;
 
   /**
+   * The user storage.
+   *
+   * @var \Drupal\user\UserStorageInterface
+   */
+  protected $userStorage;
+
+  /**
    * Encryption profile.
    *
    * @var \Drupal\encrypt\EncryptionProfileManagerInterface
@@ -118,8 +125,10 @@ class TfaTotp extends TfaBasePlugin implements TfaValidationInterface, TfaSetupI
    *   The configuration factory.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The datetime service.
+   * @param \Drupal\user\UserStorageInterface $user_storage
+   *   The user storage.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, UserDataInterface $user_data, EncryptionProfileManagerInterface $encryption_profile_manager, EncryptServiceInterface $encrypt_service, ConfigFactoryInterface $config_factory, TimeInterface $time) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, UserDataInterface $user_data, EncryptionProfileManagerInterface $encryption_profile_manager, EncryptServiceInterface $encrypt_service, ConfigFactoryInterface $config_factory, TimeInterface $time, UserStorageInterface $user_storage) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->auth = new \StdClass();
@@ -141,6 +150,7 @@ class TfaTotp extends TfaBasePlugin implements TfaValidationInterface, TfaSetupI
     $this->namePrefix = $settings['name_prefix'];
     $this->issuer = $settings['issuer'];
     $this->time = $time;
+    $this->userStorage = $user_storage;
 
     $this->encryptionProfile = $encryption_profile_manager->getEncryptionProfile($config_factory->get('tfa.settings')->get('encryption'));
     $this->encryptService = $encrypt_service;
@@ -161,7 +171,8 @@ class TfaTotp extends TfaBasePlugin implements TfaValidationInterface, TfaSetupI
       $container->get('encrypt.encryption_profile.manager'),
       $container->get('encryption'),
       $container->get('config.factory'),
-      $container->get('datetime.time')
+      $container->get('datetime.time'),
+      $container->get('entity_type.manager')->getStorage('user')
     );
   }
 
@@ -358,7 +369,7 @@ class TfaTotp extends TfaBasePlugin implements TfaValidationInterface, TfaSetupI
     return $this->timeSkew;
   }
 
-  // ================================== SETUP ==================================
+  /* ================================== SETUP ================================== */
 
   /**
    * {@inheritdoc}
@@ -481,7 +492,7 @@ class TfaTotp extends TfaBasePlugin implements TfaValidationInterface, TfaSetupI
    */
   protected function accountName() {
     /** @var \Drupal\user\Entity\User $account */
-    $account = User::load($this->configuration['uid']);
+    $account = $this->userStorage->load($this->configuration['uid']);
     $prefix = $this->siteNamePrefix ? preg_replace('@[^a-z0-9-]+@', '-', strtolower(\Drupal::config('system.site')->get('name'))) : $this->namePrefix;
     return urlencode((!empty($prefix) ? $prefix . '-' : '') . $account->getAccountName());
   }
