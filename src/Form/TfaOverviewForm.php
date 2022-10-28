@@ -170,11 +170,13 @@ class TfaOverviewForm extends FormBase {
             '#type' => 'details',
             '#title' => $this->t('Login plugins'),
             '#open' => TRUE,
+            '#access' => FALSE,
           ];
 
           foreach ($login_plugins as $plugin_id => $plugin) {
             if (!empty($config->get('login_plugins')[$plugin_id])) {
               $output['login'][$plugin_id] = $this->tfaPluginSetupFormOverview($plugin, $user, TRUE);
+              $output['login']['#access'] = TRUE;
             }
           }
         }
