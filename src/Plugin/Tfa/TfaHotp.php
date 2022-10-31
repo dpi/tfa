@@ -31,7 +31,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   helpLinks = {
  *    "Google Authenticator (Android/iOS)" = "https://googleauthenticator.net",
  *    "Microsoft Authenticator (Android/iOS)" = "https://www.microsoft.com/en-us/security/mobile-authenticator-app",
- *    "FreeOTP (Android)" = "https://freeotp.github.io",
+ *    "FreeOTP (Android/iOS)" = "https://freeotp.github.io",
  *   },
  *   setupMessages = {
  *    "saved" = @Translation("Application code verified."),
@@ -135,6 +135,7 @@ class TfaHotp extends TfaBasePlugin implements TfaValidationInterface, TfaSetupI
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, UserDataInterface $user_data, EncryptionProfileManagerInterface $encryption_profile_manager, EncryptServiceInterface $encrypt_service, ConfigFactoryInterface $config_factory, TimeInterface $time, UserStorageInterface $user_storage) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
+
     $this->auth = new \StdClass();
     $this->auth->otp = new Otp();
     $this->auth->ga = new GoogleAuthenticator();
@@ -199,7 +200,10 @@ class TfaHotp extends TfaBasePlugin implements TfaValidationInterface, TfaSetupI
       '#title' => $this->t('Application verification code'),
       '#description' => $message,
       '#required'  => TRUE,
-      '#attributes' => ['autocomplete' => 'off'],
+      '#attributes' => [
+        'autocomplete' => 'off',
+        'autofocus' => 'autofocus',
+      ],
     ];
 
     $form['actions']['#type'] = 'actions';
@@ -242,7 +246,7 @@ class TfaHotp extends TfaBasePlugin implements TfaValidationInterface, TfaSetupI
       '#description' => $this->t('Prefix for OTP QR code names. Suffix is account username.'),
       '#size' => 15,
       '#states' => [
-        'visible' => [':input[name="validation_plugin_settings[tfa_hotp][site_name_prefix]"]' => ['checked' => FALSE]],
+        'visible' => [':input[name="validation_plugin_settings[' . $this->pluginId . '][site_name_prefix]"]' => ['checked' => FALSE]],
       ],
     ];
 

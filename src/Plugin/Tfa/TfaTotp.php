@@ -242,7 +242,7 @@ class TfaTotp extends TfaBasePlugin implements TfaValidationInterface, TfaSetupI
       '#description' => $this->t('Prefix for OTP QR code names. Suffix is account username.'),
       '#size' => 15,
       '#states' => [
-        'visible' => [':input[name="validation_plugin_settings[tfa_totp][site_name_prefix]"]' => ['checked' => FALSE]],
+        'visible' => [':input[name="validation_plugin_settings[' . $this->pluginId . '][site_name_prefix]"]' => ['checked' => FALSE]],
       ],
     ];
 
