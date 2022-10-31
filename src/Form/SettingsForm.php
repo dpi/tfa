@@ -169,7 +169,6 @@ class SettingsForm extends ConfigFormBase {
     $form['validation_plugin_settings'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Validation Settings'),
-      '#descrption' => $this->t('Extra plugin settings.'),
       '#tree' => TRUE,
       '#states' => $enabled_state,
     ];
@@ -259,7 +258,6 @@ class SettingsForm extends ConfigFormBase {
     $form['login_plugin_settings'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Login Settings'),
-      '#descrption' => $this->t('Extra plugin settings.'),
       '#tree' => TRUE,
       '#states' => $enabled_state,
     ];
@@ -316,7 +314,6 @@ class SettingsForm extends ConfigFormBase {
     $form['tfa_flood'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('TFA Flood Settings'),
-      '#description' => $this->t('Configure the TFA Flood Settings.'),
       '#states' => $enabled_state,
     ];
 
