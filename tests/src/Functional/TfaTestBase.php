@@ -81,7 +81,7 @@ abstract class TfaTestBase extends BrowserTestBase {
     $encryption_profile = EncryptionProfile::create([
       'id' => 'test_encryption_profile',
       'label' => 'Test encryption profile',
-      'encryption_method' => TestEncryptionMethod::PLUGIN_ID,
+      'encryption_method' => 'test_encryption_method',
       'encryption_key' => $this->testKey->id(),
     ]);
     $encryption_profile->save();
