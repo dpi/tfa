@@ -45,7 +45,7 @@ final class TfaEncryptionSetupTest extends TfaTestBase {
       ->set('encryption_method', $encryptionPluginId)
       ->save();
 
-    $validationPluginId = ' tfa_test_plugins_validation';
+    $validationPluginId = 'tfa_test_plugins_validation';
     $this->config('tfa.settings')
       ->set('enabled', TRUE)
       ->set('required_roles', [
