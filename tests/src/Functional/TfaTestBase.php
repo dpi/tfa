@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tfa\Functional;
 
 use Drupal\encrypt\Entity\EncryptionProfile;
+use Drupal\encrypt_test\Plugin\EncryptionMethod\TestEncryptionMethod;
 use Drupal\key\Entity\Key;
 use Drupal\Tests\BrowserTestBase;
 
@@ -80,7 +81,7 @@ abstract class TfaTestBase extends BrowserTestBase {
     $encryption_profile = EncryptionProfile::create([
       'id' => 'test_encryption_profile',
       'label' => 'Test encryption profile',
-      'encryption_method' => 'test_encryption_method',
+      'encryption_method' => TestEncryptionMethod::PLUGIN_ID,
       'encryption_key' => $this->testKey->id(),
     ]);
     $encryption_profile->save();
