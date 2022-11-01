@@ -3,7 +3,6 @@
 namespace Drupal\Tests\tfa\Functional;
 
 use Drupal\encrypt\Entity\EncryptionProfile;
-use Drupal\encrypt_test\Plugin\EncryptionMethod\TestEncryptionMethod;
 use Drupal\key\Entity\Key;
 use Drupal\Tests\BrowserTestBase;
 
