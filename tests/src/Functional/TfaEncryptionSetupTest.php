@@ -6,7 +6,6 @@ namespace Drupal\Tests\tfa\Functional;
 
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
-use Drupal\encrypt_test\Plugin\EncryptionMethod\TestEncryptionMethod;
 use Drupal\tfa_test_encryption\Plugin\EncryptionMethod\FailingEncryption;
 
 /**
@@ -95,7 +94,7 @@ final class TfaEncryptionSetupTest extends TfaTestBase {
         'There was an error during TFA setup. Your settings have not been saved.',
       ],
       'success' => [
-        TestEncryptionMethod::PLUGIN_ID,
+        'test_encryption_method',
         'TFA setup complete.',
       ],
     ];
