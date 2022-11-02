@@ -6,3 +6,12 @@ services:
     class: Drupal\tfa\Routing\TfaRouteSubscriber
     tags:
       - { name: event_subscriber }
+
+  tfa.user_has_tfa.default:
+    class: Drupal\tfa\EventSubscriber\TfaDefaultUserHasTfaSubscriber
+    arguments:
+      - '@config.factory'
+      - '@user.data'
+      - '@plugin.manager.tfa'
+    tags:
+      - { name: event_subscriber }

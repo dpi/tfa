@@ -3,6 +3,7 @@
 namespace Drupal\tfa;
 
 use Drupal\Component\Plugin\Exception\PluginException;
+use Drupal\tfa\Event\TfaUserHasTfaEvent;
 use Drupal\user\UserInterface;
 
 /**
@@ -33,6 +34,13 @@ trait TfaLoginContextTrait {
    * @var \Drupal\Core\Config\ImmutableConfig
    */
   protected $tfaSettings;
+
+  /**
+   * The event dispatcher.
+   *
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
+   */
+  protected $eventDispatcher;
 
   /**
    * Entity for the user that is attempting to login.
@@ -68,20 +76,9 @@ trait TfaLoginContextTrait {
    *   TRUE if TFA is disabled.
    */
   public function isTfaDisabled() {
-    // Global TFA settings take precedence.
-    if (!($this->tfaSettings->get('enabled')) || empty($this->tfaSettings->get('default_validation_plugin'))) {
-      return TRUE;
-    }
-
-    // Check if the user has enabled TFA.
-    $user_tfa_data = $this->tfaGetTfaData($this->user->id());
-    if (!empty($user_tfa_data['status']) && !empty($user_tfa_data['data']['plugins'])) {
-      return FALSE;
-    }
-
-    // TFA is not necessary if the user doesn't have one of the required roles.
-    $required_roles = array_filter($this->tfaSettings->get('required_roles'));
-    return empty(array_intersect($required_roles, $this->user->getRoles()));
+    $event = TfaUserHasTfaEvent::create($this->getUser());
+    $this->eventDispatcher->dispatch($event);
+    return FALSE === $event->isEnforcingTfa();
   }
 
   /**

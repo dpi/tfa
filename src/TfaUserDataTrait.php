@@ -128,7 +128,7 @@ trait TfaUserDataTrait {
    *   TFA data.
    */
   protected function tfaGetTfaData($uid) {
-    $result = $this->userData->get('tfa', $uid, 'tfa_user_settings');
+    $result = $this->userData->get('tfa', (int) $uid, 'tfa_user_settings');
 
     if (!empty($result)) {
       $result['status'] = ($result['status'] == '1');

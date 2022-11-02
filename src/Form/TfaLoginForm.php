@@ -45,6 +45,7 @@ class TfaLoginForm extends UserLoginForm {
 
     $instance->destination = $container->get('redirect.destination');
     $instance->privateTempStore = $container->get('tempstore.private')->get('tfa');
+    $instance->eventDispatcher = $container->get('event_dispatcher');
 
     return $instance;
   }

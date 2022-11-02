@@ -2,8 +2,10 @@
 
 namespace Drupal\Tests\tfa\Unit;
 
+use Drupal\tfa\EventSubscriber\TfaDefaultUserHasTfaSubscriber;
 use Drupal\tfa\Plugin\TfaLoginInterface;
 use Drupal\user\UserStorageInterface;
+use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
@@ -13,6 +15,7 @@ use Drupal\tfa\TfaLoginContextTrait;
 use Drupal\tfa\TfaPluginManager;
 use Drupal\user\UserDataInterface;
 use Drupal\user\UserInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @coversDefaultClass \Drupal\tfa\TfaLoginContextTrait
@@ -65,6 +68,13 @@ class TfaContextTest extends UnitTestCase {
   protected $userData;
 
   /**
+   * The event dispatcher.
+   *
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
+   */
+  protected $eventDispatcher;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -78,6 +88,7 @@ class TfaContextTest extends UnitTestCase {
     $this->tfaPluginManager->getLoginDefinitions()->willReturn(['bar' => 'bar']);
     $this->tfaPluginManager->createInstance('foo', ['uid' => 3])->willReturn($validation_plugin);
     $this->tfaPluginManager->createInstance('bar', ['uid' => 3])->willReturn($login_plugin);
+    $this->tfaPluginManager->hasDefinition('foo')->willReturn(TRUE);
     $this->tfaPluginManager = $this->tfaPluginManager->reveal();
     $this->tfaSettings = $this->prophesize(ImmutableConfig::class)->reveal();
     $this->configFactory = $this->prophesize(ConfigFactoryInterface::class);
@@ -102,8 +113,24 @@ class TfaContextTest extends UnitTestCase {
    *   TFA context.
    */
   protected function getFixture() {
+    // Recreate object instead of in setUp() as configFactory can be recreated.
+    $defaultSubscriber = new TfaDefaultUserHasTfaSubscriber(
+      $this->configFactory,
+      $this->userData,
+      $this->tfaPluginManager,
+    );
+
+    $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
+    $eventDispatcher->dispatch(Argument::any())->will(function (...$args) use ($defaultSubscriber) {
+      /** @var \Drupal\tfa\Event\TfaUserHasTfaEvent $event */
+      $event = $args[0][0];
+      $defaultSubscriber->listenerUserHasTfaSubscriber($event);
+      return $event;
+    });
+    $eventDispatcher = $eventDispatcher->reveal();
+
     // Use simple anonymous class to add the TfaLoginContextTrait.
-    return new class($this->tfaPluginManager, $this->configFactory, $this->userData, $this->userStorage) {
+    return new class($this->tfaPluginManager, $this->configFactory, $this->userData, $this->userStorage, $eventDispatcher) {
       use TfaLoginContextTrait;
 
       /**
@@ -117,11 +144,14 @@ class TfaContextTest extends UnitTestCase {
        *   The user data service.
        * @param \Drupal\user\UserStorageInterface $user_storage
        *   The user storage.
+       * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $eventDispatcher
+       *   The event dispatcher.
        */
-      public function __construct(TfaPluginManager $tfa_plugin_manager, ConfigFactoryInterface $config_factory, UserDataInterface $user_data, UserStorageInterface $user_storage) {
+      public function __construct(TfaPluginManager $tfa_plugin_manager, ConfigFactoryInterface $config_factory, UserDataInterface $user_data, UserStorageInterface $user_storage, EventDispatcherInterface $eventDispatcher) {
         $this->tfaPluginManager = $tfa_plugin_manager;
         $this->tfaSettings = $config_factory->get('tfa.settings');
         $this->userData = $user_data;
+        $this->eventDispatcher = $eventDispatcher;
 
         /** @var \Drupal\user\UserInterface $user */
         $user = $user_storage->load(3);
