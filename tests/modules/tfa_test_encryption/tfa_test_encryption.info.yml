@@ -1,0 +1,5 @@
+name: TFA Test Encryption
+type: module
+package: Testing
+dependencies:
+  - drupal:user

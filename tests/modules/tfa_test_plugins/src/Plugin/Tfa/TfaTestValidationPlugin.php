@@ -9,6 +9,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\encrypt\EncryptionProfileManagerInterface;
 use Drupal\encrypt\EncryptServiceInterface;
+use Drupal\encrypt\Exception\EncryptException;
 use Drupal\tfa\Plugin\TfaSetupInterface;
 use Drupal\tfa\Plugin\TfaValidationInterface;
 use Drupal\tfa\TfaBasePlugin;
@@ -102,6 +103,11 @@ class TfaTestValidationPlugin extends TfaBasePlugin implements TfaValidationInte
    * {@inheritdoc}
    */
   public function getForm(array $form, FormStateInterface $form_state) {
+    $form['actions']['login'] = [
+      '#type' => 'submit',
+      '#button_type' => 'primary',
+      '#value' => $this->t('Next'),
+    ];
     return $form;
   }
 
@@ -160,7 +166,13 @@ class TfaTestValidationPlugin extends TfaBasePlugin implements TfaValidationInte
    * {@inheritdoc}
    */
   public function submitSetupForm(array $form, FormStateInterface $form_state) {
-    $encrypted = $this->encryptService->encrypt($form_state->getValue('expected_field'), $this->encryptionProfile);
+    try {
+      $encrypted = $this->encryptService->encrypt($form_state->getValue('expected_field'), $this->encryptionProfile);
+    }
+    catch (EncryptException $e) {
+      return FALSE;
+    }
+
     $record = [
       'test_data' => [
         'expected_field' => base64_encode($encrypted),

@@ -11,6 +11,7 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Url;
 use Drupal\encrypt\EncryptionProfileManagerInterface;
 use Drupal\encrypt\EncryptServiceInterface;
+use Drupal\encrypt\Exception\EncryptException;
 use Drupal\tfa\Plugin\TfaSetupInterface;
 use Drupal\tfa\Plugin\TfaValidationInterface;
 use Drupal\tfa\TfaBasePlugin;
@@ -343,10 +344,20 @@ class TfaHotp extends TfaBasePlugin implements TfaValidationInterface, TfaSetupI
    *
    * @param string $seed
    *   Un-encrypted seed.
+   *
+   * @throws \Drupal\encrypt\Exception\EncryptException
+   *   Can throw an EncryptException.
    */
   public function storeSeed($seed) {
     // Encrypt seed for storage.
     $encrypted = $this->encryptService->encrypt($seed, $this->encryptionProfile);
+
+    // Until EncryptServiceInterface::encrypt enforces a non-empty string,
+    // validate return value is a non-empty string. \base64_encode() below must
+    // also only receive a string.
+    if (!is_string($encrypted) || strlen($encrypted) === 0) {
+      throw new EncryptException('Empty encryption value received from encryption service.');
+    }
 
     $record = [
       $this->pluginId . '_seed' => [
@@ -460,8 +471,13 @@ class TfaHotp extends TfaBasePlugin implements TfaValidationInterface, TfaSetupI
    */
   public function submitSetupForm(array $form, FormStateInterface $form_state) {
     // Write seed for user.
-    $this->storeSeed($this->seed);
-    return TRUE;
+    try {
+      $this->storeSeed($this->seed);
+      return TRUE;
+    }
+    catch (EncryptException $e) {
+    }
+    return FALSE;
   }
 
   /**
