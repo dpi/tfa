@@ -113,7 +113,10 @@ class TfaLoginController {
       return $access->andIf(AccessResult::forbidden('User is not logged in.'));
     }
 
-    $is_self = $account->id() === $target_user->id();
+    // ID may be numeric string depending on entity class/storage, despite docs
+    // for both AccountInterface::id() and UserInterface::id() claiming strict
+    // integer.
+    $is_self = (int) $account->id() === (int) $target_user->id();
     if (!$is_self) {
       $method = $route->getParameter('method');
       if (!empty($method)) {
